@@ -1,0 +1,78 @@
+#@data/values
+#@ load("@ytt:overlay", "overlay")
+#@overlay/match by=overlay.all
+---
+#@overlay/match missing_ok=True
+  
+service:
+  name:  Auth
+  dockerfile: Dockerfile
+  image_name: covergo/auth
+  enabled: true
+  slug: auth-service
+  
+nuget:
+  name: Auth client nuget
+  dockerfile: ./Nuget.Dockerfile
+  container_result_path: app/nuget
+  image_name: covergo/auth-nuget
+  enabled: true
+  slug: auth-nuget
+  
+unit_test:
+  name: Unit tests
+  dockerfile: Tests.Unit.Dockerfile
+  container_result_path: app/TestResults
+  image_name: covergo/auth-test-unit
+  enabled: true
+  slug: auth-test-unit
+  
+
+integration_test:
+  name: Integration tests
+  dockerfile: Tests.Integration.Dockerfile
+  container_result_path: app/TestResults
+  image_name: covergo/auth-test-integration
+  enabled: true
+  slug: auth-test-integration
+  run_command: |
+    #set docker image tags to issue slug to hit cache
+    sed -i -e 's/:latest/:$issue_slug/g' docker-compose.yml
+    docker-compose pull
+    docker ps -a
+    docker-compose -f docker-compose.yml up --exit-code-from covergo-auth-tests-integration 
+
+additional_images:
+  mongo:
+    name: Mongo db for Auth
+    dockerfile: Mongo.Dockerfile
+    image_name: covergo/auth-mongo
+    slug: auth-mongo
+    job_name: docker-build-mongo
+  job_names: 
+  - docker-build-mongo
+    
+cache_registry:
+  url: ghcr.io
+  name: GitHub Container Registry
+  user: ${{ github.repository_owner }}
+  password: ${{ secrets.CR_PAT_FULL }}
+  
+main_registry:
+  url: registry-intl.cn-hongkong.aliyuncs.com
+  name: AliCloud Container Registry
+  user: ${{ secrets.ALI_CONTAINER_REGISTRY_USER }}
+  password: ${{ secrets.ALI_CONTAINER_REGISTRY_PASSWORD }}
+
+git:
+  branches:
+    - master
+    - f/*
+    - r/*
+    - b/*
+    
+
+
+
+    
+    

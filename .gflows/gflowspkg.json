@@ -1,0 +1,8 @@
+{
+  "name": "build-publish-net-v1",
+  "files": [
+    "workflows/build-publish/build-publish.template.yml",
+    "libs/overlays.yml",
+    "libs/workflows.lib.yml"
+  ]
+}

@@ -1,0 +1,8 @@
+#@ load("@ytt:overlay", "overlay")
+#@overlay/match by=overlay.subset({"name": "Build and publish"}), expects="0+"
+#@ load("workflows.lib.yml", "image_build_job")
+#@ load("@ytt:data", "data")
+---
+jobs:
+  #@overlay/match missing_ok=True
+  docker-build-mongo: #@ image_build_job(data.values.additional_images.mongo, data.values.cache_registry)
