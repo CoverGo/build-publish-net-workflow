@@ -30,20 +30,20 @@
   - name: #@ "Run {} tests".format(test_case)
     run: #@ "yarn {}".format(test_case) 
   #@ end
-  - name: Stop compose
-    if: ${{ always() }}
-    run: docker-compose down
   - name: Gather test environment logs
-    if: ${{ failure() }}
+    if: ${{ always() }}
     uses: ./.github/actions/docker-diagnose
     with:
       filter: name=covergo*
       diagnostic-result-path: diagnostics
       include-compose: true
+  - name: Stop compose
+    if: ${{ always() }}
+    run: docker-compose down
   - name: Upload test environment logs
-    if: ${{ failure() }}
+    if: ${{ always() }}
     uses: actions/upload-artifact@v2
     with:
-      name: Diagnostics
+      name: Legacy integration tests diagnostics
       path: diagnostics/*
 #@ end

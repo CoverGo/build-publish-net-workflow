@@ -493,21 +493,21 @@ jobs:
       run: yarn apex_uat
     - name: Run asia_uat tests
       run: yarn asia_uat
-    - name: Stop compose
-      if: ${{ always() }}
-      run: docker-compose down
     - name: Gather test environment logs
-      if: ${{ failure() }}
+      if: ${{ always() }}
       uses: ./.github/actions/docker-diagnose
       with:
         filter: name=covergo*
         diagnostic-result-path: diagnostics
         include-compose: true
+    - name: Stop compose
+      if: ${{ always() }}
+      run: docker-compose down
     - name: Upload test environment logs
-      if: ${{ failure() }}
+      if: ${{ always() }}
       uses: actions/upload-artifact@v2
       with:
-        name: Diagnostics
+        name: Legacy integration tests diagnostics
         path: diagnostics/*
   integration-tests-legacy-big:
     name: Run legacy integration big tenants tests
@@ -555,21 +555,21 @@ jobs:
       run: yarn install
     - name: Run test_uat tests
       run: yarn test_uat
-    - name: Stop compose
-      if: ${{ always() }}
-      run: docker-compose down
     - name: Gather test environment logs
-      if: ${{ failure() }}
+      if: ${{ always() }}
       uses: ./.github/actions/docker-diagnose
       with:
         filter: name=covergo*
         diagnostic-result-path: diagnostics
         include-compose: true
+    - name: Stop compose
+      if: ${{ always() }}
+      run: docker-compose down
     - name: Upload test environment logs
-      if: ${{ failure() }}
+      if: ${{ always() }}
       uses: actions/upload-artifact@v2
       with:
-        name: Diagnostics
+        name: Legacy integration tests diagnostics
         path: diagnostics/*
   docker-build-mongo:
     runs-on: ubuntu-latest
