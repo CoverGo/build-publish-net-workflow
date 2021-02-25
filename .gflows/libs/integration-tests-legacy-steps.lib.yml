@@ -3,8 +3,13 @@
 #@ load("workflows.lib.yml", "checkout_private_actions")
 #@ load("workflows.lib.yml", "checkout")
 ---
-#@ def integration_tests_legacy_steps(registries, mongo_credentials, test_suites):
-  - #@ checkout()
+#@ def integration_tests_legacy_steps(repository, registries, mongo_credentials, test_suites):
+  - name: Checkout testsrepository
+    uses: actions/checkout@v2
+    with: 
+      repository: covergo/integration-testing
+      ref: #@ repository.branch
+      password: #@ repository.token
   - #@ checkout_private_actions()
   #@ for registry in registries:
   - #@ login_docker(registry)

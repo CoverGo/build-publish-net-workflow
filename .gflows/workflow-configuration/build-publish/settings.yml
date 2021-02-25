@@ -66,6 +66,9 @@ main_registry:
 
 integration_tests_legacy:
   runner: self-hosted
+  repository:
+    branch: ${{ github.head_ref }}
+    token: ${{ github.token }}
   services_under_test:
     - compose_slug: covergo-auth
       image: covergo/auth:local

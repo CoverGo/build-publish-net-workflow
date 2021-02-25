@@ -432,8 +432,12 @@ jobs:
     - version
     - docker-build-service
     steps:
-    - name: Checkout repository
+    - name: Checkout testsrepository
       uses: actions/checkout@v2
+      with:
+        repository: covergo/integration-testing
+        ref: ${{ github.head_ref }}
+        password: ${{ github.token }}
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
@@ -510,8 +514,12 @@ jobs:
     - version
     - docker-build-service
     steps:
-    - name: Checkout repository
+    - name: Checkout testsrepository
       uses: actions/checkout@v2
+      with:
+        repository: covergo/integration-testing
+        ref: ${{ github.head_ref }}
+        password: ${{ github.token }}
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:

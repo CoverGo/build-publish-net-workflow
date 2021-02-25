@@ -207,11 +207,11 @@ jobs:
     needs:
       - version
       - docker-build-service
-    steps: #@ integration_tests_legacy_steps([data.values.cache_registry,data.values.main_registry], data.values.integration_tests_legacy.environment, data.values.integration_tests_legacy.test_suites.small_tenants)
+    steps: #@ integration_tests_legacy_steps(data.values.integration_tests_legacy.repository,[data.values.cache_registry,data.values.main_registry], data.values.integration_tests_legacy.environment, data.values.integration_tests_legacy.test_suites.small_tenants)
   integration-tests-legacy-big:
     name: Run legacy integration big tenants tests
     runs-on: #@ data.values.integration_tests_legacy.runner
     needs:
       - version
       - docker-build-service
-    steps: #@ integration_tests_legacy_steps([data.values.cache_registry,data.values.main_registry], data.values.integration_tests_legacy.environment, data.values.integration_tests_legacy.test_suites.big_tenants)
+    steps: #@ integration_tests_legacy_steps(data.values.integration_tests_legacy.repository, [data.values.cache_registry,data.values.main_registry], data.values.integration_tests_legacy.environment, data.values.integration_tests_legacy.test_suites.big_tenants)
