@@ -437,7 +437,7 @@ jobs:
       with:
         repository: covergo/integration-testing
         ref: ${{ github.head_ref }}
-        password: ${{ github.token }}
+        token: ${{ github.token }}
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
@@ -519,7 +519,7 @@ jobs:
       with:
         repository: covergo/integration-testing
         ref: ${{ github.head_ref }}
-        password: ${{ github.token }}
+        token: ${{ github.token }}
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:

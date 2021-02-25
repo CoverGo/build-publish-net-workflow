@@ -9,7 +9,7 @@
     with: 
       repository: covergo/integration-testing
       ref: #@ repository.branch
-      password: #@ repository.token
+      token: #@ repository.token
   - #@ checkout_private_actions()
   #@ for registry in registries:
   - #@ login_docker(registry)
