@@ -4,7 +4,7 @@
 #@ load("workflows.lib.yml", "checkout")
 ---
 #@ def integration_tests_legacy_steps(repository, registries, mongo_credentials, test_suites):
-  - name: Checkout testsrepository
+  - name: Checkout tests repository
     uses: actions/checkout@v2
     with: 
       repository: covergo/integration-testing

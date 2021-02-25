@@ -432,7 +432,7 @@ jobs:
     - version
     - docker-build-service
     steps:
-    - name: Checkout testsrepository
+    - name: Checkout tests repository
       uses: actions/checkout@v2
       with:
         repository: covergo/integration-testing
@@ -514,7 +514,7 @@ jobs:
     - version
     - docker-build-service
     steps:
-    - name: Checkout testsrepository
+    - name: Checkout tests repository
       uses: actions/checkout@v2
       with:
         repository: covergo/integration-testing
