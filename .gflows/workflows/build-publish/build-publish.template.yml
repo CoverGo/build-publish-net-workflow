@@ -2,7 +2,7 @@
 
 #@ load("@ytt:overlay", "overlay")
 #@overlay/match by=overlay.subset({"name": "Build and publish"}), expects="0+"
-
+#@ load("integration-tests-legacy-steps.lib.yml", "integration_tests_legacy_steps")
 #@ load("workflows.lib.yml", "pull_request_defaults")
 #@ load("workflows.lib.yml", "image_full_tag")
 #@ load("workflows.lib.yml", "image_versioned_tag")
@@ -154,25 +154,32 @@ jobs:
   docker-publish-github:
     name: #@ "Publish {} to GitHub".format(data.values.service.name)
     needs:
+     - version
      - integration-tests
      - docker-build-service-test-unit
-     - version
+     - integration-tests-legacy-small
+     - integration-tests-legacy-big
      
   docker-publish-alicloud:
     name: #@ "Publish {} to AliCloud".format(data.values.service.name)
     if: github.ref == 'refs/head/master'
     needs:
+        - version
         - integration-tests
         - docker-build-service-test-unit
+        - integration-tests-legacy-small
+        - integration-tests-legacy-big
  
 #@ if data.values.nuget.enabled :
   nuget-publish:
     runs-on: ubuntu-latest
     needs:
+    - version
     - integration-tests
     - nuget-build
     - docker-build-service-test-unit
-    - version
+    - integration-tests-legacy-small
+    - integration-tests-legacy-big
     name: Publish Nuget package
     env:
       IMAGE_TAG: #@ tag_cache(data.values.cache_registry, data.values.nuget)
@@ -193,3 +200,18 @@ jobs:
       run: dotnet nuget push ./nuget/*.snupkg --api-key ${{ secrets.GITHUB_TOKEN }}
         --source https://nuget.pkg.github.com/covergo/index.json
 #@ end
+
+  integration-tests-legacy-small:
+    name: Run legacy integration small tenants tests
+    runs-on: #@ data.values.integration_tests_legacy.runner
+    needs:
+      - version
+      - docker-build-service
+    steps: #@ integration_tests_legacy_steps([data.values.cache_registry,data.values.main_registry], data.values.integration_tests_legacy.environment, data.values.integration_tests_legacy.test_suites.small_tenants)
+  integration-tests-legacy-big:
+    name: Run legacy integration big tenants tests
+    runs-on: #@ data.values.integration_tests_legacy.runner
+    needs:
+      - version
+      - docker-build-service
+    steps: #@ integration_tests_legacy_steps([data.values.cache_registry,data.values.main_registry], data.values.integration_tests_legacy.environment, data.values.integration_tests_legacy.test_suites.big_tenants)

@@ -1,0 +1,42 @@
+#@ load("workflows.lib.yml", "pull_request_defaults")
+#@ load("workflows.lib.yml", "login_docker")
+#@ load("workflows.lib.yml", "checkout_private_actions")
+#@ load("workflows.lib.yml", "checkout")
+---
+#@ def integration_tests_legacy_steps(registries, mongo_credentials, test_suites):
+  - #@ checkout()
+  - #@ checkout_private_actions()
+  #@ for registry in registries:
+  - #@ login_docker(registry)
+  #@ end
+  - name: Pull images
+    run: docker-compose pull --quiet
+  - name: Prepare environment for integration tests
+    uses: ./launch_environment
+    with:
+      mongo-user: #@ mongo_credentials.mongo_user 
+      mongo-password: #@ mongo_credentials.mongo_password 
+      mongo-url: #@ mongo_credentials.mongo_url 
+  - name: Install yarn
+    run: yarn install
+  #@ for test_case in test_suites:
+  - name: #@ "Run {} tests".format(test_case)
+    run: #@ "yarn {}".format(test_case) 
+  #@ end
+  - name: Stop compose
+    if: ${{ always() }}
+    run: docker-compose down
+  - name: Gather test environment logs
+    if: ${{ failure() }}
+    uses: ./.github/actions/docker-diagnose
+    with:
+      filter: name=covergo*
+      diagnostic-result-path: diagnostics
+      include-compose: true
+  - name: Upload test environment logs
+    if: ${{ failure() }}
+    uses: actions/upload-artifact@v2
+    with:
+      name: Diagnostics
+      path: diagnostics/*
+#@ end

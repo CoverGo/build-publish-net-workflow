@@ -64,6 +64,32 @@ main_registry:
   user: ${{ secrets.ALI_CONTAINER_REGISTRY_USER }}
   password: ${{ secrets.ALI_CONTAINER_REGISTRY_PASSWORD }}
 
+integration_tests_legacy:
+  runner: self-hosted
+  services_under_test:
+    - compose_slug: covergo-auth
+      image: covergo/auth:local
+  test_suites:
+    small_tenants:
+      - aag_uat
+      - marsh_uat
+      - aag_uat
+      - infinity_uat
+      - vhis_uat
+      - demo_uat
+      - demo2_uat
+      - fiLife_uat
+      - hkecic_uat
+      - tahoe_uat
+      - apex_uat
+      - asia_uat
+    big_tenants:
+      - test_uat
+  environment:
+    mongo_user: ${{ secrets.MONGO_USER }}
+    mongo_password: ${{ secrets.MONGO_PASSWORD }}
+    mongo_url: dds-3ns0c4f035f4d3141258-pub.mongodb.rds.aliyuncs.com:3717,dds-3ns0c4f035f4d3142331-pub.mongodb.rds.aliyuncs.com:3717/admin?replicaSet=mgset-5830817&maxPoolSize=500&waitQueueMultiple=5
+
 git:
   branches:
     - master
