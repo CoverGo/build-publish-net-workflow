@@ -465,6 +465,8 @@ jobs:
         mongo-user: ${{ secrets.MONGO_USER }}
         mongo-password: ${{ secrets.MONGO_PASSWORD }}
         mongo-url: dds-3ns0c4f035f4d3141258-pub.mongodb.rds.aliyuncs.com:3717,dds-3ns0c4f035f4d3142331-pub.mongodb.rds.aliyuncs.com:3717/admin?replicaSet=mgset-5830817&maxPoolSize=500&waitQueueMultiple=5
+        service-under-test: auth
+        image-under-test: covergo/auth:local
     - name: Install yarn
       run: yarn install
     - name: Run aag_uat tests
@@ -547,6 +549,8 @@ jobs:
         mongo-user: ${{ secrets.MONGO_USER }}
         mongo-password: ${{ secrets.MONGO_PASSWORD }}
         mongo-url: dds-3ns0c4f035f4d3141258-pub.mongodb.rds.aliyuncs.com:3717,dds-3ns0c4f035f4d3142331-pub.mongodb.rds.aliyuncs.com:3717/admin?replicaSet=mgset-5830817&maxPoolSize=500&waitQueueMultiple=5
+        service-under-test: auth
+        image-under-test: covergo/auth:local
     - name: Install yarn
       run: yarn install
     - name: Run test_uat tests

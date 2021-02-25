@@ -69,9 +69,6 @@ integration_tests_legacy:
   repository:
     branch: ${{ github.head_ref }}
     token: ${{ github.token }}
-  services_under_test:
-    - compose_slug: covergo-auth
-      image: covergo/auth:local
   test_suites:
     small_tenants:
       - aag_uat
@@ -89,6 +86,9 @@ integration_tests_legacy:
     big_tenants:
       - test_uat
   environment:
+    service_under_test:
+        name: auth
+        image: covergo/auth:local
     mongo_user: ${{ secrets.MONGO_USER }}
     mongo_password: ${{ secrets.MONGO_PASSWORD }}
     mongo_url: dds-3ns0c4f035f4d3141258-pub.mongodb.rds.aliyuncs.com:3717,dds-3ns0c4f035f4d3142331-pub.mongodb.rds.aliyuncs.com:3717/admin?replicaSet=mgset-5830817&maxPoolSize=500&waitQueueMultiple=5
