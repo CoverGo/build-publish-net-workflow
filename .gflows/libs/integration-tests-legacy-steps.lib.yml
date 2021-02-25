@@ -14,8 +14,6 @@
   #@ for registry in registries:
   - #@ login_docker(registry)
   #@ end
-  - name: Pull images
-    run: docker-compose pull --quiet
   - name: Prepare environment for integration tests
     uses: ./launch_environment
     with:

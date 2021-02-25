@@ -271,7 +271,7 @@ jobs:
       if: ${{ always() }}
       uses: actions/upload-artifact@v2
       with:
-        name: Investigation results
+        name: Integration tests environment diagnostics
         path: investigate/*
     - name: Upload integration test results
       uses: actions/upload-artifact@v2
@@ -457,8 +457,6 @@ jobs:
         registry: registry-intl.cn-hongkong.aliyuncs.com
         username: ${{ secrets.ALI_CONTAINER_REGISTRY_USER }}
         password: ${{ secrets.ALI_CONTAINER_REGISTRY_PASSWORD }}
-    - name: Pull images
-      run: docker-compose pull --quiet
     - name: Prepare environment for integration tests
       uses: ./launch_environment
       with:
@@ -541,8 +539,6 @@ jobs:
         registry: registry-intl.cn-hongkong.aliyuncs.com
         username: ${{ secrets.ALI_CONTAINER_REGISTRY_USER }}
         password: ${{ secrets.ALI_CONTAINER_REGISTRY_PASSWORD }}
-    - name: Pull images
-      run: docker-compose pull --quiet
     - name: Prepare environment for integration tests
       uses: ./launch_environment
       with:

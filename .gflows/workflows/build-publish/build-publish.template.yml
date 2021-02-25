@@ -133,7 +133,7 @@ jobs:
       if: ${{ always() }}
       uses: actions/upload-artifact@v2
       with:
-        name: Investigation results
+        name: Integration tests environment diagnostics
         path: investigate/*
     - name: Upload integration test results
       uses: actions/upload-artifact@v2
