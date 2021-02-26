@@ -10,8 +10,6 @@ name: Build and publish
     - b/*
 jobs:
   version:
-    if: github.event_name == 'push' && contains(toJson(github.event.commits), '[ci
-      skip]') == false
     runs-on: ubuntu-latest
     name: Get version from git tag
     outputs:
@@ -253,7 +251,7 @@ jobs:
         docker-compose.yml\ndocker-compose pull\ndocker ps -a\ndocker-compose -f docker-compose.yml
         up --exit-code-from covergo-auth-tests-integration \n"
     - name: Collect integration test results
-      if: ${{ always() }}
+      if: always()
       uses: ./.github/actions/docker-extract
       with:
         filter: ancestor=ghcr.io/covergo/auth-test-integration:${{ needs.version.outputs.issue_id_slug
@@ -261,14 +259,14 @@ jobs:
         container-path: app/TestResults
         host-path: ./TestResults
     - name: Gather test environment logs
-      if: ${{ always() }}
+      if: always()
       uses: ./.github/actions/docker-diagnose
       with:
         filter: name=covergo*
         diagnostic-result-path: investigate
         include-compose: true
     - name: Upload environment logs
-      if: ${{ always() }}
+      if: always()
       uses: actions/upload-artifact@v2
       with:
         name: Integration tests environment diagnostics
@@ -325,7 +323,7 @@ jobs:
       run: echo ${{ steps.docker-build-auth-service.outputs.digest }}
   docker-publish-alicloud:
     name: Publish Auth to AliCloud
-    if: github.ref == 'refs/head/master'
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
     needs:
     - version
     - integration-tests

@@ -21,8 +21,6 @@ name: Build and publish
 
 jobs:
   version:
-    if: github.event_name == 'push' && contains(toJson(github.event.commits), '[ci
-      skip]') == false
     runs-on: ubuntu-latest
     name: Get version from git tag
     outputs:
@@ -116,21 +114,21 @@ jobs:
         issue_slug: ${{ needs.version.outputs.issue_id_slug }}
       run: #@ data.values.integration_test.run_command
     - name: Collect integration test results
-      if: ${{ always() }}
+      if: always()
       uses: ./.github/actions/docker-extract
       with:
         filter: #@ "ancestor="+tag_cache(data.values.cache_registry, data.values.integration_test)
         container-path: #@ data.values.integration_test.container_result_path
         host-path: ./TestResults
     - name: Gather test environment logs
-      if: ${{ always() }}
+      if: always()
       uses: ./.github/actions/docker-diagnose
       with:
         filter: name=covergo*
         diagnostic-result-path: investigate
         include-compose: true
     - name: Upload environment logs
-      if: ${{ always() }}
+      if: always()
       uses: actions/upload-artifact@v2
       with:
         name: Integration tests environment diagnostics
@@ -162,7 +160,7 @@ jobs:
      
   docker-publish-alicloud:
     name: #@ "Publish {} to AliCloud".format(data.values.service.name)
-    if: github.ref == 'refs/head/master'
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
     needs:
         - version
         - integration-tests
