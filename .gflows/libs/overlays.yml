@@ -24,7 +24,7 @@ jobs:
   #@overlay/match missing_ok=True
   docker-publish-github: #@ image_build_job(data.values.service, data.values.cache_registry, needs=[], tag_build = tag_version(data.values.cache_registry,data.values.service) )
   #@overlay/match missing_ok=True
-  docker-publish-alicloud: #@ image_build_job(data.values.service, data.values.cache_registry, tag_build = tag_version(data.values.main_registry,data.values.service), add_if=False )
+  docker-publish-alicloud: #@ image_build_job(data.values.service, data.values.cache_registry, main_registry=data.values.main_registry, tag_build = tag_version(data.values.main_registry,data.values.service), add_if=False )
 #@ end
 
 #@ if data.values.integration_test.enabled:

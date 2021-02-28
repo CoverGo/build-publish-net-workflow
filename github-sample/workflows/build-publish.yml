@@ -351,6 +351,12 @@ jobs:
         registry: ghcr.io
         username: ${{ github.repository_owner }}
         password: ${{ secrets.CR_PAT_FULL }}
+    - name: Login to AliCloud Container Registry
+      uses: docker/login-action@v1
+      with:
+        registry: registry-intl.cn-hongkong.aliyuncs.com
+        username: ${{ secrets.ALI_CONTAINER_REGISTRY_USER }}
+        password: ${{ secrets.ALI_CONTAINER_REGISTRY_PASSWORD }}
     - name: Build and publish Auth docker image
       uses: docker/build-push-action@v2
       id: docker-build-auth-service
