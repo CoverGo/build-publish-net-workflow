@@ -7,7 +7,7 @@
   - name: Checkout tests repository
     uses: actions/checkout@v2
     with: 
-      repository: covergo/integration-testing
+      repository: #@ repository.url
       ref: #@ repository.branch
       token: #@ repository.token
   - #@ checkout_private_actions()

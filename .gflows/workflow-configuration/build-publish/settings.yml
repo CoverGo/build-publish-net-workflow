@@ -67,6 +67,7 @@ main_registry:
 integration_tests_legacy:
   runner: self-hosted
   repository:
+    url: covergo/integration-testing
     branch: ${{ github.head_ref }}
     token: ${{ github.token }}
   test_suites:
