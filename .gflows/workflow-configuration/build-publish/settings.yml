@@ -3,7 +3,11 @@
 #@overlay/match by=overlay.all
 ---
 #@overlay/match missing_ok=True
-  
+
+versioning: 
+  use_external_build_number: false
+  use_branch_slug_for_nuget: true
+
 service:
   name:  Auth
   dockerfile: Dockerfile

@@ -36,6 +36,8 @@ jobs:
     - name: Get version from git tags
       id: version
       uses: ./.github/actions/get-version
+      with:
+        pre-release-version: ${{ steps.issue-key.outputs.issue_id_slug }}
     - name: Get jira Ticket slug
       id: issue-key
       uses: ./.github/actions/get-issue-key

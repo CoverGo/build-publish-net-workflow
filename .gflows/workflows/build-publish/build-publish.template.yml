@@ -37,6 +37,19 @@ jobs:
     - name: Get version from git tags
       id: version
       uses: ./.github/actions/get-version
+      #@ if hasattr(data.values, "versioning") :
+      with:
+        #@ if hasattr(data.values.versioning, "use_external_build_number") :
+           #@ if data.values.versioning.use_external_build_number :
+            build-number: ${{ github.run_number }}
+           #@ end
+        #@ end
+        #@ if hasattr(data.values.versioning, "use_branch_slug_for_nuget") :
+          #@ if data.values.versioning.use_branch_slug_for_nuget :
+            pre-release-version: ${{ steps.issue-key.outputs.issue_id_slug }}
+          #@ end
+         #@ end
+      #@ end
     - name: Get jira Ticket slug
       id: issue-key
       uses: ./.github/actions/get-issue-key
