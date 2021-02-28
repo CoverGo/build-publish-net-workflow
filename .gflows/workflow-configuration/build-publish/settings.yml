@@ -96,8 +96,12 @@ integration_tests_legacy:
 git:
   branches:
     - master
+    - main
+    - F/*
     - f/*
+    - R/*
     - r/*
+    - B/*
     - b/*
     
 

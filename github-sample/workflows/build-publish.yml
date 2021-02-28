@@ -5,8 +5,12 @@ name: Build and publish
   push:
     branches:
     - master
+    - main
+    - F/*
     - f/*
+    - R/*
     - r/*
+    - B/*
     - b/*
 jobs:
   version:
