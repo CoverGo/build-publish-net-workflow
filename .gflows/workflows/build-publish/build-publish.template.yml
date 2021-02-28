@@ -34,6 +34,9 @@ jobs:
       with:
         fetch-depth: 0
     - #@ checkout_private_actions()
+    - name: Get jira Ticket slug
+      id: issue-key
+      uses: ./.github/actions/get-issue-key
     - name: Get version from git tags
       id: version
       uses: ./.github/actions/get-version
@@ -50,9 +53,7 @@ jobs:
           #@ end
          #@ end
       #@ end
-    - name: Get jira Ticket slug
-      id: issue-key
-      uses: ./.github/actions/get-issue-key
+
 #@ if data.values.nuget.enabled :
   nuget-build: 
     name: Build nuget package 
