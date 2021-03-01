@@ -114,9 +114,7 @@ jobs:
     - docker-build-service
     - docker-build-tests-integration
     - version
-#@ for job_name in data.values.additional_images.job_names:
-    - #@ job_name
-#@ end
+    - docker-build-additional-images
     env:
       RESULTS_PATH: TestResults
     steps:
@@ -227,3 +225,26 @@ jobs:
       - version
       - docker-build-service
     steps: #@ integration_tests_legacy_steps(data.values.integration_tests_legacy.repository, [data.values.cache_registry,data.values.main_registry], data.values.integration_tests_legacy.environment, data.values.integration_tests_legacy.test_suites.big_tenants)
+
+#@ 
+
+
+  
+  #@ if hasattr(data.values, "additional_images"):
+  docker-build-additional-images:
+   runs-on: ubuntu-latest
+   needs:
+     - versions
+   steps:
+    - #@ checkout()
+    - #@ setup_qemu()
+    - #@ setup_buildx()
+    - #@ login_docker(data.values.cache_registry)
+    #@ for additional_image in data.values.additional_images :
+    #@ step_id_value="docker-additional-image-build-"+additional_image.slug
+    #@ tag_build = tag_cache(data.values.cache_registry, additional_image)
+    - #@ build_and_push_docker(additional_image, data.values.cache_registry, tag_build=tag_build, provide_version_args=False, load_image=True, push_image=True)
+    - name: Image digest
+      run: #@ "echo ${{ steps."+step_id_value+".outputs.digest }}"
+    #@ end
+  #@ end
