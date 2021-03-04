@@ -2,7 +2,7 @@
   "name": "build-publish-net",
   "files": [
     "workflows/build-publish/build-publish.template.yml",
-    "libs/overlays.yml",
+    "libs/images_build.yml",
     "libs/workflows.lib.yml",
     "libs/integration-tests-legacy-steps.lib.yml"
   ]
