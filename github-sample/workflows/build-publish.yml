@@ -345,8 +345,7 @@ jobs:
       with:
         file: Dockerfile
         push: true
-        tags: registry-intl.cn-hongkong.aliyuncs.com/covergo/auth:${{ needs.version.outputs.app_version
-          }}
+        tags: registry-intl.cn-hongkong.aliyuncs.com/covergo/auth:latest
         cache-from: type=registry,ref=ghcr.io/covergo/auth:${{ needs.version.outputs.issue_id_slug
           }}
         cache-to: type=inline
