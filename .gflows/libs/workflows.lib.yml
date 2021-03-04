@@ -133,19 +133,16 @@ steps:
   - #@ checkout()
 #@overlay/match by=overlay.index(1)
 #@overlay/insert before=True
-  - #@ setup_buildx()
-#@overlay/match by=overlay.index(2)
-#@overlay/insert before=True
   - #@ login_docker(cache_registry)
 #@ if main_registry!="skip":
-#@overlay/match by=overlay.index(3)
+#@overlay/match by=overlay.index(2)
 #@overlay/insert before=True
   - #@ login_docker(main_registry)
 #@ end
-#@overlay/match by=overlay.index(4)
+#@overlay/match by=overlay.index(3)
 #@overlay/insert before=True
   - #@ build_and_push_docker(component, cache_registry, step_id=step_id_value, tag_build=tag_build, provide_version_args=provide_version_args, load_image=load_image, push_image=push_image)
-#@overlay/match by=overlay.index(5)
+#@overlay/match by=overlay.index(4)
 #@overlay/insert before=True
   - name: Image digest
     run: #@ "echo ${{ steps."+step_id_value+".outputs.digest }}"
