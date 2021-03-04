@@ -22,9 +22,9 @@ unit_test:
   image_name: covergo/auth-test-unit
   enabled: true
   slug: auth-test-unit
-  
 
 integration_test:
+  runner: self-hosted
   name: Integration tests
   dockerfile: Tests.Integration.Dockerfile
   container_result_path: app/TestResults

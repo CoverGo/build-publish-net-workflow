@@ -154,3 +154,12 @@ steps:
     run: #@ "echo ${{ steps."+step_id_value+".outputs.digest }}"
 #@ end
 
+#@ def get_runner(component):
+#@ if hasattr(component,"runner") :
+#@ return component.runner
+#@ else:
+#@ return "ubuntu-latest"
+#@ end
+#@ end
+  
+
