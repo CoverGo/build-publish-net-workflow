@@ -4,7 +4,7 @@
 ---
 #@overlay/match missing_ok=True
 
-versioning: 
+versioning:
   use_external_build_number: false
   use_branch_slug_for_nuget: true
 
@@ -14,14 +14,6 @@ service:
   image_name: covergo/auth
   enabled: true
   slug: auth-service
-  
-nuget:
-  name: Auth client nuget
-  dockerfile: ./Nuget.Dockerfile
-  container_result_path: app/nuget
-  image_name: covergo/auth-nuget
-  enabled: true
-  slug: auth-nuget
   
 unit_test:
   name: Unit tests
@@ -46,23 +38,20 @@ integration_test:
     docker ps -a
     docker-compose -f docker-compose.yml up --exit-code-from covergo-auth-tests-integration 
 
+
 additional_images:
   - name: Mongo db for Auth
     dockerfile: Mongo.Dockerfile
     image_name: covergo/auth-mongo
     slug: auth-mongo
     
-cache_registry:
-  url: ghcr.io
-  name: GitHub Container Registry
-  user: ${{ github.repository_owner }}
-  password: ${{ secrets.CR_PAT_FULL }}
-  
-main_registry:
-  url: registry-intl.cn-hongkong.aliyuncs.com
-  name: AliCloud Container Registry
-  user: ${{ secrets.ALI_CONTAINER_REGISTRY_USER }}
-  password: ${{ secrets.ALI_CONTAINER_REGISTRY_PASSWORD }}
+nuget:
+  name: Auth client nuget
+  dockerfile: ./Nuget.Dockerfile
+  container_result_path: app/nuget
+  image_name: covergo/auth-nuget
+  enabled: true
+  slug: auth-nuget
 
 integration_tests_legacy:
   runner: self-hosted
@@ -104,6 +93,18 @@ git:
     - r/*
     - B/*
     - b/*
+
+cache_registry:
+  url: ghcr.io
+  name: GitHub Container Registry
+  user: ${{ github.repository_owner }}
+  password: ${{ secrets.CR_PAT_FULL }}
+
+main_registry:
+  url: registry-intl.cn-hongkong.aliyuncs.com
+  name: AliCloud Container Registry
+  user: ${{ secrets.ALI_CONTAINER_REGISTRY_USER }}
+  password: ${{ secrets.ALI_CONTAINER_REGISTRY_PASSWORD }}
     
 
 
