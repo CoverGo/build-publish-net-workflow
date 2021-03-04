@@ -11,7 +11,6 @@
 #@ load("workflows.lib.yml", "login_docker")
 #@ load("workflows.lib.yml", "checkout_private_actions")
 #@ load("workflows.lib.yml", "checkout")
-#@ load("workflows.lib.yml", "setup_qemu")
 #@ load("workflows.lib.yml", "setup_buildx")
 #@ load("workflows.lib.yml", "build_and_push_docker")
 #@ load("workflows.lib.yml", "image_build_job")
@@ -248,7 +247,6 @@ jobs:
      - version
    steps:
     - #@ checkout()
-    - #@ setup_qemu()
     - #@ setup_buildx()
     - #@ login_docker(data.values.cache_registry)
     #@ for additional_image in data.values.additional_images :

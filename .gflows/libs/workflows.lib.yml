@@ -133,11 +133,8 @@ steps:
   - #@ checkout()
 #@overlay/match by=overlay.index(1)
 #@overlay/insert before=True
-  - #@ setup_qemu()
-#@overlay/match by=overlay.index(2)
-#@overlay/insert before=True
   - #@ setup_buildx()
-#@overlay/match by=overlay.index(3)
+#@overlay/match by=overlay.index(2)
 #@overlay/insert before=True
   - #@ login_docker(cache_registry)
 #@ if main_registry!="skip":
