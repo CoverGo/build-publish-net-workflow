@@ -225,7 +225,7 @@ jobs:
     - name: Image digest
       run: echo ${{ steps.docker-build-auth-test-integration.outputs.digest }}
   integration-tests:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     name: Run integration tests
     needs:
     - docker-build-service
@@ -250,6 +250,12 @@ jobs:
         registry: ghcr.io
         username: ${{ github.repository_owner }}
         password: ${{ secrets.CR_PAT_FULL }}
+    - name: Login to AliCloud Container Registry
+      uses: docker/login-action@v1
+      with:
+        registry: registry-intl.cn-hongkong.aliyuncs.com
+        username: ${{ secrets.ALI_CONTAINER_REGISTRY_USER }}
+        password: ${{ secrets.ALI_CONTAINER_REGISTRY_PASSWORD }}
     - name: Run integration tests
       env:
         issue_slug: ${{ needs.version.outputs.issue_id_slug }}
@@ -297,8 +303,6 @@ jobs:
     - version
     - integration-tests
     - docker-build-service-test-unit
-    - integration-tests-legacy-small
-    - integration-tests-legacy-big
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && contains(toJson(github.event.commits), '[ci
       skip]') == false
@@ -334,8 +338,6 @@ jobs:
     - version
     - integration-tests
     - docker-build-service-test-unit
-    - integration-tests-legacy-small
-    - integration-tests-legacy-big
     - version
     runs-on: ubuntu-latest
     steps:
@@ -377,8 +379,6 @@ jobs:
     - integration-tests
     - nuget-build
     - docker-build-service-test-unit
-    - integration-tests-legacy-small
-    - integration-tests-legacy-big
     name: Publish Nuget package
     env:
       IMAGE_TAG: ghcr.io/covergo/auth-nuget:${{ needs.version.outputs.issue_id_slug
@@ -579,8 +579,9 @@ jobs:
         path: diagnostics/*
   docker-build-additional-images:
     runs-on: ubuntu-latest
+    name: Build additional images
     needs:
-    - versions
+    - version
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
@@ -599,7 +600,6 @@ jobs:
       with:
         file: Mongo.Dockerfile
         push: true
-        load: true
         tags: ghcr.io/covergo/auth-mongo:${{ needs.version.outputs.issue_id_slug }}
         cache-from: type=registry,ref=ghcr.io/covergo/auth-mongo:${{ needs.version.outputs.issue_id_slug
           }}

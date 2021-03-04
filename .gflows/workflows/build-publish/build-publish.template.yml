@@ -169,8 +169,10 @@ jobs:
      - version
      - integration-tests
      - docker-build-service-test-unit
+     #@ if (hasattr(data.values,"integration_tests_legacy")):
      - integration-tests-legacy-small
      - integration-tests-legacy-big
+     #@ end
      
   docker-publish-alicloud:
     name: #@ "Publish {} to AliCloud".format(data.values.service.name)
@@ -179,8 +181,10 @@ jobs:
         - version
         - integration-tests
         - docker-build-service-test-unit
+      #@ if (hasattr(data.values,"integration_tests_legacy")):
         - integration-tests-legacy-small
         - integration-tests-legacy-big
+      #@ end
  
 #@ if data.values.nuget.enabled :
   nuget-publish:
@@ -190,8 +194,10 @@ jobs:
     - integration-tests
     - nuget-build
     - docker-build-service-test-unit
+    #@ if (hasattr(data.values,"integration_tests_legacy")):
     - integration-tests-legacy-small
     - integration-tests-legacy-big
+    #@ end
     name: Publish Nuget package
     env:
       IMAGE_TAG: #@ tag_cache(data.values.cache_registry, data.values.nuget)
@@ -213,6 +219,8 @@ jobs:
         --source https://nuget.pkg.github.com/covergo/index.json
 #@ end
 
+#@ if (hasattr(data.values,"integration_tests_legacy")):
+  
   integration-tests-legacy-small:
     name: Run legacy integration small tenants tests
     runs-on: #@ data.values.integration_tests_legacy.runner
@@ -228,15 +236,16 @@ jobs:
       - docker-build-service
     steps: #@ integration_tests_legacy_steps(data.values.integration_tests_legacy.repository, [data.values.cache_registry,data.values.main_registry], data.values.integration_tests_legacy.environment, data.values.integration_tests_legacy.test_suites.big_tenants)
 
-#@ 
+#@ end
 
 
   
   #@ if hasattr(data.values, "additional_images"):
   docker-build-additional-images:
    runs-on: ubuntu-latest
+   name: Build additional images
    needs:
-     - versions
+     - version
    steps:
     - #@ checkout()
     - #@ setup_qemu()
