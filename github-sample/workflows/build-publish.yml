@@ -303,6 +303,8 @@ jobs:
     - version
     - integration-tests
     - docker-build-service-test-unit
+    - integration-tests-legacy-small
+    - integration-tests-legacy-big
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && contains(toJson(github.event.commits), '[ci
       skip]') == false
@@ -338,6 +340,8 @@ jobs:
     - version
     - integration-tests
     - docker-build-service-test-unit
+    - integration-tests-legacy-small
+    - integration-tests-legacy-big
     - version
     runs-on: ubuntu-latest
     steps:
@@ -379,6 +383,8 @@ jobs:
     - integration-tests
     - nuget-build
     - docker-build-service-test-unit
+    - integration-tests-legacy-small
+    - integration-tests-legacy-big
     name: Publish Nuget package
     env:
       IMAGE_TAG: ghcr.io/covergo/auth-nuget:${{ needs.version.outputs.issue_id_slug
@@ -510,7 +516,7 @@ jobs:
         include-compose: true
     - name: Stop compose
       if: ${{ always() }}
-      run: docker-compose down
+      run: docker-compose down --remove-orphans
     - name: Upload test environment logs
       if: ${{ always() }}
       uses: actions/upload-artifact@v2
@@ -570,7 +576,7 @@ jobs:
         include-compose: true
     - name: Stop compose
       if: ${{ always() }}
-      run: docker-compose down
+      run: docker-compose down --remove-orphans
     - name: Upload test environment logs
       if: ${{ always() }}
       uses: actions/upload-artifact@v2
