@@ -21,6 +21,9 @@ jobs:
       file_version: ${{ steps.version.outputs.file_version }}
       information_version: ${{ steps.version.outputs.information_version }}
       issue_id_slug: ${{ steps.issue-key.outputs.issue_id_slug }}
+      docker_image_ali_cloud_tags: ${{ steps.tags.outputs.docker_image_ali_cloud_tags
+        }}
+      docker_image_ghcr_tags: ${{ steps.tags.outputs.docker_image_ghcr_tags }}
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
@@ -29,7 +32,7 @@ jobs:
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
-        actions_list: '["covergo/get-version@v1.3","covergo/get-issue-key@v1.1","covergo/docker-extract@v1","covergo/docker-diagnose@v1.2"]'
+        actions_list: '["covergo/get-version@v1.4","covergo/get-issue-key@v1.2","covergo/docker-extract@v1","covergo/docker-diagnose@v1.2"]'
         checkout_base_path: ./.github/actions
         app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
         app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}
@@ -41,6 +44,22 @@ jobs:
       uses: ./.github/actions/get-version
       with:
         pre-release-version: ${{ steps.issue-key.outputs.issue_id_slug }}
+    - name: Get docker image tags
+      id: tags
+      env:
+        ghcr_versioned_tag: ghcr.io/covergo/auth:${{ steps.version.outputs.app_version
+          }}
+        ali_cloud_versioned_tag: registry-intl.cn-hongkong.aliyuncs.com/covergo/auth:${{
+          steps.version.outputs.app_version }}
+        ghcr_latest_tag: ghcr.io/covergo/auth:latest
+        ali_cloud_latest_tag: registry-intl.cn-hongkong.aliyuncs.com/covergo/auth:latest
+      run: "\nali_cloud_tags=${ali_cloud_versioned_tag}\nghcr_tags=${ghcr_versioned_tag}\n
+        \ngit_ref=${{ github.ref }}\nbranch=${git_ref#refs/heads/}\nif [[ \"$branch\"
+        = 'main' || \"$branch\" = 'master'  ]]; then\n  ali_cloud_tags=\"${ali_cloud_tags},${ali_cloud_latest_tag}\"\n
+        \ ghcr_tags=\"${ghcr_tags},${ghcr_latest_tag}\"\nfi\n \necho final tags for
+        ghcr are:  ${ghcr_tags}\necho final tags for ali are: ${ali_cloud_tags}\necho
+        ::set-output name=docker_image_ghcr_tags::${ghcr_tags}\necho ::set-output
+        name=docker_image_ali_cloud_tags::${ali_cloud_tags}\n \n"
   nuget-build:
     name: Build nuget package
     runs-on: ubuntu-latest
@@ -149,7 +168,7 @@ jobs:
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
-        actions_list: '["covergo/get-version@v1.3","covergo/get-issue-key@v1.1","covergo/docker-extract@v1","covergo/docker-diagnose@v1.2"]'
+        actions_list: '["covergo/get-version@v1.4","covergo/get-issue-key@v1.2","covergo/docker-extract@v1","covergo/docker-diagnose@v1.2"]'
         checkout_base_path: ./.github/actions
         app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
         app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}
@@ -224,7 +243,7 @@ jobs:
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
-        actions_list: '["covergo/get-version@v1.3","covergo/get-issue-key@v1.1","covergo/docker-extract@v1","covergo/docker-diagnose@v1.2"]'
+        actions_list: '["covergo/get-version@v1.4","covergo/get-issue-key@v1.2","covergo/docker-extract@v1","covergo/docker-diagnose@v1.2"]'
         checkout_base_path: ./.github/actions
         app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
         app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}
@@ -301,13 +320,19 @@ jobs:
         registry: ghcr.io
         username: ${{ github.repository_owner }}
         password: ${{ secrets.CR_PAT_FULL }}
+    - name: Login to AliCloud Container Registry
+      uses: docker/login-action@v1
+      with:
+        registry: registry-intl.cn-hongkong.aliyuncs.com
+        username: ${{ secrets.ALI_CONTAINER_REGISTRY_USER }}
+        password: ${{ secrets.ALI_CONTAINER_REGISTRY_PASSWORD }}
     - name: Build and publish Auth docker image
       uses: docker/build-push-action@v2
       id: docker-build-auth-service
       with:
         file: Dockerfile
         push: true
-        tags: ghcr.io/covergo/auth:${{ needs.version.outputs.app_version }}
+        tags: ${{ needs.version.outputs.docker_image_ghcr_tags }}
         cache-from: type=registry,ref=ghcr.io/covergo/auth:${{ needs.version.outputs.issue_id_slug
           }}
         cache-to: type=inline
@@ -345,7 +370,7 @@ jobs:
       with:
         file: Dockerfile
         push: true
-        tags: registry-intl.cn-hongkong.aliyuncs.com/covergo/auth:latest
+        tags: ${{ needs.version.outputs.docker_image_ali_cloud_tags }}
         cache-from: type=registry,ref=ghcr.io/covergo/auth:${{ needs.version.outputs.issue_id_slug
           }}
         cache-to: type=inline
@@ -376,7 +401,7 @@ jobs:
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
-        actions_list: '["covergo/get-version@v1.3","covergo/get-issue-key@v1.1","covergo/docker-extract@v1","covergo/docker-diagnose@v1.2"]'
+        actions_list: '["covergo/get-version@v1.4","covergo/get-issue-key@v1.2","covergo/docker-extract@v1","covergo/docker-diagnose@v1.2"]'
         checkout_base_path: ./.github/actions
         app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
         app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}
@@ -428,7 +453,7 @@ jobs:
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
-        actions_list: '["covergo/get-version@v1.3","covergo/get-issue-key@v1.1","covergo/docker-extract@v1","covergo/docker-diagnose@v1.2"]'
+        actions_list: '["covergo/get-version@v1.4","covergo/get-issue-key@v1.2","covergo/docker-extract@v1","covergo/docker-diagnose@v1.2"]'
         checkout_base_path: ./.github/actions
         app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
         app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}
@@ -510,7 +535,7 @@ jobs:
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
-        actions_list: '["covergo/get-version@v1.3","covergo/get-issue-key@v1.1","covergo/docker-extract@v1","covergo/docker-diagnose@v1.2"]'
+        actions_list: '["covergo/get-version@v1.4","covergo/get-issue-key@v1.2","covergo/docker-extract@v1","covergo/docker-diagnose@v1.2"]'
         checkout_base_path: ./.github/actions
         app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
         app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}

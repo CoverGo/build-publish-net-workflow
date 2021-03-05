@@ -5,8 +5,6 @@
 #@ load("workflows.lib.yml", "tag_cache")
 #@ load("workflows.lib.yml", "tag_version")
 #@ load("workflows.lib.yml", "checkout_private_actions")
-#@ load("workflows.lib.yml", "tag")
-
 
 ---
 #@ if data.values.unit_test.enabled:  
@@ -24,9 +22,9 @@ jobs:
 #@ if data.values.service.enabled:
   docker-build-service: #@ image_build_job(data.values.service, data.values.cache_registry)
   #@overlay/match missing_ok=True
-  docker-publish-github: #@ image_build_job(data.values.service, data.values.cache_registry, needs=[], tag_build = tag_version(data.values.cache_registry,data.values.service) )
+  docker-publish-github: #@ image_build_job(data.values.service, data.values.cache_registry, main_registry=data.values.main_registry,needs=[], tag_build = "${{ needs.version.outputs.docker_image_ghcr_tags }}" )
   #@overlay/match missing_ok=True
-  docker-publish-alicloud: #@ image_build_job(data.values.service, data.values.cache_registry, main_registry=data.values.main_registry, tag_build = tag(data.values.main_registry,data.values.service,"latest"), add_if=False )
+  docker-publish-alicloud: #@ image_build_job(data.values.service, data.values.cache_registry, main_registry=data.values.main_registry, tag_build = "${{ needs.version.outputs.docker_image_ali_cloud_tags }}", add_if=False )
 #@ end
 
 #@ if data.values.integration_test.enabled:

@@ -27,6 +27,8 @@ jobs:
       file_version: ${{ steps.version.outputs.file_version }}
       information_version: ${{ steps.version.outputs.information_version }}
       issue_id_slug: ${{ steps.issue-key.outputs.issue_id_slug }}
+      docker_image_ali_cloud_tags: ${{ steps.tags.outputs.docker_image_ali_cloud_tags }}
+      docker_image_ghcr_tags: ${{ steps.tags.outputs.docker_image_ghcr_tags }}
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
@@ -52,6 +54,30 @@ jobs:
           #@ end
          #@ end
       #@ end
+    - name: Get docker image tags
+      id: tags
+      env: 
+        ghcr_versioned_tag: #@ image_full_tag(data.values.cache_registry.url,data.values.service.image_name,"${{ steps.version.outputs.app_version }}")
+        ali_cloud_versioned_tag: #@ image_full_tag(data.values.main_registry.url,data.values.service.image_name,"${{ steps.version.outputs.app_version }}")
+        ghcr_latest_tag: #@ image_full_tag(data.values.cache_registry.url,data.values.service.image_name,"latest")
+        ali_cloud_latest_tag: #@ image_full_tag(data.values.main_registry.url,data.values.service.image_name,"latest")
+      run: |
+
+       ali_cloud_tags=${ali_cloud_versioned_tag}
+       ghcr_tags=${ghcr_versioned_tag}
+        
+       git_ref=${{ github.ref }}
+       branch=${git_ref#refs/heads/}
+       if [[ "$branch" = 'main' || "$branch" = 'master'  ]]; then
+         ali_cloud_tags="${ali_cloud_tags},${ali_cloud_latest_tag}"
+         ghcr_tags="${ghcr_tags},${ghcr_latest_tag}"
+       fi
+        
+       echo final tags for ghcr are:  ${ghcr_tags}
+       echo final tags for ali are: ${ali_cloud_tags}
+       echo ::set-output name=docker_image_ghcr_tags::${ghcr_tags}
+       echo ::set-output name=docker_image_ali_cloud_tags::${ali_cloud_tags}
+        
 
 #@ if data.values.nuget.enabled :
   nuget-build: 
