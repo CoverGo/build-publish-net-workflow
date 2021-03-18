@@ -5,6 +5,7 @@
 #@ load("workflows.lib.yml", "tag_cache")
 #@ load("workflows.lib.yml", "tag_version")
 #@ load("workflows.lib.yml", "checkout_private_actions")
+#@ load("workflows.lib.yml", "docker_build_job_name")
 
 ---
 #@ if data.values.unit_test.enabled:  
@@ -16,18 +17,17 @@ jobs:
 #@ if data.values.nuget.enabled :
   nuget-build: #@ image_build_job(data.values.nuget, data.values.cache_registry, provide_version_args=True)
   #@overlay/match missing_ok=True
-  nuget-publish: #@ image_build_job(data.values.nuget, data.values.cache_registry, needs=[], load_image=True, push_image=False, provide_version_args=True )
+  nuget-publish: #@ image_build_job(data.values.nuget, data.values.cache_registry, load_image=True, push_image=False, provide_version_args=True )
 #@ end
 
 #@ if data.values.service.enabled:
   docker-build-service: #@ image_build_job(data.values.service, data.values.cache_registry)
   #@overlay/match missing_ok=True
-  docker-publish-github: #@ image_build_job(data.values.service, data.values.cache_registry, main_registry=data.values.main_registry,needs=[], tag_build = "${{ needs.version.outputs.docker_image_ghcr_tags }}" )
+  docker-publish-github: #@ image_build_job(data.values.service, data.values.cache_registry, main_registry=data.values.main_registry, tag_build = "${{ needs.version.outputs.docker_image_ghcr_tags }}" )
   #@overlay/match missing_ok=True
   docker-publish-alicloud: #@ image_build_job(data.values.service, data.values.cache_registry, main_registry=data.values.main_registry, tag_build = "${{ needs.version.outputs.docker_image_ali_cloud_tags }}", add_if=False )
 #@ end
 
-#@ if data.values.integration_test.enabled:
-#@overlay/match missing_ok=True
-  docker-build-tests-integration: #@ image_build_job(data.values.integration_test, data.values.cache_registry)
-#@ end
+
+ 
+ 

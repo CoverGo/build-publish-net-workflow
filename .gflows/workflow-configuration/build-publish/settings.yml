@@ -1,12 +1,6 @@
 #@data/values
-#@ load("@ytt:overlay", "overlay")
-#@overlay/match by=overlay.all
 ---
-#@overlay/match missing_ok=True
 
-versioning:
-  use_external_build_number: false
-  use_branch_slug_for_nuget: true
 
 service:
   name:  Auth
@@ -24,19 +18,25 @@ unit_test:
   slug: auth-test-unit
 
 integration_test:
-  runner: self-hosted
-  name: Integration tests
-  dockerfile: Tests.Integration.Dockerfile
-  container_result_path: app/TestResults
-  image_name: covergo/auth-test-integration
-  enabled: true
-  slug: auth-test-integration
-  run_command: |
-    #set docker image tags to issue slug to hit cache
-    sed -i -e 's/:latest/:$issue_slug/g' docker-compose.yml
-    docker-compose pull
-    docker ps -a
-    docker-compose -f docker-compose.yml up --exit-code-from covergo-auth-tests-integration 
+  - name: Integration tests
+    slug: integration-tests
+    runner: ubuntu-latest
+    dockerfile: Tests.Integration.Dockerfile
+    container_result_path: app/TestResults
+    image_name: covergo/cases-mariadb-test-integration
+    compose_file: docker-compose.yml
+    compose_service_name: cases-test-integration
+    enabled: true
+  - name: Integration tests
+    slug: mariadb-test-integration
+    runner: ubuntu-latest
+    enabled: true
+    dockerfile: Tests.MariaDb.Integration.Dockerfile
+    image_name: covergo/cases-mariadb-test-integration
+    container_result_path: app/TestResults
+    compose_file: docker-compose.mariadb.yml
+    compose_service_name: cases-mariadb-test-integration
+    
 
 
 additional_images:
@@ -44,6 +44,10 @@ additional_images:
     dockerfile: Mongo.Dockerfile
     image_name: covergo/auth-mongo
     slug: auth-mongo
+  - name: Integration tests 2 
+    dockerfile: Tests2.Dockerfile
+    image_name: covergo/auth-tests-2
+    slug: auth-tests-2
     
 nuget:
   name: Auth client nuget
@@ -61,20 +65,22 @@ integration_tests_legacy:
     token: ${{ github.token }}
   test_suites:
     small_tenants:
-      - aag_uat
-      - marsh_uat
-      - aag_uat
-      - infinity_uat
-      - vhis_uat
-      - demo_uat
-      - demo2_uat
-      - fiLife_uat
-      - hkecic_uat
-      - tahoe_uat
-      - apex_uat
-      - asia_uat
+      name: Small tenants legacy integration tests
+      tests:
+        - aag_uat
+        - aag_uat
+        - tahoe_uat
+        - apex_uat
+        - asia_uat
     big_tenants:
-      - test_uat
+      name: Big tenants legacy integration tests
+      tests:
+        - test_uat
+        - test_uat1
+        - test_uat2
+        - test_uat3
+        - test_uat4
+
   environment:
     service_under_test:
         name: auth
@@ -83,6 +89,8 @@ integration_tests_legacy:
     mongo_password: ${{ secrets.MONGO_PASSWORD }}
     mongo_url: dds-3ns0c4f035f4d3141258-pub.mongodb.rds.aliyuncs.com:3717,dds-3ns0c4f035f4d3142331-pub.mongodb.rds.aliyuncs.com:3717/admin?replicaSet=mgset-5830817&maxPoolSize=500&waitQueueMultiple=5
 
+#optional
+#default
 git:
   branches:
     - master
@@ -93,7 +101,13 @@ git:
     - r/*
     - B/*
     - b/*
-
+    
+#optional
+#default
+versioning:
+  use_build_number: false
+  use_branch_slug: true
+  
 cache_registry:
   url: ghcr.io
   name: GitHub Container Registry

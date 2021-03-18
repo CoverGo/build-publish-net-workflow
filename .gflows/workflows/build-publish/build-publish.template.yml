@@ -14,11 +14,26 @@
 #@ load("workflows.lib.yml", "build_and_push_docker")
 #@ load("workflows.lib.yml", "image_build_job")
 #@ load("workflows.lib.yml", "get_runner")
+#@ load("workflows.lib.yml", "docker_build_job_name")
+#@ load("workflows.lib.yml", "job_name_from_slug")
+#@ load("build_publish.lib.yml", "set_build_number")
+#@ load("build_publish.lib.yml", "set_version")
+#@ load("build_publish.lib.yml", "get_repository_built_images")
+#@ load("build_publish.lib.yml", "integration_test_steps")
+#@ load("build_publish.lib.yml", "get_integration_test_run_job_name")
+#@ load("build_publish.lib.yml", "get_additional_images_build_jobs")
+#@ load("build_publish.lib.yml", "get_integration_tests_build_jobs")
+#@ load("build_publish.lib.yml", "get_integration_tests_run_jobs")
+
+#@ load("@ytt:template", "template")
+
+
 
 name: Build and publish
-"on": #@ pull_request_defaults(data.values.git)
+"on": #@ pull_request_defaults(data.values)
 
 jobs:
+ 
   version:
     runs-on: ubuntu-latest
     name: Get version from git tag
@@ -41,19 +56,9 @@ jobs:
     - name: Get version from git tags
       id: version
       uses: ./.github/actions/get-version
-      #@ if hasattr(data.values, "versioning") :
       with:
-        #@ if hasattr(data.values.versioning, "use_external_build_number") :
-           #@ if data.values.versioning.use_external_build_number :
-            build-number: ${{ github.run_number }}
-           #@ end
-        #@ end
-        #@ if hasattr(data.values.versioning, "use_branch_slug_for_nuget") :
-          #@ if data.values.versioning.use_branch_slug_for_nuget :
-            pre-release-version: ${{ steps.issue-key.outputs.issue_id_slug }}
-          #@ end
-         #@ end
-      #@ end
+        build-number: #@ set_build_number(data.values)
+        pre-release-version: #@ set_version(data.values)
     - name: Get docker image tags
       id: tags
       env: 
@@ -82,11 +87,15 @@ jobs:
 #@ if data.values.nuget.enabled :
   nuget-build: 
     name: Build nuget package 
+    needs:
+      - version
 #@ end
   
 #@ if data.values.service.enabled:
   docker-build-service: 
     name: #@ "Build {} image".format(data.values.service.name)
+    needs:
+      - version
 #@ end
   
 #@ if data.values.unit_test.enabled:  
@@ -95,6 +104,8 @@ jobs:
     env:
       RESULTS_PATH: TestResults
       UNIT_TEST_IMAGE_TAG: #@ tag_cache(data.values.cache_registry, data.values.unit_test)
+    needs:
+      - version
     steps:
       - name: dummy step for proper ordering
         run: exit 0
@@ -128,70 +139,26 @@ jobs:
           files: ${{ env.RESULTS_PATH }}/**/*.xml
 #@ end
   
-#@ if data.values.integration_test.enabled :
-  docker-build-tests-integration: 
-    name: Build int test image
-    
-  integration-tests: 
-    runs-on: #@ get_runner(data.values.integration_test)
-    name: Run integration tests
-    needs:
-    - docker-build-service
-    - docker-build-tests-integration
-    - version
-    - docker-build-additional-images
-    env:
-      RESULTS_PATH: TestResults
-    steps:
-    - #@ checkout()
-    - #@ checkout_private_actions()
-    - #@ login_docker(data.values.cache_registry)
-    - #@ login_docker(data.values.main_registry)
-    - name: Run integration tests
-      env:
-        issue_slug: ${{ needs.version.outputs.issue_id_slug }}
-      run: #@ data.values.integration_test.run_command
-    - name: Collect integration test results
-      if: always()
-      uses: ./.github/actions/docker-extract
-      with:
-        filter: #@ "ancestor="+tag_cache(data.values.cache_registry, data.values.integration_test)
-        container-path: #@ data.values.integration_test.container_result_path
-        host-path: ./TestResults
-    - name: Gather test environment logs
-      if: always()
-      uses: ./.github/actions/docker-diagnose
-      with:
-        filter: name=covergo*
-        diagnostic-result-path: investigate
-        include-compose: true
-    - name: Upload environment logs
-      if: always()
-      uses: actions/upload-artifact@v2
-      with:
-        name: Integration tests environment diagnostics
-        path: investigate/*
-    - name: Upload integration test results
-      uses: actions/upload-artifact@v2
-      if: always()
-      with:
-        name: Integration test results
-        path: ${{ env.RESULTS_PATH }}
-    - name: Publish integration tests results as check
-      uses: docker://ghcr.io/enricomi/publish-unit-test-result-action:latest
-      if: always()
-      with:
-        report_individual_runs: "true"
-        check_name: Integration Tests Results
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        files: ${{ env.RESULTS_PATH }}/**/*.xml
+#@ if hasattr(data.values,"integration_test") :
+  #@ integration_tests_run_needs = []
+  #@ integration_tests_run_needs.extend(get_integration_tests_build_jobs(data.values.integration_test))
+  #@ integration_tests_run_needs.extend(get_additional_images_build_jobs(data.values.additional_images))
+
+  #@ for integration_test_definition in data.values.integration_test :
+  build-integration-test-job: #@ template.replace({docker_build_job_name(integration_test_definition): image_build_job(integration_test_definition, data.values.cache_registry, needs=["version"], job_name="Build "+integration_test_definition.name)})
+  run-integration-tests-job: #@ template.replace({get_integration_test_run_job_name(integration_test_definition): integration_test_steps(integration_test_definition, get_repository_built_images(data.values), data.values.main_registry, data.values.cache_registry, integration_tests_run_needs)})
+  #@ end
 #@ end
   
   docker-publish-github:
     name: #@ "Publish {} to GitHub".format(data.values.service.name)
     needs:
      - version
-     - integration-tests
+     #@ if hasattr(data.values,"integration_test"):
+       #@ for integration_test_run_job_name in get_integration_tests_run_jobs(data.values.integration_test):
+     - #@ integration_test_run_job_name
+       #@ end
+     #@ end
      - docker-build-service-test-unit
      #@ if (hasattr(data.values,"integration_tests_legacy")):
      - integration-tests-legacy-small
@@ -203,7 +170,11 @@ jobs:
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
     needs:
         - version
-        - integration-tests
+      #@ if hasattr(data.values,"integration_test"):
+      #@ for integration_test_run_job_name in get_integration_tests_run_jobs(data.values.integration_test):
+        - #@ integration_test_run_job_name
+      #@ end
+      #@ end
         - docker-build-service-test-unit
       #@ if (hasattr(data.values,"integration_tests_legacy")):
         - integration-tests-legacy-small
@@ -215,7 +186,11 @@ jobs:
     runs-on: ubuntu-latest
     needs:
     - version
-    - integration-tests
+    #@ if hasattr(data.values,"integration_test"):
+      #@ for integration_test_run_job_name in get_integration_tests_run_jobs(data.values.integration_test):
+    - #@ integration_test_run_job_name
+      #@ end
+    #@ end
     - nuget-build
     - docker-build-service-test-unit
     #@ if (hasattr(data.values,"integration_tests_legacy")):
@@ -262,22 +237,11 @@ jobs:
 
 #@ end
 
+#@ if hasattr(data.values,"additional_images"):
+#@ for additional_image in data.values.additional_images :
+  job: #@ template.replace({docker_build_job_name(additional_image): image_build_job(additional_image, data.values.cache_registry, needs=["version"], job_name=additional_image.name)})
+#@ end
+#@ end
 
   
-  #@ if hasattr(data.values, "additional_images"):
-  docker-build-additional-images:
-   runs-on: ubuntu-latest
-   name: Build additional images
-   needs:
-     - version
-   steps:
-    - #@ checkout()
-    - #@ login_docker(data.values.cache_registry)
-    #@ for additional_image in data.values.additional_images :
-    #@ step_id_value="docker-additional-image-build-"+additional_image.slug
-    #@ tag_build = tag_cache(data.values.cache_registry, additional_image)
-    - #@ build_and_push_docker(additional_image, data.values.cache_registry, tag_build=tag_build, provide_version_args=False, load_image=False, push_image=True)
-    - name: Image digest
-      run: #@ "echo ${{ steps."+step_id_value+".outputs.digest }}"
-    #@ end
-  #@ end
+
