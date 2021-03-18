@@ -6,3 +6,7 @@ templates:
   defaults:
     libs:
       - workflow-configuration/build-publish
+      - libs
+    dependencies:
+      - https://raw.githubusercontent.com/CoverGo/ci-workflow-libraries/v1/.gflows
+
