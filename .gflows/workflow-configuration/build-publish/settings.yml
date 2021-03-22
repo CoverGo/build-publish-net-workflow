@@ -80,6 +80,7 @@ integration_tests_legacy:
         - test_uat2
         - test_uat3
         - test_uat4
+        - test_uat5
 
   environment:
     service_under_test:
