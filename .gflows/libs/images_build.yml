@@ -9,11 +9,13 @@
 
 ---
 jobs:
+#@ if hasattr(data.values,"nuget"):
 #@ if data.values.nuget.enabled :
   #@overlay/match missing_ok=True
   nuget-build: #@ image_build_job(data.values.nuget, data.values.cache_registry, provide_version_args=True)
   #@overlay/match missing_ok=True
   nuget-publish: #@ image_build_job(data.values.nuget, data.values.cache_registry, load_image=True, push_image=False, provide_version_args=True )
+#@ end
 #@ end
 
 #@ if data.values.service.enabled:

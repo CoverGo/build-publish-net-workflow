@@ -87,12 +87,13 @@ jobs:
        echo ::set-output name=docker_image_ghcr_tags::${ghcr_tags}
        echo ::set-output name=docker_image_ali_cloud_tags::${ali_cloud_tags}
         
-
-#@ if data.values.nuget.enabled :
+#@ if hasattr(data.values,"nuget"):
+#@ if data.values.nuget.enabled:
   nuget-build: 
     name: Build nuget package 
     needs:
       - version
+#@ end
 #@ end
   
 #@ if data.values.service.enabled:
@@ -159,7 +160,8 @@ jobs:
         - integration-tests-legacy-small
         - integration-tests-legacy-big
       #@ end
- 
+        
+#@ if hasattr(data.values,"nuget"):
 #@ if data.values.nuget.enabled :
   nuget-publish:
     runs-on: ubuntu-latest
@@ -199,6 +201,7 @@ jobs:
     - name: Push generated package symbols to GitHub registry
       run: dotnet nuget push ./nuget/*.snupkg --api-key ${{ secrets.GITHUB_TOKEN }}
         --source https://nuget.pkg.github.com/covergo/index.json
+#@ end
 #@ end
 
 #@ if (hasattr(data.values,"integration_tests_legacy")):
