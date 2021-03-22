@@ -6,6 +6,7 @@
 #@ load("workflows.lib.yml", "tag_cache")
 #@ load("workflows.lib.yml", "docker_build_job_name")
 #@ load("workflows.lib.yml", "job_name_from_slug")
+#@ load("workflows.lib.yml", "build_and_push_docker")
 ---
 #@ def set_version(context):
 #@ if hasattr(context, "versioning"):
@@ -32,7 +33,7 @@
 #@ def get_repository_built_images(settings):
 #@ images = []
 #@ images.append(get_image_from_section(settings,"service"))
-#@ images.append(get_image_from_section(settings,"unit_test"))
+#@ images.extend(get_images_from_section(settings,"unit_test"))
 #@ images.extend(get_images_from_section(settings,"integration_test"))
 #@ images.extend(get_images_from_section(settings,"additional_images"))
 #@ return ';'.join(images)
@@ -145,4 +146,59 @@
 #@   jobs.append(docker_build_job_name(additional_image))
 #@ end
 #@ return jobs
+#@ end
+
+
+---
+
+#@ def get_unit_test_job_name(unit_test_definition):
+#@ return job_name_from_slug(unit_test_definition,"build-and-run-")
+#@ end
+
+#@ def get_unit_tests_job_names(unit_tests):
+#@ jobs = []
+#@ for unit_test_definition in unit_tests:
+#@   jobs.append(get_unit_test_job_name(unit_test_definition))
+#@ end
+#@ return jobs
+#@ end
+
+  
+#@ def unit_test_build_and_run_steps(unit_test_definition,cache_registry):
+    name: #@ "Build and run {}".format(unit_test_definition.name, cache_registry)
+    runs-on: ubuntu-latest
+    env:
+      RESULTS_PATH: TestResults
+      UNIT_TEST_IMAGE_TAG: #@ tag_cache(cache_registry, unit_test_definition)
+    needs:
+      - version
+    steps:
+      - #@ build_and_push_docker(unit_test_definition, cache_registry, step_name="Load {} image into local docker".format(unit_test_definition.name), load_image=True, push_image=False)
+      - name: #@ "Run {}".format(unit_test_definition.name)
+        run: |
+          id=$(docker images "$UNIT_TEST_IMAGE_TAG" -q | head -n 1)
+          echo "found image id: $id"
+          docker run --name unit_tests $id
+      - #@ checkout_private_actions()
+      - name: #@ "Get {} results".format(unit_test_definition.name)
+        if: always()
+        uses: ./.github/actions/docker-extract
+        with:
+          filter: ancestor=$UNIT_TEST_IMAGE_TAG
+          container-path: #@ unit_test_definition.container_result_path
+          host-path: ./TestResults
+      - name: #@ "Upload {} results".format(unit_test_definition.name)
+        uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: #@ "{} results".format(unit_test_definition.name)
+          path: ${{ env.RESULTS_PATH }}
+      - name: #@ "Publish {} results as Check".format(unit_test_definition.name)
+        uses: docker://ghcr.io/enricomi/publish-unit-test-result-action:latest
+        if: always()
+        with:
+          report_individual_runs: "true"
+          check_name: #@ "{} Results".format(unit_test_definition.name)
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          files: ${{ env.RESULTS_PATH }}/**/*.xml  
 #@ end

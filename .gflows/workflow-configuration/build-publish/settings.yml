@@ -10,12 +10,12 @@ service:
   slug: auth-service
   
 unit_test:
-  name: Unit tests
-  dockerfile: Tests.Unit.Dockerfile
-  container_result_path: app/TestResults
-  image_name: covergo/auth-test-unit
-  enabled: true
-  slug: auth-test-unit
+  - name: Unit tests
+    slug: auth-test-unit
+    dockerfile: Tests.Unit.Dockerfile
+    container_result_path: app/TestResults
+    image_name: covergo/auth-test-unit
+    enabled: true
 
 integration_test:
   - name: Integration tests

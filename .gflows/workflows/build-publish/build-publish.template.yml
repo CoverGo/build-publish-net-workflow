@@ -25,6 +25,10 @@
 #@ load("build_publish.lib.yml", "get_integration_tests_build_jobs")
 #@ load("build_publish.lib.yml", "get_integration_tests_run_jobs")
 
+#@ load("build_publish.lib.yml", "get_unit_tests_job_names")
+#@ load("build_publish.lib.yml", "get_unit_test_job_name")
+#@ load("build_publish.lib.yml", "unit_test_build_and_run_steps")
+
 #@ load("@ytt:template", "template")
 
 
@@ -97,47 +101,14 @@ jobs:
     needs:
       - version
 #@ end
-  
-#@ if data.values.unit_test.enabled:  
-  docker-build-service-test-unit:
-    name: Build and run unit tests image
-    env:
-      RESULTS_PATH: TestResults
-      UNIT_TEST_IMAGE_TAG: #@ tag_cache(data.values.cache_registry, data.values.unit_test)
-    needs:
-      - version
-    steps:
-      - name: dummy step for proper ordering
-        run: exit 0
-      - #@ build_and_push_docker(data.values.unit_test, data.values.cache_registry, step_name="Load unit test image into local docker", load_image=True, push_image=False)
-      - name: Run unit tests
-        run: |
-          id=$(docker images "$UNIT_TEST_IMAGE_TAG" -q | head -n 1)
-          echo "found image id: $id"
-          docker run --name unit_tests $id
-      - #@ checkout_private_actions()
-      - name: Get unit tests results
-        if: always()
-        uses: ./.github/actions/docker-extract
-        with:
-          filter: ancestor=$UNIT_TEST_IMAGE_TAG
-          container-path: #@ data.values.unit_test.container_result_path
-          host-path: ./TestResults
-      - name: Upload unit test results
-        uses: actions/upload-artifact@v2
-        if: always()
-        with:
-          name: Unit test results
-          path: ${{ env.RESULTS_PATH }}
-      - name: Publish unit test results as Check
-        uses: docker://ghcr.io/enricomi/publish-unit-test-result-action:latest
-        if: always()
-        with:
-          report_individual_runs: "true"
-          check_name: Unit Tests Results
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          files: ${{ env.RESULTS_PATH }}/**/*.xml
+
+
+#@ if hasattr(data.values,"unit_test") :
+#@ for unit_test_definition in data.values.unit_test :
+  build-and-run-unit-tests-job: #@ template.replace({get_unit_test_job_name(unit_test_definition): unit_test_build_and_run_steps(unit_test_definition, data.values.cache_registry)})
 #@ end
+#@ end
+  
   
 #@ if hasattr(data.values,"integration_test") :
   #@ integration_tests_run_needs = []
@@ -159,7 +130,11 @@ jobs:
      - #@ integration_test_run_job_name
        #@ end
      #@ end
-     - docker-build-service-test-unit
+     #@ if hasattr(data.values,"unit_test"):
+       #@ for unit_test_job_name in get_unit_tests_job_names(data.values.unit_test):
+     - #@ unit_test_job_name
+       #@ end
+      #@ end
      #@ if (hasattr(data.values,"integration_tests_legacy")):
      - integration-tests-legacy-small
      - integration-tests-legacy-big
@@ -175,7 +150,11 @@ jobs:
         - #@ integration_test_run_job_name
       #@ end
       #@ end
-        - docker-build-service-test-unit
+      #@ if hasattr(data.values,"unit_test"):
+      #@ for unit_test_job_name in get_unit_tests_job_names(data.values.unit_test):
+        - #@ unit_test_job_name
+      #@ end
+      #@ end
       #@ if (hasattr(data.values,"integration_tests_legacy")):
         - integration-tests-legacy-small
         - integration-tests-legacy-big
@@ -192,7 +171,11 @@ jobs:
       #@ end
     #@ end
     - nuget-build
-    - docker-build-service-test-unit
+    #@ if hasattr(data.values,"unit_test"):
+    #@ for unit_test_job_name in get_unit_tests_job_names(data.values.unit_test):
+    - #@ unit_test_job_name
+    #@ end
+    #@ end
     #@ if (hasattr(data.values,"integration_tests_legacy")):
     - integration-tests-legacy-small
     - integration-tests-legacy-big

@@ -165,9 +165,8 @@ jobs:
         cache-to: type=inline
     - name: Image digest
       run: echo ${{ steps.docker-build-auth-service.outputs.digest }}
-  build-and-run-auth-test-unit:
-    name: Build and run Unit tests
-    runs-on: ubuntu-latest
+  docker-build-service-test-unit:
+    name: Build and run unit tests image
     env:
       RESULTS_PATH: TestResults
       UNIT_TEST_IMAGE_TAG: ghcr.io/covergo/auth-test-unit:${{ needs.version.outputs.issue_id_slug
@@ -175,7 +174,51 @@ jobs:
     needs:
     - version
     steps:
-    - name: Load Unit tests image into local docker
+    - name: Checkout repository
+      uses: actions/checkout@v2
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v1
+      with:
+        registry: ghcr.io
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.CR_PAT_FULL }}
+    - name: Checkout repository
+      uses: actions/checkout@v2
+    - name: Build and publish Unit tests docker image
+      uses: docker/build-push-action@v2
+      id: docker-build-auth-test-unit
+      with:
+        file: Tests.Unit.Dockerfile
+        push: true
+        tags: ghcr.io/covergo/auth-test-unit:${{ needs.version.outputs.issue_id_slug
+          }}
+        cache-from: type=registry,ref=ghcr.io/covergo/auth-test-unit:${{ needs.version.outputs.issue_id_slug
+          }}
+        cache-to: type=inline
+    - name: Image digest
+      run: echo ${{ steps.docker-build-auth-test-unit.outputs.digest }}
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v1
+      with:
+        registry: ghcr.io
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.CR_PAT_FULL }}
+    - name: dummy step for proper ordering
+      run: exit 0
+    - name: Build and publish Unit tests docker image
+      uses: docker/build-push-action@v2
+      id: docker-build-auth-test-unit
+      with:
+        file: Tests.Unit.Dockerfile
+        push: true
+        tags: ghcr.io/covergo/auth-test-unit:${{ needs.version.outputs.issue_id_slug
+          }}
+        cache-from: type=registry,ref=ghcr.io/covergo/auth-test-unit:${{ needs.version.outputs.issue_id_slug
+          }}
+        cache-to: type=inline
+    - name: Image digest
+      run: echo ${{ steps.docker-build-auth-test-unit.outputs.digest }}
+    - name: Load unit test image into local docker
       uses: docker/build-push-action@v2
       with:
         file: Tests.Unit.Dockerfile
@@ -185,7 +228,7 @@ jobs:
         cache-from: type=registry,ref=ghcr.io/covergo/auth-test-unit:${{ needs.version.outputs.issue_id_slug
           }}
         cache-to: type=inline
-    - name: Run Unit tests
+    - name: Run unit tests
       run: |
         id=$(docker images "$UNIT_TEST_IMAGE_TAG" -q | head -n 1)
         echo "found image id: $id"
@@ -197,27 +240,30 @@ jobs:
         checkout_base_path: ./.github/actions
         app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
         app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}
-    - name: Get Unit tests results
+    - name: Get unit tests results
       if: always()
       uses: ./.github/actions/docker-extract
       with:
         filter: ancestor=$UNIT_TEST_IMAGE_TAG
         container-path: app/TestResults
         host-path: ./TestResults
-    - name: Upload Unit tests results
+    - name: Upload unit test results
       uses: actions/upload-artifact@v2
       if: always()
       with:
-        name: Unit tests results
+        name: Unit test results
         path: ${{ env.RESULTS_PATH }}
-    - name: Publish Unit tests results as Check
+    - name: Publish unit test results as Check
       uses: docker://ghcr.io/enricomi/publish-unit-test-result-action:latest
       if: always()
       with:
         report_individual_runs: "true"
-        check_name: Unit tests Results
+        check_name: Unit Tests Results
         github_token: ${{ secrets.GITHUB_TOKEN }}
         files: ${{ env.RESULTS_PATH }}/**/*.xml
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && contains(toJson(github.event.commits), '[ci
+      skip]') == false
   docker-build-integration-tests:
     name: Build Integration tests
     runs-on: ubuntu-latest
@@ -444,7 +490,7 @@ jobs:
     - version
     - run-integration-tests
     - run-mariadb-test-integration
-    - build-and-run-auth-test-unit
+    - docker-build-service-test-unit
     - integration-tests-legacy-small
     - integration-tests-legacy-big
     runs-on: ubuntu-latest
@@ -510,7 +556,7 @@ jobs:
     - version
     - run-integration-tests
     - run-mariadb-test-integration
-    - build-and-run-auth-test-unit
+    - docker-build-service-test-unit
     - integration-tests-legacy-small
     - integration-tests-legacy-big
     runs-on: ubuntu-latest
@@ -574,7 +620,7 @@ jobs:
     - run-integration-tests
     - run-mariadb-test-integration
     - nuget-build
-    - build-and-run-auth-test-unit
+    - docker-build-service-test-unit
     - integration-tests-legacy-small
     - integration-tests-legacy-big
     name: Publish Nuget package
