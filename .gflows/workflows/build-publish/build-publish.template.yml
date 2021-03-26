@@ -114,8 +114,9 @@ jobs:
 #@ if hasattr(data.values,"integration_test") :
   #@ integration_tests_run_needs = []
   #@ integration_tests_run_needs.extend(get_integration_tests_build_jobs(data.values.integration_test))
-  #@ integration_tests_run_needs.extend(get_additional_images_build_jobs(data.values.additional_images))
-
+ #@ if hasattr(data.values,"additional_images"):
+   #@ integration_tests_run_needs.extend(get_additional_images_build_jobs(data.values.additional_images))
+ #@ end
   #@ for integration_test_definition in data.values.integration_test :
   build-integration-test-job: #@ template.replace({docker_build_job_name(integration_test_definition): image_build_job(integration_test_definition, data.values.cache_registry, needs=["version"], job_name="Build "+integration_test_definition.name)})
   run-integration-tests-job: #@ template.replace({get_integration_test_run_job_name(integration_test_definition): integration_test_steps(integration_test_definition, get_repository_built_images(data.values), data.values.main_registry, data.values.cache_registry, integration_tests_run_needs)})

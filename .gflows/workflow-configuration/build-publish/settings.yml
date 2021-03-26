@@ -38,16 +38,16 @@ integration_test:
     compose_service_name: cases-mariadb-test-integration
     
 
-
-additional_images:
-  - name: Mongo db for Auth
-    dockerfile: Mongo.Dockerfile
-    image_name: covergo/auth-mongo
-    slug: auth-mongo
-  - name: Integration tests 2 
-    dockerfile: Tests2.Dockerfile
-    image_name: covergo/auth-tests-2
-    slug: auth-tests-2
+#
+#additional_images:
+#  - name: Mongo db for Auth
+#    dockerfile: Mongo.Dockerfile
+#    image_name: covergo/auth-mongo
+#    slug: auth-mongo
+#  - name: Integration tests 2 
+#    dockerfile: Tests2.Dockerfile
+#    image_name: covergo/auth-tests-2
+#    slug: auth-tests-2
     
 nuget:
   name: Auth client nuget
