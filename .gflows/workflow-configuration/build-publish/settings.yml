@@ -27,6 +27,7 @@ integration_test:
     compose_file: docker-compose.yml
     compose_service_name: cases-test-integration
     enabled: true
+    diagnostic_password: 123
   - name: Integration tests
     slug: mariadb-test-integration
     runner: ubuntu-latest
@@ -59,6 +60,7 @@ nuget:
 
 integration_tests_legacy:
   runner: self-hosted
+  diagnostic_password: 123
   repository:
     url: covergo/integration-testing
     branch: ${{ github.head_ref }}
