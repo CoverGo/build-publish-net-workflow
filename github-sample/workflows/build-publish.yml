@@ -32,7 +32,9 @@ jobs:
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
-        actions_list: '["covergo/get-version@v1.4","covergo/get-issue-key@v1.2","covergo/docker-extract@v1","covergo/docker-diagnose@v1.2","covergo/set-compose-tags@v1","covergo/run-in-compose@v1"]'
+        actions_list: '[ "covergo/get-version@v1.4", "covergo/get-issue-key@v1.2",
+          "covergo/docker-extract@v1", "covergo/docker-diagnose@v1.4", "covergo/set-compose-tags@v1",
+          "covergo/run-in-compose@v1" ]'
         checkout_base_path: ./.github/actions
         app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
         app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}
@@ -193,7 +195,9 @@ jobs:
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
-        actions_list: '["covergo/get-version@v1.4","covergo/get-issue-key@v1.2","covergo/docker-extract@v1","covergo/docker-diagnose@v1.2","covergo/set-compose-tags@v1","covergo/run-in-compose@v1"]'
+        actions_list: '[ "covergo/get-version@v1.4", "covergo/get-issue-key@v1.2",
+          "covergo/docker-extract@v1", "covergo/docker-diagnose@v1.4", "covergo/set-compose-tags@v1",
+          "covergo/run-in-compose@v1" ]'
         checkout_base_path: ./.github/actions
         app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
         app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}
@@ -263,7 +267,9 @@ jobs:
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
-        actions_list: '["covergo/get-version@v1.4","covergo/get-issue-key@v1.2","covergo/docker-extract@v1","covergo/docker-diagnose@v1.2","covergo/set-compose-tags@v1","covergo/run-in-compose@v1"]'
+        actions_list: '[ "covergo/get-version@v1.4", "covergo/get-issue-key@v1.2",
+          "covergo/docker-extract@v1", "covergo/docker-diagnose@v1.4", "covergo/set-compose-tags@v1",
+          "covergo/run-in-compose@v1" ]'
         checkout_base_path: ./.github/actions
         app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
         app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}
@@ -306,6 +312,7 @@ jobs:
         filter: name=covergo*
         diagnostic-result-path: investigate
         include-compose: true
+        encrypt-password: 123
     - name: Upload environment logs
       if: always()
       uses: actions/upload-artifact@v2
@@ -371,7 +378,9 @@ jobs:
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
-        actions_list: '["covergo/get-version@v1.4","covergo/get-issue-key@v1.2","covergo/docker-extract@v1","covergo/docker-diagnose@v1.2","covergo/set-compose-tags@v1","covergo/run-in-compose@v1"]'
+        actions_list: '[ "covergo/get-version@v1.4", "covergo/get-issue-key@v1.2",
+          "covergo/docker-extract@v1", "covergo/docker-diagnose@v1.4", "covergo/set-compose-tags@v1",
+          "covergo/run-in-compose@v1" ]'
         checkout_base_path: ./.github/actions
         app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
         app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}
@@ -414,6 +423,7 @@ jobs:
         filter: name=covergo*
         diagnostic-result-path: investigate
         include-compose: true
+        encrypt-password: ${{ secrets.DIAGNOSTIC_PASSWORD }}$GITHUB_RUN_NUMBER
     - name: Upload environment logs
       if: always()
       uses: actions/upload-artifact@v2
@@ -613,7 +623,9 @@ jobs:
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
-        actions_list: '["covergo/get-version@v1.4","covergo/get-issue-key@v1.2","covergo/docker-extract@v1","covergo/docker-diagnose@v1.2","covergo/set-compose-tags@v1","covergo/run-in-compose@v1"]'
+        actions_list: '[ "covergo/get-version@v1.4", "covergo/get-issue-key@v1.2",
+          "covergo/docker-extract@v1", "covergo/docker-diagnose@v1.4", "covergo/set-compose-tags@v1",
+          "covergo/run-in-compose@v1" ]'
         checkout_base_path: ./.github/actions
         app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
         app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}
@@ -665,7 +677,9 @@ jobs:
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
-        actions_list: '["covergo/get-version@v1.4","covergo/get-issue-key@v1.2","covergo/docker-extract@v1","covergo/docker-diagnose@v1.2","covergo/set-compose-tags@v1","covergo/run-in-compose@v1"]'
+        actions_list: '[ "covergo/get-version@v1.4", "covergo/get-issue-key@v1.2",
+          "covergo/docker-extract@v1", "covergo/docker-diagnose@v1.4", "covergo/set-compose-tags@v1",
+          "covergo/run-in-compose@v1" ]'
         checkout_base_path: ./.github/actions
         app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
         app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}
@@ -708,6 +722,7 @@ jobs:
         filter: name=covergo*
         diagnostic-result-path: diagnostics
         include-compose: true
+        encrypt-password: ${{ secrets.DIAGNOSTIC_PASSWORD }}$GITHUB_RUN_NUMBER
     - name: Stop compose
       if: ${{ always() }}
       run: docker-compose down --remove-orphans
@@ -733,7 +748,9 @@ jobs:
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
-        actions_list: '["covergo/get-version@v1.4","covergo/get-issue-key@v1.2","covergo/docker-extract@v1","covergo/docker-diagnose@v1.2","covergo/set-compose-tags@v1","covergo/run-in-compose@v1"]'
+        actions_list: '[ "covergo/get-version@v1.4", "covergo/get-issue-key@v1.2",
+          "covergo/docker-extract@v1", "covergo/docker-diagnose@v1.4", "covergo/set-compose-tags@v1",
+          "covergo/run-in-compose@v1" ]'
         checkout_base_path: ./.github/actions
         app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
         app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}
@@ -778,6 +795,7 @@ jobs:
         filter: name=covergo*
         diagnostic-result-path: diagnostics
         include-compose: true
+        encrypt-password: ${{ secrets.DIAGNOSTIC_PASSWORD }}$GITHUB_RUN_NUMBER
     - name: Stop compose
       if: ${{ always() }}
       run: docker-compose down --remove-orphans

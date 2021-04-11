@@ -7,6 +7,7 @@
 #@ load("workflows.lib.yml", "docker_build_job_name")
 #@ load("workflows.lib.yml", "job_name_from_slug")
 #@ load("workflows.lib.yml", "build_and_push_docker")
+#@ load("workflows.lib.yml", "generate_diagnostic_password")
 ---
 #@ def set_version(context):
 #@ if hasattr(context, "versioning"):
@@ -97,6 +98,7 @@
         filter: name=covergo*
         diagnostic-result-path: investigate
         include-compose: true
+        encrypt-password: #@ generate_diagnostic_password(integration_test_definition)
     - name: Upload environment logs
       if: always()
       uses: actions/upload-artifact@v2
