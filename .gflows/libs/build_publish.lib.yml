@@ -55,7 +55,7 @@
 #@ return getattr(section,"image_name",None)
 #@ end
 
-#@ def integration_test_steps(integration_test_definition, repository_built_images, main_registry, cache_registry, needs= []):
+#@ def integration_test_steps(integration_test_definition, repository_built_images, cache_registry, main_registry=None, needs= []):
   runs-on: #@ get_runner(integration_test_definition)
   name: #@ "Run {}".format(integration_test_definition.name)
   needs:
@@ -69,7 +69,9 @@
   steps:
     - #@ checkout()
     - #@ checkout_private_actions()
+    #@ if (main_registry != None):
     - #@ login_docker(main_registry)
+    #@ end
     - #@ login_docker(cache_registry)
     - name: Prepare compose file
       uses: ./.github/actions/set-compose-tags

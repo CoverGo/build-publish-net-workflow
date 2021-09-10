@@ -22,9 +22,11 @@ jobs:
   #@overlay/match missing_ok=True
   docker-build-service: #@ image_build_job(data.values.service, data.values.cache_registry)
   #@overlay/match missing_ok=True
-  docker-publish-github: #@ image_build_job(data.values.service, data.values.cache_registry, main_registry=data.values.main_registry, tag_build = "${{ needs.version.outputs.docker_image_ghcr_tags }}" )
+  docker-publish-github: #@ image_build_job(data.values.service, data.values.cache_registry, tag_build = "${{ needs.version.outputs.docker_image_ghcr_tags }}" )
+  #@ if hasattr(data.values,"main_registry"):
   #@overlay/match missing_ok=True
   docker-publish-alicloud: #@ image_build_job(data.values.service, data.values.cache_registry, main_registry=data.values.main_registry, tag_build = "${{ needs.version.outputs.docker_image_ali_cloud_tags }}", add_if=False )
+  #@ end
 #@ end
 
 
