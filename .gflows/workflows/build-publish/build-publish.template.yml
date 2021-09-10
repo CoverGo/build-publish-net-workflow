@@ -148,7 +148,7 @@ jobs:
      - integration-tests-legacy-small
      - integration-tests-legacy-big
      #@ end
-     
+#@ if hasattr(data.values,"main_registry"): 
   docker-publish-alicloud:
     name: #@ "Publish {} to AliCloud".format(data.values.service.name)
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
@@ -168,7 +168,8 @@ jobs:
         - integration-tests-legacy-small
         - integration-tests-legacy-big
       #@ end
-        
+#@ end
+  
 #@ if hasattr(data.values,"nuget"):
 #@ if data.values.nuget.enabled :
   nuget-publish:
