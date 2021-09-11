@@ -101,6 +101,7 @@
         diagnostic-result-path: investigate
         include-compose: true
         encrypt-password: #@ generate_diagnostic_password(integration_test_definition)
+        compose-file: #@ integration_test_definition.compose_file
     - name: Upload environment logs
       if: always()
       uses: actions/upload-artifact@v2
