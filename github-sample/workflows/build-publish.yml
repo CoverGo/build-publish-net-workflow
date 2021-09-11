@@ -187,6 +187,7 @@ jobs:
         cache-from: type=registry,ref=ghcr.io/covergo/auth-test-unit:${{ needs.version.outputs.issue_id_slug
           }}
         cache-to: type=inline
+        target: TestTarget
     - name: Run Unit tests
       run: |
         id=$(docker images "$UNIT_TEST_IMAGE_TAG" -q | head -n 1)

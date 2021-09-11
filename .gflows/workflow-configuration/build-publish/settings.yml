@@ -13,6 +13,7 @@ unit_test:
   - name: Unit tests
     slug: auth-test-unit
     dockerfile: Tests.Unit.Dockerfile
+    docker_target: TestTarget
     container_result_path: app/TestResults
     image_name: covergo/auth-test-unit
     enabled: true
