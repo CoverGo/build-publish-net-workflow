@@ -16,6 +16,7 @@
 #@ load("workflows.lib.yml", "get_runner")
 #@ load("workflows.lib.yml", "docker_build_job_name")
 #@ load("workflows.lib.yml", "job_name_from_slug")
+#@ load("workflows.lib.yml", "get_timeout")
 #@ load("build_publish.lib.yml", "set_build_number")
 #@ load("build_publish.lib.yml", "set_version")
 #@ load("build_publish.lib.yml", "get_repository_built_images")
@@ -93,6 +94,7 @@ jobs:
 #@ if data.values.nuget.enabled:
   nuget-build: 
     name: Build nuget package 
+    timeout-minutes: #@ get_timeout(data.values.nuget, data.values)
     needs:
       - version
 #@ end
@@ -101,6 +103,7 @@ jobs:
 #@ if data.values.service.enabled:
   docker-build-service: 
     name: #@ "Build {} image".format(data.values.service.name)
+    timeout-minutes: #@ get_timeout(data.values.service, data.values)
     needs:
       - version
 #@ end
@@ -108,7 +111,7 @@ jobs:
 
 #@ if hasattr(data.values,"unit_test") :
 #@ for unit_test_definition in data.values.unit_test :
-  build-and-run-unit-tests-job: #@ template.replace({get_unit_test_job_name(unit_test_definition): unit_test_build_and_run_steps(unit_test_definition, data.values.cache_registry)})
+  build-and-run-unit-tests-job: #@ template.replace({get_unit_test_job_name(unit_test_definition): unit_test_build_and_run_steps(unit_test_definition, data.values.cache_registry, data.values)})
 #@ end
 #@ end
   
@@ -123,9 +126,9 @@ jobs:
   build-integration-test-job: #@ template.replace({docker_build_job_name(integration_test_definition): image_build_job(integration_test_definition, data.values.cache_registry, needs=["version"], job_name="Build "+integration_test_definition.name)})
   run-integration-tests-job:
     #@ if hasattr(data.values,"main_registry"):
-      #@ template.replace({get_integration_test_run_job_name(integration_test_definition): integration_test_steps(integration_test_definition, get_repository_built_images(data.values), data.values.cache_registry, data.values.main_registry, integration_tests_run_needs)})
+      #@ template.replace({get_integration_test_run_job_name(integration_test_definition): integration_test_steps(integration_test_definition, get_repository_built_images(data.values), data.values.cache_registry, data.values.main_registry, integration_tests_run_needs, data.values)})
     #@ else:
-       #@ template.replace({get_integration_test_run_job_name(integration_test_definition): integration_test_steps(integration_test_definition, get_repository_built_images(data.values), data.values.cache_registry, None, integration_tests_run_needs)})
+       #@ template.replace({get_integration_test_run_job_name(integration_test_definition): integration_test_steps(integration_test_definition, get_repository_built_images(data.values), data.values.cache_registry, None, integration_tests_run_needs, data.values)})
     #@ end
   #@ end
 #@ end
@@ -174,6 +177,7 @@ jobs:
 #@ if data.values.nuget.enabled :
   nuget-publish:
     runs-on: ubuntu-latest
+    timeout-minutes: #@ get_timeout(data.values.nuget, data.values)
     needs:
     - version
     #@ if hasattr(data.values,"integration_test"):
@@ -218,6 +222,7 @@ jobs:
   integration-tests-legacy-small:
     name: Run legacy integration small tenants tests
     runs-on: #@ data.values.integration_tests_legacy.runner
+    timeout-minutes: #@ get_timeout(data.values.integration_tests_legacy, data.values)
     needs:
       - version
       - docker-build-service
@@ -225,6 +230,7 @@ jobs:
   integration-tests-legacy-big:
     name: Run legacy integration big tenants tests
     runs-on: #@ data.values.integration_tests_legacy.runner
+    timeout-minutes: #@ get_timeout(data.values.integration_tests_legacy, data.values)
     needs:
       - version
       - docker-build-service

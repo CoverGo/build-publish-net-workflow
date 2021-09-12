@@ -65,6 +65,7 @@ jobs:
         name=docker_image_ali_cloud_tags::${ali_cloud_tags}\n \n"
   nuget-build:
     name: Build nuget package
+    timeout-minutes: 30
     needs:
     - version
     runs-on: ubuntu-latest
@@ -121,6 +122,7 @@ jobs:
       run: echo ${{ steps.docker-build-auth-nuget.outputs.digest }}
   docker-build-service:
     name: Build Auth image
+    timeout-minutes: 30
     needs:
     - version
     runs-on: ubuntu-latest
@@ -170,6 +172,7 @@ jobs:
   build-and-run-auth-test-unit:
     name: Build and run Unit tests
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     env:
       RESULTS_PATH: TestResults
       UNIT_TEST_IMAGE_TAG: ghcr.io/covergo/auth-test-unit:${{ needs.version.outputs.issue_id_slug
@@ -225,6 +228,7 @@ jobs:
         files: ${{ env.RESULTS_PATH }}/**/*.xml
   docker-build-integration-tests:
     name: Build Integration tests
+    timeout-minutes: 30
     runs-on: ubuntu-latest
     needs:
     - version
@@ -255,6 +259,7 @@ jobs:
   run-integration-tests:
     runs-on: ubuntu-latest
     name: Run Integration tests
+    timeout-minutes: 30
     needs:
     - docker-build-service
     - version
@@ -337,6 +342,7 @@ jobs:
         files: ${{ env.RESULTS_PATH }}/**/*.xml
   docker-build-mariadb-test-integration:
     name: Build Integration tests
+    timeout-minutes: 30
     runs-on: ubuntu-latest
     needs:
     - version
@@ -367,6 +373,7 @@ jobs:
   run-mariadb-test-integration:
     runs-on: ubuntu-latest
     name: Run Integration tests
+    timeout-minutes: 30
     needs:
     - docker-build-service
     - version
@@ -578,6 +585,7 @@ jobs:
       run: echo ${{ steps.docker-build-auth-service.outputs.digest }}
   nuget-publish:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     needs:
     - version
     - run-integration-tests
@@ -667,6 +675,7 @@ jobs:
   integration-tests-legacy-small:
     name: Run legacy integration small tenants tests
     runs-on: self-hosted
+    timeout-minutes: 30
     needs:
     - version
     - docker-build-service
@@ -738,6 +747,7 @@ jobs:
   integration-tests-legacy-big:
     name: Run legacy integration big tenants tests
     runs-on: self-hosted
+    timeout-minutes: 30
     needs:
     - version
     - docker-build-service
