@@ -6,3 +6,5 @@
 .idea/.idea.build-publish-net-workflow.dir/.idea/
 
 gflows
+
+.idea/sonarlint/issuestore/
