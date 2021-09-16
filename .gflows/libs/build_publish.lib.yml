@@ -85,7 +85,7 @@
       uses: ./.github/actions/run-in-compose
       with:
         compose-file: #@ integration_test_definition.compose_file
-        service-name: #@ integration_test_definition.compose_service_name
+        service-name: #@ getattr(integration_test_definition,"compose_service_name",integration_test_definition.slug)
         project-name: integration-test
 
     - name: #@ "Collect {} results".format(integration_test_definition.name)
