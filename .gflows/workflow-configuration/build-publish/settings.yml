@@ -29,6 +29,7 @@ integration_test:
     compose_service_name: cases-test-integration
     enabled: true
     diagnostic_password: 123
+    diagnostic_filter: filter*
   - name: Integration tests
     slug: mariadb-test-integration
     runner: ubuntu-latest

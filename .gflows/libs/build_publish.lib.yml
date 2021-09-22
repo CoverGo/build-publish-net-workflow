@@ -9,6 +9,7 @@
 #@ load("workflows.lib.yml", "build_and_push_docker")
 #@ load("workflows.lib.yml", "generate_diagnostic_password")
 #@ load("workflows.lib.yml", "get_timeout")
+#@ load("workflows.lib.yml", "get_compose_service_name_filter_to_diagnose")
 ---
 #@ def set_version(context):
 #@ if hasattr(context, "versioning"):
@@ -99,7 +100,7 @@
       if: always()
       uses: ./.github/actions/docker-diagnose
       with:
-        filter: name=covergo*
+        filter: #@ get_compose_service_name_filter_to_diagnose(integration_test_definition)
         diagnostic-result-path: investigate
         include-compose: true
         encrypt-password: #@ generate_diagnostic_password(integration_test_definition)

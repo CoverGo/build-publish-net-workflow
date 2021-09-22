@@ -8,5 +8,5 @@ templates:
       - workflow-configuration/build-publish
       - libs
     dependencies:
-      - https://raw.githubusercontent.com/CoverGo/ci-workflow-libraries/v1.4/.gflows
+      - https://raw.githubusercontent.com/CoverGo/ci-workflow-libraries/v1.5/.gflows
 

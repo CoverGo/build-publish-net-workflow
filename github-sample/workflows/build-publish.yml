@@ -287,7 +287,7 @@ jobs:
       if: always()
       uses: ./.github/actions/docker-diagnose
       with:
-        filter: name=covergo*
+        filter: name=filter*
         diagnostic-result-path: investigate
         include-compose: true
         encrypt-password: 123
@@ -395,7 +395,7 @@ jobs:
       if: always()
       uses: ./.github/actions/docker-diagnose
       with:
-        filter: name=covergo*
+        filter: name=*
         diagnostic-result-path: investigate
         include-compose: true
         encrypt-password: ${{ secrets.DIAGNOSTIC_PASSWORD }}$GITHUB_RUN_NUMBER
@@ -670,7 +670,7 @@ jobs:
       if: ${{ always() }}
       uses: ./.github/actions/docker-diagnose
       with:
-        filter: name=covergo*
+        filter: name=*
         diagnostic-result-path: diagnostics
         include-compose: true
         encrypt-password: ${{ secrets.DIAGNOSTIC_PASSWORD }}$GITHUB_RUN_NUMBER
@@ -742,7 +742,7 @@ jobs:
       if: ${{ always() }}
       uses: ./.github/actions/docker-diagnose
       with:
-        filter: name=covergo*
+        filter: name=*
         diagnostic-result-path: diagnostics
         include-compose: true
         encrypt-password: ${{ secrets.DIAGNOSTIC_PASSWORD }}$GITHUB_RUN_NUMBER
