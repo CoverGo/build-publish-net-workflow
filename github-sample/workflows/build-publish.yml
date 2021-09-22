@@ -190,7 +190,7 @@ jobs:
         filter: ancestor=$UNIT_TEST_IMAGE_TAG
         container-path: app/TestResults
         host-path: ./TestResults
-    - name: Upload Unit tests results
+    - name: Upload Unit tests results as artifact
       uses: actions/upload-artifact@v2
       if: always()
       with:
@@ -268,7 +268,7 @@ jobs:
     - name: Prepare compose file
       uses: ./.github/actions/set-compose-tags
       with:
-        images: covergo/auth;covergo/auth-test-unit;covergo/cases-mariadb-test-integration;covergo/cases-mariadb-test-integration;covergo/cases-mariadb-test-integration
+        images: covergo/auth;covergo/auth-test-unit;covergo/cases-mariadb-test-integration;covergo/cases-mariadb-test-acceptance;covergo/cases-mariadb-test-integration
         target-tag: ${{ needs.version.outputs.issue_id_slug }}
         compose-file: docker-compose.yml
     - name: Run Integration tests
@@ -293,13 +293,13 @@ jobs:
         include-compose: true
         encrypt-password: 123
         compose-file: docker-compose.yml
-    - name: Upload environment logs
+    - name: Upload environment logs as artifact
       if: always()
       uses: actions/upload-artifact@v2
       with:
         name: Integration tests environment diagnostics
         path: investigate/*
-    - name: Upload Integration tests results
+    - name: Upload Integration tests results as artifact
       uses: actions/upload-artifact@v2
       if: always()
       with:
@@ -335,8 +335,8 @@ jobs:
       with:
         file: Tests.Acceptance.Dockerfile
         push: true
-        tags: ghcr.io/covergo/cases-mariadb-test-integration:${{ needs.version.outputs.issue_id_slug }}
-        cache-from: type=registry,ref=ghcr.io/covergo/cases-mariadb-test-integration:${{ needs.version.outputs.issue_id_slug }}
+        tags: ghcr.io/covergo/cases-mariadb-test-acceptance:${{ needs.version.outputs.issue_id_slug }}
+        cache-from: type=registry,ref=ghcr.io/covergo/cases-mariadb-test-acceptance:${{ needs.version.outputs.issue_id_slug }}
         cache-to: type=inline
     - name: Image digest
       run: echo ${{ steps.docker-build-acceptance-tests.outputs.digest }}
@@ -377,7 +377,7 @@ jobs:
     - name: Prepare compose file
       uses: ./.github/actions/set-compose-tags
       with:
-        images: covergo/auth;covergo/auth-test-unit;covergo/cases-mariadb-test-integration;covergo/cases-mariadb-test-integration;covergo/cases-mariadb-test-integration
+        images: covergo/auth;covergo/auth-test-unit;covergo/cases-mariadb-test-integration;covergo/cases-mariadb-test-acceptance;covergo/cases-mariadb-test-integration
         target-tag: ${{ needs.version.outputs.issue_id_slug }}
         compose-file: docker-compose.yml
     - name: Run Acceptance tests
@@ -390,7 +390,7 @@ jobs:
       if: always()
       uses: ./.github/actions/docker-extract
       with:
-        filter: ancestor=ghcr.io/covergo/cases-mariadb-test-integration:${{ needs.version.outputs.issue_id_slug }}
+        filter: ancestor=ghcr.io/covergo/cases-mariadb-test-acceptance:${{ needs.version.outputs.issue_id_slug }}
         container-path: app/TestResults
         host-path: ./TestResults
     - name: Gather test environment logs
@@ -402,13 +402,13 @@ jobs:
         include-compose: true
         encrypt-password: 123
         compose-file: docker-compose.yml
-    - name: Upload environment logs
+    - name: Upload environment logs as artifact
       if: always()
       uses: actions/upload-artifact@v2
       with:
         name: Acceptance tests environment diagnostics
         path: investigate/*
-    - name: Upload Acceptance tests results
+    - name: Upload Acceptance tests results as artifact
       uses: actions/upload-artifact@v2
       if: always()
       with:
@@ -503,7 +503,7 @@ jobs:
     - name: Prepare compose file
       uses: ./.github/actions/set-compose-tags
       with:
-        images: covergo/auth;covergo/auth-test-unit;covergo/cases-mariadb-test-integration;covergo/cases-mariadb-test-integration;covergo/cases-mariadb-test-integration
+        images: covergo/auth;covergo/auth-test-unit;covergo/cases-mariadb-test-integration;covergo/cases-mariadb-test-acceptance;covergo/cases-mariadb-test-integration
         target-tag: ${{ needs.version.outputs.issue_id_slug }}
         compose-file: docker-compose.mariadb.yml
     - name: Run Integration tests
@@ -528,13 +528,13 @@ jobs:
         include-compose: true
         encrypt-password: ${{ secrets.DIAGNOSTIC_PASSWORD }}$GITHUB_RUN_NUMBER
         compose-file: docker-compose.mariadb.yml
-    - name: Upload environment logs
+    - name: Upload environment logs as artifact
       if: always()
       uses: actions/upload-artifact@v2
       with:
         name: Integration tests environment diagnostics
         path: investigate/*
-    - name: Upload Integration tests results
+    - name: Upload Integration tests results as artifact
       uses: actions/upload-artifact@v2
       if: always()
       with:
@@ -808,7 +808,7 @@ jobs:
     - name: Stop compose
       if: ${{ always() }}
       run: docker-compose down --remove-orphans
-    - name: Upload test environment logs
+    - name: Upload test environment logs as artifact
       if: ${{ always() }}
       uses: actions/upload-artifact@v2
       with:
@@ -880,7 +880,7 @@ jobs:
     - name: Stop compose
       if: ${{ always() }}
       run: docker-compose down --remove-orphans
-    - name: Upload test environment logs
+    - name: Upload test environment logs as artifact
       if: ${{ always() }}
       uses: actions/upload-artifact@v2
       with:

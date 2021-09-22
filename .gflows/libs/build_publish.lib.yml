@@ -105,13 +105,13 @@
         include-compose: true
         encrypt-password: #@ generate_diagnostic_password(integration_test_definition)
         compose-file: #@ integration_test_definition.compose_file
-    - name: Upload environment logs
+    - name: Upload environment logs as artifact
       if: always()
       uses: actions/upload-artifact@v2
       with:
         name: #@ "{} environment diagnostics".format(integration_test_definition.name)
         path: investigate/*
-    - name: #@ "Upload {} results".format(integration_test_definition.name)
+    - name: #@ "Upload {} results as artifact".format(integration_test_definition.name)
       uses: actions/upload-artifact@v2
       if: always()
       with:
@@ -225,7 +225,7 @@
           filter: ancestor=$UNIT_TEST_IMAGE_TAG
           container-path: #@ unit_test_definition.container_result_path
           host-path: ./TestResults
-      - name: #@ "Upload {} results".format(unit_test_definition.name)
+      - name: #@ "Upload {} results as artifact".format(unit_test_definition.name)
         uses: actions/upload-artifact@v2
         if: always()
         with:
