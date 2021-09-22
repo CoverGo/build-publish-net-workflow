@@ -239,6 +239,7 @@ jobs:
     - docker-build-service
     - version
     - docker-build-integration-tests
+    - docker-build-acceptance-tests
     - docker-build-mariadb-test-integration
     env:
       RESULTS_PATH: TestResults
@@ -267,7 +268,7 @@ jobs:
     - name: Prepare compose file
       uses: ./.github/actions/set-compose-tags
       with:
-        images: covergo/auth;covergo/auth-test-unit;covergo/cases-mariadb-test-integration;covergo/cases-mariadb-test-integration
+        images: covergo/auth;covergo/auth-test-unit;covergo/cases-mariadb-test-integration;covergo/cases-mariadb-test-integration;covergo/cases-mariadb-test-integration
         target-tag: ${{ needs.version.outputs.issue_id_slug }}
         compose-file: docker-compose.yml
     - name: Run Integration tests
@@ -312,6 +313,132 @@ jobs:
         check_name: Integration tests check
         github_token: ${{ secrets.GITHUB_TOKEN }}
         files: ${{ env.RESULTS_PATH }}/**/*.xml
+  docker-build-acceptance-tests:
+    name: Build Acceptance tests
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    needs:
+    - version
+    if: github.event_name == 'push' && contains(toJson(github.event.commits), '[ci skip]') == false
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v1
+      with:
+        registry: ghcr.io
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.CR_PAT_FULL }}
+    - name: Build and publish Acceptance tests docker image
+      uses: docker/build-push-action@v2
+      id: docker-build-acceptance-tests
+      with:
+        file: Tests.Acceptance.Dockerfile
+        push: true
+        tags: ghcr.io/covergo/cases-mariadb-test-integration:${{ needs.version.outputs.issue_id_slug }}
+        cache-from: type=registry,ref=ghcr.io/covergo/cases-mariadb-test-integration:${{ needs.version.outputs.issue_id_slug }}
+        cache-to: type=inline
+    - name: Image digest
+      run: echo ${{ steps.docker-build-acceptance-tests.outputs.digest }}
+  run-acceptance-tests:
+    runs-on: ubuntu-latest
+    name: Run Acceptance tests
+    timeout-minutes: 30
+    needs:
+    - docker-build-service
+    - version
+    - docker-build-integration-tests
+    - docker-build-acceptance-tests
+    - docker-build-mariadb-test-integration
+    env:
+      RESULTS_PATH: TestResults
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+    - name: Checkout GitHub Action Repos
+      uses: daspn/private-actions-checkout@v2
+      with:
+        actions_list: '[ "covergo/get-version@v1.4", "covergo/get-issue-key@v1.2", "covergo/docker-extract@v1", "covergo/docker-diagnose@v1.5", "covergo/set-compose-tags@v1", "covergo/run-in-compose@v1" ]'
+        checkout_base_path: ./.github/actions
+        app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
+        app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}
+    - name: Login to AliCloud Container Registry
+      uses: docker/login-action@v1
+      with:
+        registry: registry-intl.cn-hongkong.aliyuncs.com
+        username: ${{ secrets.ALI_CONTAINER_REGISTRY_USER }}
+        password: ${{ secrets.ALI_CONTAINER_REGISTRY_PASSWORD }}
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v1
+      with:
+        registry: ghcr.io
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.CR_PAT_FULL }}
+    - name: Prepare compose file
+      uses: ./.github/actions/set-compose-tags
+      with:
+        images: covergo/auth;covergo/auth-test-unit;covergo/cases-mariadb-test-integration;covergo/cases-mariadb-test-integration;covergo/cases-mariadb-test-integration
+        target-tag: ${{ needs.version.outputs.issue_id_slug }}
+        compose-file: docker-compose.yml
+    - name: Run Acceptance tests
+      uses: ./.github/actions/run-in-compose
+      with:
+        compose-file: docker-compose.yml
+        service-name: cases-test-acceptance
+        project-name: integration-test
+    - name: Collect Acceptance tests results
+      if: always()
+      uses: ./.github/actions/docker-extract
+      with:
+        filter: ancestor=ghcr.io/covergo/cases-mariadb-test-integration:${{ needs.version.outputs.issue_id_slug }}
+        container-path: app/TestResults
+        host-path: ./TestResults
+    - name: Gather test environment logs
+      if: always()
+      uses: ./.github/actions/docker-diagnose
+      with:
+        filter: name=filter*
+        diagnostic-result-path: investigate
+        include-compose: true
+        encrypt-password: 123
+        compose-file: docker-compose.yml
+    - name: Upload environment logs
+      if: always()
+      uses: actions/upload-artifact@v2
+      with:
+        name: Acceptance tests environment diagnostics
+        path: investigate/*
+    - name: Upload Acceptance tests results
+      uses: actions/upload-artifact@v2
+      if: always()
+      with:
+        name: Acceptance tests results
+        path: ${{ env.RESULTS_PATH }}
+    - name: Upload Acceptance tests results to Behave.Pro
+      if: always()
+      env:
+        behave_api_key: ${{ secrets.BEHAVE_PRO_TOKEN }}
+        build_id: ${{ github.run_id }}
+        build_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        results_folder: ${{ env.RESULTS_PATH }}
+        results_file: cucumberResult.json
+      run: |
+        latest_commit_sha=$(git rev-parse HEAD)
+        test_results_path="$results_folder/$results_file"
+
+        curl -L -X PUT https://test-reports.behave.pro/REST/1.0/bdd/report \
+        -H "X-API-KEY: $behave_api_key" \
+        -H "X-COMMIT-ID: $latest_commit_sha" \
+        -H "X-BUILD-ID: $build_id" \
+        -H "X-BUILD-URL: $build_url" \
+        --data-binary @"$test_results_path" \
+    - name: Publish Acceptance tests results as check
+      uses: deblockt/cucumber-report-annotations-action@v1.7
+      if: always()
+      with:
+        name: Acceptance tests check
+        access-token: ${{ secrets.GITHUB_TOKEN }}
+        path: ${{ env.RESULTS_PATH }}/cucumberResult.json
   docker-build-mariadb-test-integration:
     name: Build Integration tests
     timeout-minutes: 30
@@ -347,6 +474,7 @@ jobs:
     - docker-build-service
     - version
     - docker-build-integration-tests
+    - docker-build-acceptance-tests
     - docker-build-mariadb-test-integration
     env:
       RESULTS_PATH: TestResults
@@ -375,7 +503,7 @@ jobs:
     - name: Prepare compose file
       uses: ./.github/actions/set-compose-tags
       with:
-        images: covergo/auth;covergo/auth-test-unit;covergo/cases-mariadb-test-integration;covergo/cases-mariadb-test-integration
+        images: covergo/auth;covergo/auth-test-unit;covergo/cases-mariadb-test-integration;covergo/cases-mariadb-test-integration;covergo/cases-mariadb-test-integration
         target-tag: ${{ needs.version.outputs.issue_id_slug }}
         compose-file: docker-compose.mariadb.yml
     - name: Run Integration tests
@@ -425,6 +553,7 @@ jobs:
     needs:
     - version
     - run-integration-tests
+    - run-acceptance-tests
     - run-mariadb-test-integration
     - build-and-run-auth-test-unit
     - integration-tests-legacy-small
@@ -476,6 +605,7 @@ jobs:
     needs:
     - version
     - run-integration-tests
+    - run-acceptance-tests
     - run-mariadb-test-integration
     - build-and-run-auth-test-unit
     - integration-tests-legacy-small
@@ -538,6 +668,7 @@ jobs:
     needs:
     - version
     - run-integration-tests
+    - run-acceptance-tests
     - run-mariadb-test-integration
     - nuget-build
     - build-and-run-auth-test-unit

@@ -117,6 +117,7 @@
       with:
         name: #@ "{} results".format(integration_test_definition.name)
         path: ${{ env.RESULTS_PATH }}
+    #@ if getattr(integration_test_definition,"enable_junit_test_check",True) :
     - name: #@ "Publish {} results as check".format(integration_test_definition.name)
       uses: docker://ghcr.io/enricomi/publish-unit-test-result-action:latest
       if: always()
@@ -125,6 +126,34 @@
         check_name: #@ "{} check".format(integration_test_definition.name)
         github_token: ${{ secrets.GITHUB_TOKEN }}
         files: ${{ env.RESULTS_PATH }}/**/*.xml
+    #@ end
+    #@ if hasattr(integration_test_definition,"cucumber_result_filename") :
+    - name: #@ "Upload {} results to Behave.Pro".format(integration_test_definition.name)
+      if: always()
+      env:
+        behave_api_key: ${{ secrets.BEHAVE_PRO_TOKEN }}
+        build_id: ${{ github.run_id }}
+        build_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        results_folder: ${{ env.RESULTS_PATH }}
+        results_file: #@ getattr(integration_test_definition,"cucumber_result_filename")
+      run: |
+        latest_commit_sha=$(git rev-parse HEAD)
+        test_results_path="$results_folder/$results_file"
+
+        curl -L -X PUT https://test-reports.behave.pro/REST/1.0/bdd/report \
+        -H "X-API-KEY: $behave_api_key" \
+        -H "X-COMMIT-ID: $latest_commit_sha" \
+        -H "X-BUILD-ID: $build_id" \
+        -H "X-BUILD-URL: $build_url" \
+        --data-binary @"$test_results_path" \
+    - name: #@ "Publish {} results as check".format(integration_test_definition.name)
+      uses: deblockt/cucumber-report-annotations-action@v1.7
+      if: always()
+      with:
+        name: #@ "{} check".format(integration_test_definition.name)
+        access-token: ${{ secrets.GITHUB_TOKEN }}
+        path: #@ "${{ env.RESULTS_PATH }}/"+getattr(integration_test_definition,"cucumber_result_filename")
+    #@ end
 #@ end
 
 #@ def get_integration_test_run_job_name(integration_test_definition):

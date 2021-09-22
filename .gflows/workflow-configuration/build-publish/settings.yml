@@ -30,6 +30,19 @@ integration_test:
     enabled: true
     diagnostic_password: 123
     diagnostic_filter: filter*
+  - name: Acceptance tests
+    slug: acceptance-tests
+    runner: ubuntu-latest
+    dockerfile: Tests.Acceptance.Dockerfile
+    container_result_path: app/TestResults
+    cucumber_result_filename: cucumberResult.json
+    enable_junit_test_check: false
+    image_name: covergo/cases-mariadb-test-acceptance
+    compose_file: docker-compose.yml
+    compose_service_name: cases-test-acceptance
+    enabled: true
+    diagnostic_password: 123
+    diagnostic_filter: filter*
   - name: Integration tests
     slug: mariadb-test-integration
     runner: ubuntu-latest
