@@ -125,7 +125,7 @@
         report_individual_runs: "true"
         check_name: #@ "{} check".format(integration_test_definition.name)
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        files: #@ "${{ env.RESULTS_PATH }}/{}".format(getattr(integration_test_definition,"junit_result_filename","TestResults.xml"))
+        files: #@ "TestResults/{}".format(getattr(integration_test_definition,"junit_result_filename","TestResults.xml"))
     #@ end
     #@ if hasattr(integration_test_definition,"cucumber_result_filename") :
     - name: #@ "Upload {} results to Behave.Pro".format(integration_test_definition.name)
