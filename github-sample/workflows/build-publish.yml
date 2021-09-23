@@ -428,18 +428,17 @@ jobs:
         behave_api_key: ${{ secrets.BEHAVE_PRO_TOKEN }}
         build_id: ${{ github.run_id }}
         build_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        results_folder: ${{ env.RESULTS_PATH }}
-        results_file: cucumberResult.json
+        results_file: ${{ env.RESULTS_PATH }}/cucumberResult.json
       run: |
         latest_commit_sha=$(git rev-parse HEAD)
-        test_results_path="$results_folder/$results_file"
-
+        echo "commit sha: $latest_commit_sha"
+        echo "test result file: $results_file"
         curl -L -X PUT https://test-reports.behave.pro/REST/1.0/bdd/report \
         -H "X-API-KEY: $behave_api_key" \
         -H "X-COMMIT-ID: $latest_commit_sha" \
         -H "X-BUILD-ID: $build_id" \
         -H "X-BUILD-URL: $build_url" \
-        --data-binary @"$test_results_path" \
+        --data-binary @"results_file" \
     - name: Publish Acceptance tests results as check
       uses: deblockt/cucumber-report-annotations-action@v1.7
       if: always()
