@@ -312,7 +312,7 @@ jobs:
         report_individual_runs: "true"
         check_name: Integration tests check
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        files: ${{ env.RESULTS_PATH }}/**/*.xml
+        files: ${ env.RESULTS_PATH }/TestResults.xml
   docker-build-acceptance-tests:
     name: Build Acceptance tests
     timeout-minutes: 30
@@ -547,7 +547,7 @@ jobs:
         report_individual_runs: "true"
         check_name: Integration tests check
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        files: ${{ env.RESULTS_PATH }}/**/*.xml
+        files: ${ env.RESULTS_PATH }/TestResults.xml
   docker-publish-github:
     name: Publish Auth to GitHub
     needs:

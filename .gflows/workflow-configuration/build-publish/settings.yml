@@ -37,6 +37,7 @@ integration_test:
     container_result_path: app/TestResults
     cucumber_result_filename: cucumberResult.json
     enable_junit_test_check: false
+    junit_result_filename: TestResultJUnit.xml
     image_name: covergo/cases-mariadb-test-acceptance
     compose_file: docker-compose.yml
     compose_service_name: cases-test-acceptance
