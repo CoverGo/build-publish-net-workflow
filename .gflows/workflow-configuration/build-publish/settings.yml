@@ -108,7 +108,7 @@ integration_tests_legacy:
     mongo_url: dds-3ns0c4f035f4d3141258-pub.mongodb.rds.aliyuncs.com:3717,dds-3ns0c4f035f4d3142331-pub.mongodb.rds.aliyuncs.com:3717/admin?replicaSet=mgset-5830817&maxPoolSize=500&waitQueueMultiple=5
 
 #optional
-#default
+#default - all branches
 git:
   branches:
     - master
@@ -137,6 +137,10 @@ main_registry:
   name: AliCloud Container Registry
   user: ${{ secrets.ALI_CONTAINER_REGISTRY_USER }}
   password: ${{ secrets.ALI_CONTAINER_REGISTRY_PASSWORD }}
+  #optional
+  #default
+  branches:
+    - main
     
 
 

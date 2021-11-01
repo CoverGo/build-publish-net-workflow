@@ -29,6 +29,7 @@
 #@ load("build_publish.lib.yml", "get_unit_tests_job_names")
 #@ load("build_publish.lib.yml", "get_unit_test_job_name")
 #@ load("build_publish.lib.yml", "unit_test_build_and_run_steps")
+#@ load("build_publish.lib.yml", "build_git_branches_condition")
 
 #@ load("@ytt:template", "template")
 
@@ -154,7 +155,7 @@ jobs:
 #@ if hasattr(data.values,"main_registry"): 
   docker-publish-alicloud:
     name: #@ "Publish {} to AliCloud".format(data.values.service.name)
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    if: #@ build_git_branches_condition(data.values.main_registry)
     needs:
         - version
       #@ if hasattr(data.values,"integration_test"):

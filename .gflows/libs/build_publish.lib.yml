@@ -239,3 +239,12 @@
           github_token: ${{ secrets.GITHUB_TOKEN }}
           files: ${{ env.RESULTS_PATH }}/**/*.xml  
 #@ end
+
+#@ def build_git_branches_condition(registry_info):
+#@ branches = getattr(registry_info,"branches",["master","main"]);
+#@ git_branches = [];
+#@ for branch in branches:
+#@   git_branches.append("github.ref == 'refs/heads/{}'".format(branch));
+#@ end
+#@ return " || ".join(git_branches);
+#@ end
