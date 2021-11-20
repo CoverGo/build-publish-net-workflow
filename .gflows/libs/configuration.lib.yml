@@ -1,0 +1,24 @@
+#@ load("@ytt:struct", "struct")
+---
+#@ def _get_required_docker_cache_images(section):
+#@ additional_cache_images = []
+#@ cache_config = _get_cache_subsection(section)
+#@ if type(cache_config) == type([]):
+#@  additional_cache_images = cache_config # cache config is a list of images 
+#@ else:
+#@  additional_cache_images = getattr(cache_config,"from_images",[])
+#@ end
+#@ return additional_cache_images
+#@ end 
+---
+
+#@ def _get_cache_subsection(section):
+#@ return getattr(section,"cache_from",None)
+#@ end
+---
+#@ def _get_cache_type(section):
+#@ return getattr(_get_cache_subsection(section),"type", "registry")
+#@ end
+---
+#@ cfg = struct.make(get_cache_type = _get_cache_type,
+#@ get_required_docker_cache_images = _get_required_docker_cache_images)

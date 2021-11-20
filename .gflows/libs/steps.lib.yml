@@ -1,0 +1,105 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:struct", "struct")
+#@ load("naming.lib.yml","job")
+#@ load("common.lib.yml","common")
+#@ load("tagging.lib.yml","tagging")
+#@ load("configuration.lib.yml","cfg")
+
+
+#@ def _login_docker(registry):
+name: #@ "Login to {}".format(registry.name)
+uses: docker/login-action@v1
+with:
+  registry: #@ registry.url
+  username: #@ registry.user
+  password: #@ registry.password
+#@ end
+---
+#@ def _checkout():
+name: Checkout repository
+uses: actions/checkout@v2
+#@ end 
+---
+#@ def _setup_qemu():
+name: Set up QEMU
+uses: docker/setup-qemu-action@v1
+#@ end 
+---
+#@ def _setup_buildx():
+name: Set up Docker Buildx
+uses: docker/setup-buildx-action@v1
+#@ end
+---
+#@ def _checkout_private_actions():
+name: Checkout GitHub Action Repos
+uses: daspn/private-actions-checkout@v2
+with:
+  actions_list: '[
+  "covergo/get-version@v1.4",
+  "covergo/get-issue-key@v1.2",
+  "covergo/docker-extract@v1",
+  "covergo/docker-diagnose@v1.5",
+  "covergo/set-compose-tags@v1.0.1",
+  "covergo/run-in-compose@v1"
+  ]'
+  checkout_base_path: ./.github/actions
+  app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
+  app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}
+#@ end
+---
+
+#@ def _build_and_push_docker(component, cache_registry, step_name=None, step_id=None, push_image=True, load_image=False, tags=None):
+name: #@ common.get_value(step_name, job.name.docker_build(component.name))
+uses: docker/build-push-action@v2
+#@ if step_id != None : 
+id: #@ step_id
+#@ end
+#@ if tags == None :
+#@ tags=tagging.image(cache_registry, component)
+#@ end
+#@ cache_gha = struct.make(cache_from="type=gha",cache_to="type=gha, mode=max")
+#@ cache_images = []
+#@ for additional_image in cfg.get_required_docker_cache_images(component):
+#@ cache_images.append(tagging.cache_image(cache_registry, additional_image))
+#@ end
+#@ own_cache_image = tagging.cache_image(cache_registry, component)
+#@ cache_images.append(own_cache_image)
+#@
+#@ cache_refs =[]
+#@ for cache_image in cache_images:
+#@  cache_refs.append("type=registry,ref={}".format(cache_image))
+#@ end
+#@ 
+#@ cache_from_multiline_string = "\n".join(cache_refs)
+#@ cache_registry = struct.make(cache_from =cache_from_multiline_string, cache_to = "type=registry,ref={},mode=max".format(own_cache_image))
+  
+#@ cache_params = {"gha":cache_gha, "registry":cache_registry}
+
+#@ cache_type = cfg.get_cache_type(component)
+
+with:
+  file: #@ getattr(component,"dockerfile","Dockerfile")
+  push: #@ push_image
+  load: #@ load_image
+  tags: #@ tags
+  cache-from: #@ cache_params[cache_type].cache_from
+  cache-to: #@ cache_params[cache_type].cache_to
+  #@ if hasattr(component,"docker_target"):
+  target: #@ component.docker_target
+  #@ end
+  #@ provide_version_args = False
+  #@ if provide_version_args:
+  build-args: |
+    APP_VERSION=${{ needs.version.outputs.app_version }}
+    FILE_VERSION=${{ needs.version.outputs.file_version }}
+    INFORMATIONAL_VERSION=${{ needs.version.outputs.information_version }}
+#@ end
+#@ end
+---
+#@ steps = struct.make(login_docker = _login_docker,
+#@ checkout = _checkout,
+#@ setup_qemu = _setup_qemu,
+#@ setup_buildx = _setup_buildx,
+#@ checkout_private_actions = _checkout_private_actions,
+#@ build_and_push_docker = _build_and_push_docker)
+---

@@ -1,0 +1,78 @@
+#@ load("@ytt:data", "data")
+#@ load("tagging.lib.yml", "tagging")
+#@ load("steps.lib.yml", "steps")
+---
+#@ def set_version(context):
+#@ if hasattr(context, "versioning"):
+#@ if hasattr(context.versioning,"use_branch_slug"):
+#@ if not context.versioning.use_branch_slug:
+#@ return "none"
+#@ end 
+#@ end
+#@ end
+#@ return "${{ steps.issue-key.outputs.issue_id_slug }}"
+#@ end
+---
+#@ def set_build_number(context):
+#@ if hasattr(context, "versioning"):
+#@ if hasattr(context.versioning,"use_build_number"):
+#@ if context.versioning.use_build_number:
+#@ return "${{ github.run_number }}"
+#@ end 
+#@ end
+#@ end
+#@ return "none"
+#@ end
+---
+#@ def generate_version_job(sections):
+runs-on: ubuntu-latest
+name: Get version from git tag
+outputs:
+  app_version: ${{ steps.version.outputs.app_version }}
+  file_version: ${{ steps.version.outputs.file_version }}
+  information_version: ${{ steps.version.outputs.information_version }}
+  issue_id_slug: ${{ steps.issue-key.outputs.issue_id_slug }}
+  docker_image_ali_cloud_tags: ${{ steps.tags.outputs.docker_image_ali_cloud_tags }}
+  docker_image_ghcr_tags: ${{ steps.tags.outputs.docker_image_ghcr_tags }}
+steps:
+  - name: Checkout repository
+    uses: actions/checkout@v2
+    with:
+      fetch-depth: 0
+  - #@  steps.checkout_private_actions()
+  - name: Get jira Ticket slug
+    id: issue-key
+    uses: ./.github/actions/get-issue-key
+  - name: Get version from git tags
+    id: version
+    uses: ./.github/actions/get-version
+    with:
+      build-number: #@ set_build_number(sections)
+      pre-release-version: #@ set_version(sections)
+  - name: Get docker image tags
+    id: tags
+    env:
+      ghcr_versioned_tag: #@ tagging.with_registry(sections.cache_registry.url,sections.service.image_name,"${{ steps.version.outputs.app_version }}")
+      ghcr_latest_tag: #@ tagging.with_registry(sections.cache_registry.url,sections.service.image_name,"latest")
+      #@ if hasattr(sections,"main_registry"):
+      ali_cloud_versioned_tag: #@ tagging.with_registry(sections.main_registry.url,sections.service.image_name,"${{ steps.version.outputs.app_version }}")
+      ali_cloud_latest_tag: #@ tagging.with_registry(sections.main_registry.url,sections.service.image_name,"latest")
+      #@ end
+    run: |
+      
+      ali_cloud_tags=${ali_cloud_versioned_tag}
+      ghcr_tags=${ghcr_versioned_tag}
+      
+      git_ref=${{ github.ref }}
+      branch=${git_ref#refs/heads/}
+      if [[ "$branch" = 'main' || "$branch" = 'master'  ]]; then
+        ali_cloud_tags="${ali_cloud_tags},${ali_cloud_latest_tag}"
+        ghcr_tags="${ghcr_tags},${ghcr_latest_tag}"
+      fi
+      
+      echo final tags for ghcr are:  ${ghcr_tags}
+      echo final tags for ali are: ${ali_cloud_tags}
+      echo ::set-output name=docker_image_ghcr_tags::${ghcr_tags}
+      echo ::set-output name=docker_image_ali_cloud_tags::${ali_cloud_tags}
+#@ end
+---

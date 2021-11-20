@@ -31,7 +31,7 @@ jobs:
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
-        actions_list: '[ "covergo/get-version@v1.4", "covergo/get-issue-key@v1.2", "covergo/docker-extract@v1", "covergo/docker-diagnose@v1.5", "covergo/set-compose-tags@v1", "covergo/run-in-compose@v1" ]'
+        actions_list: '[ "covergo/get-version@v1.4", "covergo/get-issue-key@v1.2", "covergo/docker-extract@v1", "covergo/docker-diagnose@v1.5", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v1" ]'
         checkout_base_path: ./.github/actions
         app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
         app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}
@@ -51,139 +51,185 @@ jobs:
         ghcr_latest_tag: ghcr.io/covergo/auth:latest
         ali_cloud_versioned_tag: registry-intl.cn-hongkong.aliyuncs.com/covergo/auth:${{ steps.version.outputs.app_version }}
         ali_cloud_latest_tag: registry-intl.cn-hongkong.aliyuncs.com/covergo/auth:latest
-      run: "\nali_cloud_tags=${ali_cloud_versioned_tag}\nghcr_tags=${ghcr_versioned_tag}\n \ngit_ref=${{ github.ref }}\nbranch=${git_ref#refs/heads/}\nif [[ \"$branch\" = 'main' || \"$branch\" = 'master'  ]]; then\n  ali_cloud_tags=\"${ali_cloud_tags},${ali_cloud_latest_tag}\"\n  ghcr_tags=\"${ghcr_tags},${ghcr_latest_tag}\"\nfi\n \necho final tags for ghcr are:  ${ghcr_tags}\necho final tags for ali are: ${ali_cloud_tags}\necho ::set-output name=docker_image_ghcr_tags::${ghcr_tags}\necho ::set-output name=docker_image_ali_cloud_tags::${ali_cloud_tags}\n \n"
+      run: |2
+
+        ali_cloud_tags=${ali_cloud_versioned_tag}
+        ghcr_tags=${ghcr_versioned_tag}
+
+        git_ref=${{ github.ref }}
+        branch=${git_ref#refs/heads/}
+        if [[ "$branch" = 'main' || "$branch" = 'master'  ]]; then
+          ali_cloud_tags="${ali_cloud_tags},${ali_cloud_latest_tag}"
+          ghcr_tags="${ghcr_tags},${ghcr_latest_tag}"
+        fi
+
+        echo final tags for ghcr are:  ${ghcr_tags}
+        echo final tags for ali are: ${ali_cloud_tags}
+        echo ::set-output name=docker_image_ghcr_tags::${ghcr_tags}
+        echo ::set-output name=docker_image_ali_cloud_tags::${ali_cloud_tags}
   nuget-build:
-    name: Build nuget package
-    timeout-minutes: 30
+    name: Build Auth client nuget
+    timeout-minutes: 20
+    runs-on: ubuntu-latest
     needs:
     - version
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && contains(toJson(github.event.commits), '[ci skip]') == false
+    - docker-build-auth-service
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
     - name: Login to GitHub Container Registry
       uses: docker/login-action@v1
       with:
         registry: ghcr.io
         username: ${{ github.repository_owner }}
         password: ${{ secrets.CR_PAT_FULL }}
-    - name: Checkout repository
-      uses: actions/checkout@v2
-    - name: Build and publish Auth client nuget docker image
+    - name: Build Auth client nuget image
       uses: docker/build-push-action@v2
       id: docker-build-auth-nuget
       with:
-        file: ./Nuget.Dockerfile
-        push: true
+        file: Dockerfile
+        push: false
+        load: true
         tags: ghcr.io/covergo/auth-nuget:${{ needs.version.outputs.issue_id_slug }}
-        cache-from: type=registry,ref=ghcr.io/covergo/auth-nuget:${{ needs.version.outputs.issue_id_slug }}
-        cache-to: type=inline
-        build-args: |
-          APP_VERSION=${{ needs.version.outputs.app_version }}
-          FILE_VERSION=${{ needs.version.outputs.file_version }}
-          INFORMATIONAL_VERSION=${{ needs.version.outputs.information_version }}
+        cache-from: |-
+          type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.issue_id_slug }}
+          type=registry,ref=ghcr.io/covergo/auth-nuget-cache:${{ needs.version.outputs.issue_id_slug }}
+        cache-to: type=registry,ref=ghcr.io/covergo/auth-nuget-cache:${{ needs.version.outputs.issue_id_slug }},mode=max
     - name: Image digest
       run: echo ${{ steps.docker-build-auth-nuget.outputs.digest }}
-    - name: Login to GitHub Container Registry
-      uses: docker/login-action@v1
+    - name: Create docker image with nuget packages
+      run: docker create ghcr.io/covergo/auth-nuget:${{ needs.version.outputs.issue_id_slug }} --name nuget
+    - name: Checkout GitHub Action Repos
+      uses: daspn/private-actions-checkout@v2
       with:
-        registry: ghcr.io
-        username: ${{ github.repository_owner }}
-        password: ${{ secrets.CR_PAT_FULL }}
-    - name: Build and publish Auth client nuget docker image
-      uses: docker/build-push-action@v2
-      id: docker-build-auth-nuget
+        actions_list: '[ "covergo/get-version@v1.4", "covergo/get-issue-key@v1.2", "covergo/docker-extract@v1", "covergo/docker-diagnose@v1.5", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v1" ]'
+        checkout_base_path: ./.github/actions
+        app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
+        app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}
+    - name: Extract nuget packages from docker image
+      uses: ./.github/actions/docker-extract
       with:
-        file: ./Nuget.Dockerfile
-        push: true
-        tags: ghcr.io/covergo/auth-nuget:${{ needs.version.outputs.issue_id_slug }}
-        cache-from: type=registry,ref=ghcr.io/covergo/auth-nuget:${{ needs.version.outputs.issue_id_slug }}
-        cache-to: type=inline
-        build-args: |
-          APP_VERSION=${{ needs.version.outputs.app_version }}
-          FILE_VERSION=${{ needs.version.outputs.file_version }}
-          INFORMATIONAL_VERSION=${{ needs.version.outputs.information_version }}
-    - name: Image digest
-      run: echo ${{ steps.docker-build-auth-nuget.outputs.digest }}
-  docker-build-service:
+        filter: ancestor=ghcr.io/covergo/auth-nuget:${{ needs.version.outputs.issue_id_slug }}
+        container-path: app/nuget
+        host-path: ./nuget
+    - name: Upload nuget packages as artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: Nuget packages
+        path: ./nuget
+  nuget-publish:
+    name: Publish Auth client nuget
+    timeout-minutes: 20
+    runs-on: ubuntu-latest
+    needs:
+    - run-integration-tests
+    - run-acceptance-tests
+    - run-api-test-integration
+    - nuget-build
+    - run-auth-test-unit
+    - integration-tests-legacy-small
+    - integration-tests-legacy-big
+    steps:
+    - uses: actions/download-artifact@v2
+      with:
+        name: Nuget packages
+        path: ./nuget
+    - name: Push generated package to GitHub registry
+      run: dotnet nuget push ./nuget/*.nupkg --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate --source https://nuget.pkg.github.com/covergo/index.json
+    - name: Push generated package symbols to GitHub registry
+      run: dotnet nuget push ./nuget/*.snupkg --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate --source https://nuget.pkg.github.com/covergo/index.json
+  docker-build-auth-service:
     name: Build Auth image
-    timeout-minutes: 30
+    timeout-minutes: 20
+    runs-on: ubuntu-latest
     needs:
     - version
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && contains(toJson(github.event.commits), '[ci skip]') == false
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
     - name: Login to GitHub Container Registry
       uses: docker/login-action@v1
       with:
         registry: ghcr.io
         username: ${{ github.repository_owner }}
         password: ${{ secrets.CR_PAT_FULL }}
-    - name: Checkout repository
-      uses: actions/checkout@v2
-    - name: Build and publish Auth docker image
+    - name: Build Auth image
       uses: docker/build-push-action@v2
       id: docker-build-auth-service
       with:
         file: Dockerfile
         push: true
+        load: false
         tags: ghcr.io/covergo/auth:${{ needs.version.outputs.issue_id_slug }}
-        cache-from: type=registry,ref=ghcr.io/covergo/auth:${{ needs.version.outputs.issue_id_slug }}
-        cache-to: type=inline
+        cache-from: type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.issue_id_slug }}
+        cache-to: type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.issue_id_slug }},mode=max
     - name: Image digest
       run: echo ${{ steps.docker-build-auth-service.outputs.digest }}
-    - name: Login to GitHub Container Registry
-      uses: docker/login-action@v1
-      with:
-        registry: ghcr.io
-        username: ${{ github.repository_owner }}
-        password: ${{ secrets.CR_PAT_FULL }}
-    - name: Build and publish Auth docker image
-      uses: docker/build-push-action@v2
-      id: docker-build-auth-service
-      with:
-        file: Dockerfile
-        push: true
-        tags: ghcr.io/covergo/auth:${{ needs.version.outputs.issue_id_slug }}
-        cache-from: type=registry,ref=ghcr.io/covergo/auth:${{ needs.version.outputs.issue_id_slug }}
-        cache-to: type=inline
-    - name: Image digest
-      run: echo ${{ steps.docker-build-auth-service.outputs.digest }}
-  build-and-run-auth-test-unit:
-    name: Build and run Unit tests
+  docker-build-auth-test-unit:
+    name: Build Unit tests image
+    timeout-minutes: 20
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    needs:
+    - version
+    - docker-build-auth-service
     env:
       RESULTS_PATH: TestResults
       UNIT_TEST_IMAGE_TAG: ghcr.io/covergo/auth-test-unit:${{ needs.version.outputs.issue_id_slug }}
+    steps:
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v1
+      with:
+        registry: ghcr.io
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.CR_PAT_FULL }}
+    - name: Build Unit tests image
+      uses: docker/build-push-action@v2
+      id: docker-build-auth-test-unit
+      with:
+        file: Dockerfile
+        push: true
+        load: false
+        tags: ghcr.io/covergo/auth-test-unit:${{ needs.version.outputs.issue_id_slug }}
+        cache-from: |-
+          type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.issue_id_slug }}
+          type=registry,ref=ghcr.io/covergo/auth-test-unit-cache:${{ needs.version.outputs.issue_id_slug }}
+        cache-to: type=registry,ref=ghcr.io/covergo/auth-test-unit-cache:${{ needs.version.outputs.issue_id_slug }},mode=max
+    - name: Image digest
+      run: echo ${{ steps.docker-build-auth-test-unit.outputs.digest }}
+  run-auth-test-unit:
+    name: Run Unit tests
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
     needs:
     - version
+    - docker-build-auth-test-unit
+    env:
+      RESULTS_PATH: TestResults
+      UNIT_TEST_IMAGE_TAG: ghcr.io/covergo/auth-test-unit:${{ needs.version.outputs.issue_id_slug }}
     steps:
-    - name: Load Unit tests image into local docker
-      uses: docker/build-push-action@v2
+    - name: Checkout GitHub Action Repos
+      uses: daspn/private-actions-checkout@v2
       with:
-        file: Tests.Unit.Dockerfile
-        load: true
-        tags: ghcr.io/covergo/auth-test-unit:${{ needs.version.outputs.issue_id_slug }}
-        cache-from: type=registry,ref=ghcr.io/covergo/auth-test-unit:${{ needs.version.outputs.issue_id_slug }}
-        cache-to: type=inline
-        target: TestTarget
+        actions_list: '[ "covergo/get-version@v1.4", "covergo/get-issue-key@v1.2", "covergo/docker-extract@v1", "covergo/docker-diagnose@v1.5", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v1" ]'
+        checkout_base_path: ./.github/actions
+        app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
+        app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v1
+      with:
+        registry: ghcr.io
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.CR_PAT_FULL }}
+    - name: Pull image covergo/auth-test-unit
+      run: docker pull $UNIT_TEST_IMAGE_TAG
     - name: Run Unit tests
       run: |
         id=$(docker images "$UNIT_TEST_IMAGE_TAG" -q | head -n 1)
         echo "found image id: $id"
         docker run --name unit_tests $id
-    - name: Checkout GitHub Action Repos
-      uses: daspn/private-actions-checkout@v2
-      with:
-        actions_list: '[ "covergo/get-version@v1.4", "covergo/get-issue-key@v1.2", "covergo/docker-extract@v1", "covergo/docker-diagnose@v1.5", "covergo/set-compose-tags@v1", "covergo/run-in-compose@v1" ]'
-        checkout_base_path: ./.github/actions
-        app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
-        app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}
-    - name: Get Unit tests results
+    - name: Collect Unit tests results
       if: always()
       uses: ./.github/actions/docker-extract
       with:
@@ -191,56 +237,58 @@ jobs:
         container-path: app/TestResults
         host-path: ./TestResults
     - name: Upload Unit tests results as artifact
-      uses: actions/upload-artifact@v2
       if: always()
+      uses: actions/upload-artifact@v2
       with:
         name: Unit tests results
         path: ${{ env.RESULTS_PATH }}
-    - name: Publish Unit tests results as Check
+    - name: Publish Unit tests results as check
       uses: docker://ghcr.io/enricomi/publish-unit-test-result-action:latest
       if: always()
       with:
         report_individual_runs: "true"
-        check_name: Unit tests Results
+        check_name: Unit tests check
         github_token: ${{ secrets.GITHUB_TOKEN }}
         files: ${{ env.RESULTS_PATH }}/**/*.xml
   docker-build-integration-tests:
-    name: Build Integration tests
-    timeout-minutes: 30
+    name: Build Integration tests image
+    timeout-minutes: 20
     runs-on: ubuntu-latest
     needs:
     - version
-    if: github.event_name == 'push' && contains(toJson(github.event.commits), '[ci skip]') == false
+    - docker-build-auth-service
+    - docker-build-auth-test-unit
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
     - name: Login to GitHub Container Registry
       uses: docker/login-action@v1
       with:
         registry: ghcr.io
         username: ${{ github.repository_owner }}
         password: ${{ secrets.CR_PAT_FULL }}
-    - name: Build and publish Integration tests docker image
+    - name: Build Integration tests image
       uses: docker/build-push-action@v2
       id: docker-build-integration-tests
       with:
-        file: Tests.Integration.Dockerfile
+        file: Dockerfile
         push: true
+        load: false
         tags: ghcr.io/covergo/cases-mariadb-test-integration:${{ needs.version.outputs.issue_id_slug }}
-        cache-from: type=registry,ref=ghcr.io/covergo/cases-mariadb-test-integration:${{ needs.version.outputs.issue_id_slug }}
-        cache-to: type=inline
+        cache-from: |-
+          type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.issue_id_slug }}
+          type=registry,ref=ghcr.io/covergo/auth-test-unit-cache:${{ needs.version.outputs.issue_id_slug }}
+          type=registry,ref=ghcr.io/covergo/cases-mariadb-test-integration-cache:${{ needs.version.outputs.issue_id_slug }}
+        cache-to: type=registry,ref=ghcr.io/covergo/cases-mariadb-test-integration-cache:${{ needs.version.outputs.issue_id_slug }},mode=max
     - name: Image digest
       run: echo ${{ steps.docker-build-integration-tests.outputs.digest }}
   run-integration-tests:
-    runs-on: ubuntu-latest
     name: Run Integration tests
-    timeout-minutes: 30
+    timeout-minutes: 20
+    runs-on: ubuntu-latest
     needs:
-    - docker-build-service
     - version
     - docker-build-integration-tests
-    - docker-build-acceptance-tests
-    - docker-build-mariadb-test-integration
     env:
       RESULTS_PATH: TestResults
     steps:
@@ -249,16 +297,10 @@ jobs:
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
-        actions_list: '[ "covergo/get-version@v1.4", "covergo/get-issue-key@v1.2", "covergo/docker-extract@v1", "covergo/docker-diagnose@v1.5", "covergo/set-compose-tags@v1", "covergo/run-in-compose@v1" ]'
+        actions_list: '[ "covergo/get-version@v1.4", "covergo/get-issue-key@v1.2", "covergo/docker-extract@v1", "covergo/docker-diagnose@v1.5", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v1" ]'
         checkout_base_path: ./.github/actions
         app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
         app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}
-    - name: Login to AliCloud Container Registry
-      uses: docker/login-action@v1
-      with:
-        registry: registry-intl.cn-hongkong.aliyuncs.com
-        username: ${{ secrets.ALI_CONTAINER_REGISTRY_USER }}
-        password: ${{ secrets.ALI_CONTAINER_REGISTRY_PASSWORD }}
     - name: Login to GitHub Container Registry
       uses: docker/login-action@v1
       with:
@@ -268,7 +310,7 @@ jobs:
     - name: Prepare compose file
       uses: ./.github/actions/set-compose-tags
       with:
-        images: covergo/auth;covergo/auth-test-unit;covergo/cases-mariadb-test-integration;covergo/cases-mariadb-test-acceptance;covergo/cases-mariadb-test-integration
+        images: covergo/auth;covergo/auth-test-unit;covergo/cases-mariadb-test-integration;covergo/cases-test-acceptance;covergo/cases-api-test-integration;covergo/auth-mongo
         target-tag: ${{ needs.version.outputs.issue_id_slug }}
         compose-file: docker-compose.yml
     - name: Run Integration tests
@@ -293,15 +335,15 @@ jobs:
         include-compose: true
         encrypt-password: 123
         compose-file: docker-compose.yml
-    - name: Upload environment logs as artifact
+    - name: Upload Integration tests environment diagnostics as artifact
       if: always()
       uses: actions/upload-artifact@v2
       with:
         name: Integration tests environment diagnostics
         path: investigate/*
     - name: Upload Integration tests results as artifact
-      uses: actions/upload-artifact@v2
       if: always()
+      uses: actions/upload-artifact@v2
       with:
         name: Integration tests results
         path: ${{ env.RESULTS_PATH }}
@@ -314,42 +356,46 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         files: TestResults/TestResults.xml
   docker-build-acceptance-tests:
-    name: Build Acceptance tests
-    timeout-minutes: 30
+    name: Build Acceptance tests image
+    timeout-minutes: 20
     runs-on: ubuntu-latest
     needs:
     - version
-    if: github.event_name == 'push' && contains(toJson(github.event.commits), '[ci skip]') == false
+    - docker-build-auth-service
+    - docker-build-auth-test-unit
+    - docker-build-api-test-integration
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
     - name: Login to GitHub Container Registry
       uses: docker/login-action@v1
       with:
         registry: ghcr.io
         username: ${{ github.repository_owner }}
         password: ${{ secrets.CR_PAT_FULL }}
-    - name: Build and publish Acceptance tests docker image
+    - name: Build Acceptance tests image
       uses: docker/build-push-action@v2
       id: docker-build-acceptance-tests
       with:
-        file: Tests.Acceptance.Dockerfile
+        file: Dockerfile
         push: true
-        tags: ghcr.io/covergo/cases-mariadb-test-acceptance:${{ needs.version.outputs.issue_id_slug }}
-        cache-from: type=registry,ref=ghcr.io/covergo/cases-mariadb-test-acceptance:${{ needs.version.outputs.issue_id_slug }}
-        cache-to: type=inline
+        load: false
+        tags: ghcr.io/covergo/cases-test-acceptance:${{ needs.version.outputs.issue_id_slug }}
+        cache-from: |-
+          type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.issue_id_slug }}
+          type=registry,ref=ghcr.io/covergo/auth-test-unit-cache:${{ needs.version.outputs.issue_id_slug }}
+          type=registry,ref=ghcr.io/covergo/cases-api-test-integration-cache:${{ needs.version.outputs.issue_id_slug }}
+          type=registry,ref=ghcr.io/covergo/cases-test-acceptance-cache:${{ needs.version.outputs.issue_id_slug }}
+        cache-to: type=registry,ref=ghcr.io/covergo/cases-test-acceptance-cache:${{ needs.version.outputs.issue_id_slug }},mode=max
     - name: Image digest
       run: echo ${{ steps.docker-build-acceptance-tests.outputs.digest }}
   run-acceptance-tests:
-    runs-on: ubuntu-latest
     name: Run Acceptance tests
-    timeout-minutes: 30
+    timeout-minutes: 20
+    runs-on: ubuntu-latest
     needs:
-    - docker-build-service
     - version
-    - docker-build-integration-tests
     - docker-build-acceptance-tests
-    - docker-build-mariadb-test-integration
     env:
       RESULTS_PATH: TestResults
     steps:
@@ -358,16 +404,10 @@ jobs:
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
-        actions_list: '[ "covergo/get-version@v1.4", "covergo/get-issue-key@v1.2", "covergo/docker-extract@v1", "covergo/docker-diagnose@v1.5", "covergo/set-compose-tags@v1", "covergo/run-in-compose@v1" ]'
+        actions_list: '[ "covergo/get-version@v1.4", "covergo/get-issue-key@v1.2", "covergo/docker-extract@v1", "covergo/docker-diagnose@v1.5", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v1" ]'
         checkout_base_path: ./.github/actions
         app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
         app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}
-    - name: Login to AliCloud Container Registry
-      uses: docker/login-action@v1
-      with:
-        registry: registry-intl.cn-hongkong.aliyuncs.com
-        username: ${{ secrets.ALI_CONTAINER_REGISTRY_USER }}
-        password: ${{ secrets.ALI_CONTAINER_REGISTRY_PASSWORD }}
     - name: Login to GitHub Container Registry
       uses: docker/login-action@v1
       with:
@@ -377,7 +417,7 @@ jobs:
     - name: Prepare compose file
       uses: ./.github/actions/set-compose-tags
       with:
-        images: covergo/auth;covergo/auth-test-unit;covergo/cases-mariadb-test-integration;covergo/cases-mariadb-test-acceptance;covergo/cases-mariadb-test-integration
+        images: covergo/auth;covergo/auth-test-unit;covergo/cases-mariadb-test-integration;covergo/cases-test-acceptance;covergo/cases-api-test-integration;covergo/auth-mongo
         target-tag: ${{ needs.version.outputs.issue_id_slug }}
         compose-file: docker-compose.yml
     - name: Run Acceptance tests
@@ -390,7 +430,7 @@ jobs:
       if: always()
       uses: ./.github/actions/docker-extract
       with:
-        filter: ancestor=ghcr.io/covergo/cases-mariadb-test-acceptance:${{ needs.version.outputs.issue_id_slug }}
+        filter: ancestor=ghcr.io/covergo/cases-test-acceptance:${{ needs.version.outputs.issue_id_slug }}
         container-path: app/TestResults
         host-path: ./TestResults
     - name: Gather test environment logs
@@ -402,15 +442,15 @@ jobs:
         include-compose: true
         encrypt-password: 123
         compose-file: docker-compose.yml
-    - name: Upload environment logs as artifact
+    - name: Upload Acceptance tests environment diagnostics as artifact
       if: always()
       uses: actions/upload-artifact@v2
       with:
         name: Acceptance tests environment diagnostics
         path: investigate/*
     - name: Upload Acceptance tests results as artifact
-      uses: actions/upload-artifact@v2
       if: always()
+      uses: actions/upload-artifact@v2
       with:
         name: Acceptance tests results
         path: ${{ env.RESULTS_PATH }}
@@ -446,43 +486,47 @@ jobs:
         name: Acceptance tests check
         access-token: ${{ secrets.GITHUB_TOKEN }}
         path: ${{ env.RESULTS_PATH }}/cucumberResult.json
-  docker-build-mariadb-test-integration:
-    name: Build Integration tests
-    timeout-minutes: 30
+  docker-build-api-test-integration:
+    name: Build Integration API tests image
+    timeout-minutes: 20
     runs-on: ubuntu-latest
     needs:
     - version
-    if: github.event_name == 'push' && contains(toJson(github.event.commits), '[ci skip]') == false
+    - docker-build-auth-service
+    - docker-build-auth-test-unit
+    - docker-build-auth-service
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
     - name: Login to GitHub Container Registry
       uses: docker/login-action@v1
       with:
         registry: ghcr.io
         username: ${{ github.repository_owner }}
         password: ${{ secrets.CR_PAT_FULL }}
-    - name: Build and publish Integration tests docker image
+    - name: Build Integration API tests image
       uses: docker/build-push-action@v2
-      id: docker-build-mariadb-test-integration
+      id: docker-build-api-test-integration
       with:
         file: Tests.MariaDb.Integration.Dockerfile
         push: true
-        tags: ghcr.io/covergo/cases-mariadb-test-integration:${{ needs.version.outputs.issue_id_slug }}
-        cache-from: type=registry,ref=ghcr.io/covergo/cases-mariadb-test-integration:${{ needs.version.outputs.issue_id_slug }}
-        cache-to: type=inline
+        load: false
+        tags: ghcr.io/covergo/cases-api-test-integration:${{ needs.version.outputs.issue_id_slug }}
+        cache-from: |-
+          type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.issue_id_slug }}
+          type=registry,ref=ghcr.io/covergo/auth-test-unit-cache:${{ needs.version.outputs.issue_id_slug }}
+          type=registry,ref=ghcr.io/covergo/cases-mariadb-test-integration-cache:${{ needs.version.outputs.issue_id_slug }}
+          type=registry,ref=ghcr.io/covergo/cases-api-test-integration-cache:${{ needs.version.outputs.issue_id_slug }}
+        cache-to: type=registry,ref=ghcr.io/covergo/cases-api-test-integration-cache:${{ needs.version.outputs.issue_id_slug }},mode=max
     - name: Image digest
-      run: echo ${{ steps.docker-build-mariadb-test-integration.outputs.digest }}
-  run-mariadb-test-integration:
+      run: echo ${{ steps.docker-build-api-test-integration.outputs.digest }}
+  run-api-test-integration:
+    name: Run Integration API tests
+    timeout-minutes: 20
     runs-on: ubuntu-latest
-    name: Run Integration tests
-    timeout-minutes: 30
     needs:
-    - docker-build-service
     - version
-    - docker-build-integration-tests
-    - docker-build-acceptance-tests
-    - docker-build-mariadb-test-integration
+    - docker-build-api-test-integration
     env:
       RESULTS_PATH: TestResults
     steps:
@@ -491,16 +535,10 @@ jobs:
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
-        actions_list: '[ "covergo/get-version@v1.4", "covergo/get-issue-key@v1.2", "covergo/docker-extract@v1", "covergo/docker-diagnose@v1.5", "covergo/set-compose-tags@v1", "covergo/run-in-compose@v1" ]'
+        actions_list: '[ "covergo/get-version@v1.4", "covergo/get-issue-key@v1.2", "covergo/docker-extract@v1", "covergo/docker-diagnose@v1.5", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v1" ]'
         checkout_base_path: ./.github/actions
         app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
         app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}
-    - name: Login to AliCloud Container Registry
-      uses: docker/login-action@v1
-      with:
-        registry: registry-intl.cn-hongkong.aliyuncs.com
-        username: ${{ secrets.ALI_CONTAINER_REGISTRY_USER }}
-        password: ${{ secrets.ALI_CONTAINER_REGISTRY_PASSWORD }}
     - name: Login to GitHub Container Registry
       uses: docker/login-action@v1
       with:
@@ -510,20 +548,20 @@ jobs:
     - name: Prepare compose file
       uses: ./.github/actions/set-compose-tags
       with:
-        images: covergo/auth;covergo/auth-test-unit;covergo/cases-mariadb-test-integration;covergo/cases-mariadb-test-acceptance;covergo/cases-mariadb-test-integration
+        images: covergo/auth;covergo/auth-test-unit;covergo/cases-mariadb-test-integration;covergo/cases-test-acceptance;covergo/cases-api-test-integration;covergo/auth-mongo
         target-tag: ${{ needs.version.outputs.issue_id_slug }}
         compose-file: docker-compose.mariadb.yml
-    - name: Run Integration tests
+    - name: Run Integration API tests
       uses: ./.github/actions/run-in-compose
       with:
         compose-file: docker-compose.mariadb.yml
         service-name: cases-mariadb-test-integration
         project-name: integration-test
-    - name: Collect Integration tests results
+    - name: Collect Integration API tests results
       if: always()
       uses: ./.github/actions/docker-extract
       with:
-        filter: ancestor=ghcr.io/covergo/cases-mariadb-test-integration:${{ needs.version.outputs.issue_id_slug }}
+        filter: ancestor=ghcr.io/covergo/cases-api-test-integration:${{ needs.version.outputs.issue_id_slug }}
         container-path: app/TestResults
         host-path: ./TestResults
     - name: Gather test environment logs
@@ -535,92 +573,40 @@ jobs:
         include-compose: true
         encrypt-password: ${{ secrets.DIAGNOSTIC_PASSWORD }}$GITHUB_RUN_NUMBER
         compose-file: docker-compose.mariadb.yml
-    - name: Upload environment logs as artifact
+    - name: Upload Integration API tests environment diagnostics as artifact
       if: always()
       uses: actions/upload-artifact@v2
       with:
-        name: Integration tests environment diagnostics
+        name: Integration API tests environment diagnostics
         path: investigate/*
-    - name: Upload Integration tests results as artifact
-      uses: actions/upload-artifact@v2
+    - name: Upload Integration API tests results as artifact
       if: always()
+      uses: actions/upload-artifact@v2
       with:
-        name: Integration tests results
+        name: Integration API tests results
         path: ${{ env.RESULTS_PATH }}
-    - name: Publish Integration tests results as check
+    - name: Publish Integration API tests results as check
       uses: docker://ghcr.io/enricomi/publish-unit-test-result-action:latest
       if: always()
       with:
         report_individual_runs: "true"
-        check_name: Integration tests check
+        check_name: Integration API tests check
         github_token: ${{ secrets.GITHUB_TOKEN }}
         files: TestResults/TestResults.xml
-  docker-publish-github:
-    name: Publish Auth to GitHub
-    needs:
-    - version
-    - run-integration-tests
-    - run-acceptance-tests
-    - run-mariadb-test-integration
-    - build-and-run-auth-test-unit
-    - integration-tests-legacy-small
-    - integration-tests-legacy-big
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && contains(toJson(github.event.commits), '[ci skip]') == false
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
-    - name: Login to GitHub Container Registry
-      uses: docker/login-action@v1
-      with:
-        registry: ghcr.io
-        username: ${{ github.repository_owner }}
-        password: ${{ secrets.CR_PAT_FULL }}
-    - name: Checkout repository
-      uses: actions/checkout@v2
-    - name: Build and publish Auth docker image
-      uses: docker/build-push-action@v2
-      id: docker-build-auth-service
-      with:
-        file: Dockerfile
-        push: true
-        tags: ${{ needs.version.outputs.docker_image_ghcr_tags }}
-        cache-from: type=registry,ref=ghcr.io/covergo/auth:${{ needs.version.outputs.issue_id_slug }}
-        cache-to: type=inline
-    - name: Image digest
-      run: echo ${{ steps.docker-build-auth-service.outputs.digest }}
-    - name: Login to GitHub Container Registry
-      uses: docker/login-action@v1
-      with:
-        registry: ghcr.io
-        username: ${{ github.repository_owner }}
-        password: ${{ secrets.CR_PAT_FULL }}
-    - name: Build and publish Auth docker image
-      uses: docker/build-push-action@v2
-      id: docker-build-auth-service
-      with:
-        file: Dockerfile
-        push: true
-        tags: ${{ needs.version.outputs.docker_image_ghcr_tags }}
-        cache-from: type=registry,ref=ghcr.io/covergo/auth:${{ needs.version.outputs.issue_id_slug }}
-        cache-to: type=inline
-    - name: Image digest
-      run: echo ${{ steps.docker-build-auth-service.outputs.digest }}
   docker-publish-alicloud:
-    name: Publish Auth to AliCloud
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    name: Push service to AliCloud
+    timeout-minutes: 20
+    runs-on: ubuntu-latest
     needs:
     - version
+    - docker-build-auth-service
     - run-integration-tests
     - run-acceptance-tests
-    - run-mariadb-test-integration
-    - build-and-run-auth-test-unit
+    - run-api-test-integration
+    - run-auth-test-unit
     - integration-tests-legacy-small
     - integration-tests-legacy-big
-    runs-on: ubuntu-latest
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
     - name: Login to GitHub Container Registry
       uses: docker/login-action@v1
       with:
@@ -633,131 +619,18 @@ jobs:
         registry: registry-intl.cn-hongkong.aliyuncs.com
         username: ${{ secrets.ALI_CONTAINER_REGISTRY_USER }}
         password: ${{ secrets.ALI_CONTAINER_REGISTRY_PASSWORD }}
-    - name: Build and publish Auth docker image
-      uses: docker/build-push-action@v2
-      id: docker-build-auth-service
+    - name: Push Image to AliCloud Container Registry
+      uses: akhilerm/tag-push-action@v2.0.0
       with:
-        file: Dockerfile
-        push: true
-        tags: ${{ needs.version.outputs.docker_image_ali_cloud_tags }}
-        cache-from: type=registry,ref=ghcr.io/covergo/auth:${{ needs.version.outputs.issue_id_slug }}
-        cache-to: type=inline
-    - name: Image digest
-      run: echo ${{ steps.docker-build-auth-service.outputs.digest }}
-    - name: Checkout repository
-      uses: actions/checkout@v2
-    - name: Login to GitHub Container Registry
-      uses: docker/login-action@v1
-      with:
-        registry: ghcr.io
-        username: ${{ github.repository_owner }}
-        password: ${{ secrets.CR_PAT_FULL }}
-    - name: Login to AliCloud Container Registry
-      uses: docker/login-action@v1
-      with:
-        registry: registry-intl.cn-hongkong.aliyuncs.com
-        username: ${{ secrets.ALI_CONTAINER_REGISTRY_USER }}
-        password: ${{ secrets.ALI_CONTAINER_REGISTRY_PASSWORD }}
-    - name: Build and publish Auth docker image
-      uses: docker/build-push-action@v2
-      id: docker-build-auth-service
-      with:
-        file: Dockerfile
-        push: true
-        tags: ${{ needs.version.outputs.docker_image_ali_cloud_tags }}
-        cache-from: type=registry,ref=ghcr.io/covergo/auth:${{ needs.version.outputs.issue_id_slug }}
-        cache-to: type=inline
-    - name: Image digest
-      run: echo ${{ steps.docker-build-auth-service.outputs.digest }}
-  nuget-publish:
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    needs:
-    - version
-    - run-integration-tests
-    - run-acceptance-tests
-    - run-mariadb-test-integration
-    - nuget-build
-    - build-and-run-auth-test-unit
-    - integration-tests-legacy-small
-    - integration-tests-legacy-big
-    name: Publish Nuget package
-    env:
-      IMAGE_TAG: ghcr.io/covergo/auth-nuget:${{ needs.version.outputs.issue_id_slug }}
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
-    - name: Login to GitHub Container Registry
-      uses: docker/login-action@v1
-      with:
-        registry: ghcr.io
-        username: ${{ github.repository_owner }}
-        password: ${{ secrets.CR_PAT_FULL }}
-    - name: Checkout repository
-      uses: actions/checkout@v2
-    - name: Build and publish Auth client nuget docker image
-      uses: docker/build-push-action@v2
-      id: docker-build-auth-nuget
-      with:
-        file: ./Nuget.Dockerfile
-        load: true
-        tags: ghcr.io/covergo/auth-nuget:${{ needs.version.outputs.issue_id_slug }}
-        cache-from: type=registry,ref=ghcr.io/covergo/auth-nuget:${{ needs.version.outputs.issue_id_slug }}
-        cache-to: type=inline
-        build-args: |
-          APP_VERSION=${{ needs.version.outputs.app_version }}
-          FILE_VERSION=${{ needs.version.outputs.file_version }}
-          INFORMATIONAL_VERSION=${{ needs.version.outputs.information_version }}
-    - name: Image digest
-      run: echo ${{ steps.docker-build-auth-nuget.outputs.digest }}
-    - name: Login to GitHub Container Registry
-      uses: docker/login-action@v1
-      with:
-        registry: ghcr.io
-        username: ${{ github.repository_owner }}
-        password: ${{ secrets.CR_PAT_FULL }}
-    - name: Checkout GitHub Action Repos
-      uses: daspn/private-actions-checkout@v2
-      with:
-        actions_list: '[ "covergo/get-version@v1.4", "covergo/get-issue-key@v1.2", "covergo/docker-extract@v1", "covergo/docker-diagnose@v1.5", "covergo/set-compose-tags@v1", "covergo/run-in-compose@v1" ]'
-        checkout_base_path: ./.github/actions
-        app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
-        app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}
-    - name: Build and publish Auth client nuget docker image
-      uses: docker/build-push-action@v2
-      id: docker-build-auth-nuget
-      with:
-        file: ./Nuget.Dockerfile
-        load: true
-        tags: ghcr.io/covergo/auth-nuget:${{ needs.version.outputs.issue_id_slug }}
-        cache-from: type=registry,ref=ghcr.io/covergo/auth-nuget:${{ needs.version.outputs.issue_id_slug }}
-        cache-to: type=inline
-        build-args: |
-          APP_VERSION=${{ needs.version.outputs.app_version }}
-          FILE_VERSION=${{ needs.version.outputs.file_version }}
-          INFORMATIONAL_VERSION=${{ needs.version.outputs.information_version }}
-    - name: Image digest
-      run: echo ${{ steps.docker-build-auth-nuget.outputs.digest }}
-    - name: Create docker image with nuget packages
-      run: docker create $IMAGE_TAG --name nuget
-    - name: Copy nuget packages from docker image
-      uses: ./.github/actions/docker-extract
-      with:
-        filter: ancestor=$IMAGE_TAG
-        container-path: app/nuget
-        host-path: ./nuget
-    - name: Push generated package to GitHub registry
-      run: dotnet nuget push ./nuget/*.nupkg --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate --source https://nuget.pkg.github.com/covergo/index.json
-    - name: Push generated package symbols to GitHub registry
-      run: dotnet nuget push ./nuget/*.snupkg --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate --source https://nuget.pkg.github.com/covergo/index.json
-    if: github.event_name == 'push' && contains(toJson(github.event.commits), '[ci skip]') == false
+        src: ${{ needs.version.outputs.docker_image_ghcr_tags }}
+        dst: ${{ needs.version.outputs.docker_image_ali_cloud_tags }}
   integration-tests-legacy-small:
     name: Run legacy integration small tenants tests
     runs-on: self-hosted
-    timeout-minutes: 30
+    timeout-minutes: 20
     needs:
     - version
-    - docker-build-service
+    - docker-build-auth-service
     steps:
     - name: Checkout tests repository
       uses: actions/checkout@v2
@@ -768,7 +641,7 @@ jobs:
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
-        actions_list: '[ "covergo/get-version@v1.4", "covergo/get-issue-key@v1.2", "covergo/docker-extract@v1", "covergo/docker-diagnose@v1.5", "covergo/set-compose-tags@v1", "covergo/run-in-compose@v1" ]'
+        actions_list: '[ "covergo/get-version@v1.4", "covergo/get-issue-key@v1.2", "covergo/docker-extract@v1", "covergo/docker-diagnose@v1.5", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v1" ]'
         checkout_base_path: ./.github/actions
         app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
         app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}
@@ -824,10 +697,10 @@ jobs:
   integration-tests-legacy-big:
     name: Run legacy integration big tenants tests
     runs-on: self-hosted
-    timeout-minutes: 30
+    timeout-minutes: 20
     needs:
     - version
-    - docker-build-service
+    - docker-build-auth-service
     steps:
     - name: Checkout tests repository
       uses: actions/checkout@v2
@@ -838,7 +711,7 @@ jobs:
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
-        actions_list: '[ "covergo/get-version@v1.4", "covergo/get-issue-key@v1.2", "covergo/docker-extract@v1", "covergo/docker-diagnose@v1.5", "covergo/set-compose-tags@v1", "covergo/run-in-compose@v1" ]'
+        actions_list: '[ "covergo/get-version@v1.4", "covergo/get-issue-key@v1.2", "covergo/docker-extract@v1", "covergo/docker-diagnose@v1.5", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v1" ]'
         checkout_base_path: ./.github/actions
         app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
         app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}
@@ -893,3 +766,30 @@ jobs:
       with:
         name: Big tenants legacy integration tests diagnostics
         path: diagnostics/*
+  docker-build-auth-mongo:
+    name: Build Mongo db for Auth image
+    timeout-minutes: 20
+    runs-on: ubuntu-latest
+    needs:
+    - version
+    steps:
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v1
+      with:
+        registry: ghcr.io
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.CR_PAT_FULL }}
+    - name: Build Mongo db for Auth image
+      uses: docker/build-push-action@v2
+      id: docker-build-auth-mongo
+      with:
+        file: Mongo.Dockerfile
+        push: true
+        load: false
+        tags: ghcr.io/covergo/auth-mongo:${{ needs.version.outputs.issue_id_slug }}
+        cache-from: type=registry,ref=ghcr.io/covergo/auth-mongo-cache:${{ needs.version.outputs.issue_id_slug }}
+        cache-to: type=registry,ref=ghcr.io/covergo/auth-mongo-cache:${{ needs.version.outputs.issue_id_slug }},mode=max
+    - name: Image digest
+      run: echo ${{ steps.docker-build-auth-mongo.outputs.digest }}

@@ -1,0 +1,44 @@
+#@ load("@ytt:data", "data")
+
+#@ load("naming.lib.yml", "job")
+#@ load("tagging.lib.yml", "tagging")
+#@ load("steps.lib.yml", "steps")
+#@ load("job_dependency_resolution.lib.yml", "dep")
+#@ load("common.lib.yml", "common")
+
+---
+#@ def generate_nuget_publish_job_steps():
+- uses: actions/download-artifact@v2
+  with:
+    name: Nuget packages
+    path: ./nuget
+- name: Push generated package to GitHub registry
+  run: dotnet nuget push ./nuget/*.nupkg --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate --source https://nuget.pkg.github.com/covergo/index.json
+- name: Push generated package symbols to GitHub registry
+  run: dotnet nuget push ./nuget/*.snupkg --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate --source https://nuget.pkg.github.com/covergo/index.json
+#@ end
+---
+#@ def default_nuget_dependencies(sections):
+#@ if hasattr(sections,"integration_test"):
+#@ for integration_test_run_job_name in dep.get_integration_tests_run_jobs(sections.integration_test):
+- #@ integration_test_run_job_name
+  #@ end
+#@ end
+- nuget-build
+#@ if hasattr(sections,"unit_test"):
+#@ for unit_test_job_name in dep.get_unit_tests_job_names(sections.unit_test):
+- #@ unit_test_job_name
+  #@ end
+  #@ end
+#@ if (hasattr(sections,"integration_tests_legacy")):
+- integration-tests-legacy-small
+- integration-tests-legacy-big
+#@ end
+#@ end 
+---
+#@ def generate_nuget_publish_job(sections):
+#@ steps = generate_nuget_publish_job_steps()
+#@ needs = default_nuget_dependencies(sections)
+#@ return common.generate_job(sections.nuget, steps, None, sections,needs, job_name = "Publish "+sections.nuget.name)  
+#@ end
+---

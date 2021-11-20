@@ -1,0 +1,172 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:struct", "struct")
+#@ load("naming.lib.yml", "job")
+#@ load("tagging.lib.yml", "tagging")
+#@ load("steps.lib.yml", "steps")
+#@ load("common.lib.yml", "common")
+#@ load("build_publish_steps.lib.yml", "bpsteps")
+#@ load("build_publish_naming.lib.yml", "bpnaming")
+#@ load("configuration.lib.yml", "cfg")
+---
+#@ def _get_integration_tests_run_jobs(integration_tests):
+#@ jobs = []
+#@ for integration_test_definition in integration_tests:
+#@   jobs.append(bpnaming.get_integration_test_run_job_name(integration_test_definition))
+#@ end
+#@ return jobs
+#@ end
+---
+#@ def _get_additional_images_build_jobs(additional_images):
+#@ jobs = []
+#@ for additional_image in additional_images:
+#@   jobs.append(job.id.docker_build(additional_image))
+#@ end
+#@ return jobs
+#@ end
+---
+#@ def _get_unit_tests_job_names(unit_tests):
+#@ jobs = []
+#@ for unit_test_definition in unit_tests:
+#@   jobs.append(job.id.docker_run(unit_test_definition))
+#@ end
+#@ return jobs
+#@ end
+---
+# var artifacts = {
+#                      {
+#                          "artifact_name": {
+#                                    "job":"artifact_producing_job_name",
+#                                    "section":"configuration_section_name_defining_artifact" 
+#                                    "type":"docker"
+#                         }
+#                      }
+#                 }
+# 
+#
+#@ def copyTo(fromDict,toDict):
+#@    if fromDict != None:
+#@       for section_artifact_name in fromDict.keys():
+#@         toDict[section_artifact_name] = fromDict[section_artifact_name]
+#          print("Found export during scan: " + section_artifact_name)
+#@       end
+#@    end
+#@ end
+---
+#@ def _get_exports(section, section_name):
+
+#@ exports = {}
+
+#@ if hasattr(section,"dockerfile") and hasattr(section,"image_name"): 
+#@ job_name=job.id.docker_build(section)
+#@ exports[section.image_name]={"section":section_name, "job":job_name, "type":"default_local_docker_image"} 
+# print("found by dockerfile " + section.image_name);
+#@ end
+
+#@ if not hasattr(section,"docker_export"):
+#@ return exports
+#@ end
+
+#@ for export in section.docker_export:
+#@ field_names = dir(export)
+#@ if len(field_names) != 1:
+#@ fail("Found more than one field in docker export: " + field_names)
+#@ end
+#@ docker_target = field_names[0]
+#@ docker_image_name = getattr(export,field_names[0])
+#@ job_name=job.id.docker_build(section)
+# print ("found export {} at {} with job {}".format(docker_image_name,section_name, job_name)) 
+#@ exports[docker_image_name] = {"section":section_name, "job":job_name, "type":"targeted_local_docker_image", "target": docker_target}
+# print_fields(export)
+#@ end
+#@ return exports
+#@ end 
+---
+#@ def _scan_exports(sections):
+#@ exports = {}
+#@ for section_name in ["service","nuget","integration_tests_legacy"] :
+#@  if hasattr(sections, section_name):
+#@     section_artifacts = _get_exports(getattr(sections, section_name),section_name)
+#@     copyTo(section_artifacts, exports)
+#@  end
+#@ end
+
+#@ for section_name in ["unit_test","integration_test"] :
+#@   for subsection in getattr(sections, section_name, {}):
+#       print("got subsection "+subsection.slug)
+#@       section_artifacts =  _get_exports(subsection, subsection.slug)
+#@       copyTo(section_artifacts, exports)
+#@   end
+#@ end
+#@ _exports_cache = exports
+#@ return exports
+#@ end
+
+#@ _exports_cache = _scan_exports(data.values)
+---
+#@ def _get_cached_exports() :
+#@ return _exports_cache
+#@ end
+---
+#@ def print_fields(obj):
+#@  print(type(obj))
+#@  print(dir(obj))
+#@   for k,v in dir(obj):
+#@    print (k,v)
+#@    if hasattr(v,'__dict__'):
+#@      print_fields(v)
+#@    end
+#@   end
+#@ end
+
+---
+#@ def _find_job_for_image(image):
+#@ exports = _get_cached_exports()
+#@ if image not in exports:
+#@ if len(exports.keys()) == 0:
+#@  print("Empty exports")
+#@ end
+#@ fail("image {} has not been found in exports: {}".format(image,str(exports)))
+#@ end
+#@ jobName = exports[image]["job"]
+#@ return jobName
+#@ end
+
+---
+#@ def _get_repository_built_images(sections):
+#@ images = []
+#@ images.append(sections.service.image_name)
+#@ append_images_from_section(sections,"unit_test",images)
+#@ append_images_from_section(sections,"integration_test",images)
+#@ append_images_from_section(sections,"additional_images",images)
+#@ return ';'.join(images)
+#@ end
+---
+#@ def append_images_from_section(settings, section_name, images):
+#@ if hasattr(settings, section_name):
+#@    for section in getattr(settings, section_name):
+#@      if hasattr(section,"image_name"):
+#@        images.append(section.image_name)
+#@      end
+#@    end
+#@ end
+#@ end
+---
+
+#@ def _get_job_needs(job_section):
+#@ needs = []
+#@ docker_images_for_cache = cfg.get_required_docker_cache_images(job_section)
+#@ for image in docker_images_for_cache:
+#@   needs.append(_find_job_for_image(image))
+#@ end
+#@ return needs
+#@ end 
+---
+
+#@ dep = struct.make(
+#@ get_integration_tests_run_jobs    = _get_integration_tests_run_jobs, 
+#@ get_additional_images_build_jobs  = _get_additional_images_build_jobs,
+#@ get_unit_tests_job_names          = _get_unit_tests_job_names,        
+#@ find_job_for_image                = _find_job_for_image,          
+#@ get_repository_built_images       = _get_repository_built_images,
+#@ get_job_needs                     = _get_job_needs
+#@ )

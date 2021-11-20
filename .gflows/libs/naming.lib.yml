@@ -1,0 +1,38 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:struct", "struct")
+#@ load("common.lib.yml", "common")
+---
+#@ def _from_slug(component, prefix):
+#@ return common.job_id(component, prefix)
+#@ end
+---
+#@ def _docker_build_job_id(component):
+#@ return common.job_id(component,"docker-build-")
+#@ end
+---
+#@ def _docker_build_job_name(component_or_name):
+#@ name = getattr(component_or_name,"name",component_or_name)
+#@ return "Build {} image".format(name)
+#@ end
+---
+#@ def _docker_run_job_name(component_or_name):
+#@ name = getattr(component_or_name,"name",component_or_name)
+#@ return "Run {}".format(name)
+#@ end
+---
+#@ def _docker_run_id(component):
+#@ return common.job_id(component,"run-")
+#@ end
+---
+#@ def _docker_id_build_and_run(component):
+#@ return common.job_id(component,"build-and-run-")
+#@ end
+---
+#@ job_id = struct.make(from_slug = _from_slug,
+#@                      docker_build = _docker_build_job_id,
+#@                      build_and_run = _docker_id_build_and_run,
+#@                      docker_run = _docker_run_id)
+#@ 
+#@ job_name = struct.make(docker_build = _docker_build_job_name,
+#@                        docker_run = _docker_run_job_name)
+#@ job = struct.make(id = job_id, name = job_name, run = _docker_run_job_name)

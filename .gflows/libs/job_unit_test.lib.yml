@@ -1,0 +1,43 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:struct", "struct")
+#@ load("naming.lib.yml", "job")
+#@ load("tagging.lib.yml", "tagging")
+#@ load("steps.lib.yml", "steps")
+#@ load("common.lib.yml", "common")
+#@ load("job_docker_build.lib.yml", "docker")
+#@ load("build_publish_steps.lib.yml", "bpsteps")
+#@ load("job_dependency_resolution.lib.yml", "dep")
+
+---
+#@ def _generate_build_job(unit_test_section,sections):
+#@   env = {"RESULTS_PATH":"TestResults","UNIT_TEST_IMAGE_TAG":tagging.image(sections.cache_registry, unit_test_section)}
+#@   needs = ["version"]
+#@   needs.extend(dep.get_job_needs(unit_test_section))
+#@   return  docker.job.build(unit_test_section, sections, needs, environment_variables = env )
+#@ end
+---
+#@ def _generate_run_job(unit_test_section, registry, needs = ["version"]):
+#@   env = {"RESULTS_PATH":"TestResults","UNIT_TEST_IMAGE_TAG":tagging.image(registry, unit_test_section)}
+#@   job_name = job.name.docker_run(unit_test_section)
+#@   steps = unit_test_run_steps(unit_test_section, registry)
+#@   return  common.generate_job(unit_test_section,steps,env, registry, needs, job_name)
+#@ end
+---
+#@ def unit_test_run_steps(config, registry):
+- #@ steps.checkout_private_actions()
+- #@ steps.login_docker(registry)
+- name: #@ "Pull image {}".format(config.image_name)
+  run: #@ "docker pull {}".format("$UNIT_TEST_IMAGE_TAG")
+- name: #@ "Run {}".format(config.name)
+  run: |
+    id=$(docker images "$UNIT_TEST_IMAGE_TAG" -q | head -n 1)
+    echo "found image id: $id"
+    docker run --name unit_tests $id
+- #@ bpsteps.collect_results_step(config,registry,"$UNIT_TEST_IMAGE_TAG")
+- #@ bpsteps.upload_artifacts_step("${{ env.RESULTS_PATH }}","{} results".format(config.name))
+- #@ bpsteps.publish_test_result_as_check_step("${{ env.RESULTS_PATH }}/**/*.xml",config.name)
+#@ end
+      
+#@ unit_test_job = struct.make(
+#@  build = _generate_build_job,
+#@  run = _generate_run_job )

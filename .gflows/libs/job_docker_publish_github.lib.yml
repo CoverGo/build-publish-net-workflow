@@ -1,0 +1,25 @@
+#@ load("@ytt:data", "data")
+
+#@ load("job_docker_build.lib.yml", "docker")
+#@ load("naming.lib.yml", "job")
+#@ load("job_dependency_resolution.lib.yml", "dep")
+---
+#@ def generate_docker_publish_github(sections):
+#@ name= "Publish {} to GitHub".format(sections.service.name)
+#@ needs=["version", job.id.docker_build(sections.service)]
+#@ if hasattr(sections,"integration_test"):
+#@ needs.extend(dep.get_integration_tests_run_jobs(sections.integration_test))
+#@ end
+
+#@ if hasattr(sections,"unit_test"):
+#@ needs.extend(dep.get_unit_tests_job_names(sections.unit_test))
+#@ end
+
+#@ if (hasattr(sections,"integration_tests_legacy")):
+#@ needs.append("integration-tests-legacy-small")
+#@ needs.append("integration-tests-legacy-big")
+#@ end
+
+#@ return docker.job.build(sections.service, sections, tag_build="${{ needs.version.outputs.docker_image_ghcr_tags }}", needs = needs, job_name = name)
+#@ end
+---

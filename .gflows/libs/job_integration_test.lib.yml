@@ -1,0 +1,84 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:struct", "struct")
+#@ load("tagging.lib.yml", "tagging")
+#@ load("steps.lib.yml", "steps")
+#@ load("common.lib.yml", "common")
+#@ load("naming.lib.yml", "job")
+#@ load("build_publish_steps.lib.yml", "bpsteps")
+#@ load("security.lib.yml", "security")
+#@ load("job_docker_build.lib.yml", "docker")
+#@ load("job_dependency_resolution.lib.yml", "dep")
+---
+#@ def integration_test_run_job_steps(integration_test_definition, repository_built_images, cache_registry):
+  - #@ steps.checkout()
+  - #@ steps.checkout_private_actions()
+  - #@ steps.login_docker(cache_registry)
+#@ for compose_step in bpsteps.compose_launch_steps(integration_test_definition,repository_built_images):
+  - #@ compose_step
+#@ end
+  - #@ bpsteps.collect_results_step(integration_test_definition,cache_registry,tagging.image(cache_registry, integration_test_definition))
+  - name: Gather test environment logs
+    if: always()
+    uses: ./.github/actions/docker-diagnose
+    with:
+      filter: #@ bpsteps.get_compose_service_name_filter_to_diagnose(integration_test_definition)
+      diagnostic-result-path: investigate
+      include-compose: true
+      encrypt-password: #@ security.generate_diagnostic_password(integration_test_definition)
+      compose-file: #@ integration_test_definition.compose_file
+  - #@ bpsteps.upload_artifacts_step("investigate/*","{} environment diagnostics".format(integration_test_definition.name) )
+  - #@ bpsteps.upload_artifacts_step("${{ env.RESULTS_PATH }}","{} results".format(integration_test_definition.name))
+  #@ if getattr(integration_test_definition,"enable_junit_test_check",True) :
+  - #@ bpsteps.publish_test_result_as_check_step("TestResults/{}".format(getattr(integration_test_definition,"junit_result_filename","TestResults.xml")),integration_test_definition.name)
+    #@ end
+  #@ if hasattr(integration_test_definition,"cucumber_result_filename") :
+  - name: #@ "Upload {} results to Behave.Pro".format(integration_test_definition.name)
+    if: always()
+    env:
+      behave_api_key: ${{ secrets.BEHAVE_PRO_TOKEN }}
+      build_id: ${{ github.run_id }}
+      build_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      results_file: #@ "${{ env.RESULTS_PATH }}/"+getattr(integration_test_definition,"cucumber_result_filename")
+    run: |
+      latest_commit_sha=$(git rev-parse HEAD)
+      echo "commit sha: $latest_commit_sha"
+      echo "test result file: $results_file"
+      curl -L -X PUT https://test-reports.behave.pro/REST/1.0/bdd/report \
+      -H "X-API-KEY: $behave_api_key" \
+      -H "X-COMMIT-ID: $latest_commit_sha" \
+      -H "X-BUILD-ID: $build_id" \
+      -H "X-BUILD-URL: $build_url" \
+      --data-binary @"$results_file" \
+  - name: #@ "Publish {} results as check".format(integration_test_definition.name)
+    uses: deblockt/cucumber-report-annotations-action@v1.7
+    if: always()
+    with:
+      name: #@ "{} check".format(integration_test_definition.name)
+      access-token: ${{ secrets.GITHUB_TOKEN }}
+      path: #@ "${{ env.RESULTS_PATH }}/"+getattr(integration_test_definition,"cucumber_result_filename")
+    #@ end
+  #@ end
+---
+#@ def _integration_test_run_job(integration_test_definition, sections, needs = ["version"]):
+#@ repository_built_images=dep.get_repository_built_images(sections)
+#@ steps = integration_test_run_job_steps(integration_test_definition, repository_built_images, sections.cache_registry)
+#@ return common.generate_job(integration_test_definition, steps ,{"RESULTS_PATH": "TestResults"},sections, needs, job.name.docker_run(integration_test_definition))
+#@ end
+---
+#@ def _integration_test_build_job(integration_test_definition, sections):
+#@ needs = ["version"]
+#@ needs.extend(dep.get_job_needs(integration_test_definition))
+#@ return docker.job.build(integration_test_definition, sections, needs)
+#@ end
+---
+
+
+
+#@ integration_test = struct.make(
+#@  build = _integration_test_build_job,
+#@  run = _integration_test_run_job)
+
+
+
+      
+      

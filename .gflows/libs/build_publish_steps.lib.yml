@@ -1,0 +1,80 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:struct", "struct")
+#@ load("naming.lib.yml", "job")
+#@ load("tagging.lib.yml", "tagging")
+#@ load("steps.lib.yml", "steps")
+
+---
+#@ def _get_compose_service_name_filter_to_diagnose(integration_test_component) :
+#@ return "name=" + getattr(integration_test_component,"diagnostic_filter", "*")
+#@ end
+---
+#@ def _compose_launch_steps(integration_test_definition, images):
+    - name: Prepare compose file
+      uses: ./.github/actions/set-compose-tags
+      with:
+        images: #@ images
+        target-tag: ${{ needs.version.outputs.issue_id_slug }}
+        compose-file: #@ integration_test_definition.compose_file
+    - name: #@ "Run {}".format(integration_test_definition.name)
+      uses: ./.github/actions/run-in-compose
+      with:
+        compose-file: #@ integration_test_definition.compose_file
+        service-name: #@ getattr(integration_test_definition,"compose_service_name",integration_test_definition.slug)
+        project-name: integration-test
+#@ end
+---
+#@ def _collect_results_step(integration_test_definition, cache_registry, filter, hostPath="./TestResults"):
+name: #@ "Collect {} results".format(integration_test_definition.name)
+if: always()
+uses: ./.github/actions/docker-extract
+with:
+  filter: #@ "ancestor="+filter
+  container-path: #@ integration_test_definition.container_result_path
+  host-path: ./TestResults
+#@ end 
+    
+---
+#@ def _upload_artifacts_step(path, artifact_name, step_name = None, ifExpression = "always()"):
+#@ if step_name == None:
+    #@ step_name = "Upload {} as artifact".format(artifact_name)
+#@ end
+name: #@ step_name
+if: #@ ifExpression
+uses: actions/upload-artifact@v2
+with:
+  name: #@ artifact_name
+  path: #@ path
+#@ end
+---
+#@ def _publish_test_result_as_check_step(filePath, check_name):
+name: #@ "Publish {} results as check".format(check_name)
+uses: docker://ghcr.io/enricomi/publish-unit-test-result-action:latest
+if: always()
+with:
+  report_individual_runs: "true"
+  check_name: #@ "{} check".format(check_name)
+  github_token: ${{ secrets.GITHUB_TOKEN }}
+  files: #@ filePath
+#@ end
+---
+#@ def _copy_between_registries_step(tag_from,tag_to, target_registry_name):
+name: #@ "Push Image to {}".format(target_registry_name) 
+uses: akhilerm/tag-push-action@v2.0.0
+with:
+  src: #@ tag_from
+  #docker.io/user/app:1.0.0
+  dst: #@ tag_to
+#      quay.io/user/app:latest
+#      quay.io/user/app:1.0.0
+#      ghcr.io/user/app:latest
+#      ghcr.io/user/app:1.0.0
+#@ end
+---
+#@ bpsteps = struct.make(
+#@ compose_launch_steps = _compose_launch_steps,
+#@ collect_results_step =  _collect_results_step,
+#@ upload_artifacts_step = _upload_artifacts_step,
+#@ publish_test_result_as_check_step = _publish_test_result_as_check_step,
+#@ copy_between_registries_step = _copy_between_registries_step,
+#@ get_compose_service_name_filter_to_diagnose = _get_compose_service_name_filter_to_diagnose)

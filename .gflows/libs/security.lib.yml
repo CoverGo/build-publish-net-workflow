@@ -1,0 +1,13 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:struct", "struct")
+---
+#@ def _generate_diagnostic_password(passwordSource) :
+  #@ if hasattr(passwordSource,"diagnostic_password") :
+  #@ return getattr(passwordSource,"diagnostic_password")
+  #@ else:
+  #@ return "${{ secrets.DIAGNOSTIC_PASSWORD }}$GITHUB_RUN_NUMBER"
+  #@ end
+#@ end
+---
+#@ security = struct.make(
+#@ generate_diagnostic_password = _generate_diagnostic_password)

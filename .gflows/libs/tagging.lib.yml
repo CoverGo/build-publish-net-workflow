@@ -1,0 +1,24 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:struct", "struct")
+
+---
+#@ def _registry_image_tag(registry, image_name, version):
+#@ return "{}/{}:{}".format(registry, image_name, version)
+#@ end
+
+#@ def _tag(registry_or_url, image_or_name, suffix="${{ needs.version.outputs.issue_id_slug }}"):
+#@ url = getattr(registry_or_url,"url",registry_or_url)
+#@ image_name = getattr(image_or_name,"image_name",image_or_name)
+#@ return _registry_image_tag(url, image_name, suffix)
+#@ end
+
+#@ def _cache_image(registry_or_url, image_or_name, suffix = "${{ needs.version.outputs.issue_id_slug }}"):
+#@ url = getattr(registry_or_url,"url",registry_or_url)
+#@ image_name = getattr(image_or_name,"image_name",image_or_name)
+#@ return _registry_image_tag(url, image_name+"-cache", suffix)
+#@ end
+---
+
+#@ tagging = struct.make(with_registry = _registry_image_tag,
+#@                       image = _tag,
+#@                       cache_image=_cache_image)

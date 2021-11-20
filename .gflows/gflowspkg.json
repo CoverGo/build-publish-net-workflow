@@ -2,7 +2,24 @@
   "name": "build-publish-net",
   "files": [
     "workflows/build-publish/build-publish.template.yml",
-    "libs/images_build.yml",
-    "libs/build_publish.lib.yml"
+    "libs/build_publish_naming.lib.yml",
+    "libs/build_publish_steps.lib.yml",
+    "libs/integration-tests-legacy-steps.lib.yml",
+    "libs/job_dependency_resolution.lib.yml",
+    "libs/configuration.lib.yml",
+    "libs/naming.lib.yml",
+    "libs/security.lib.yml",
+    "libs/steps.lib.yml",
+    "libs/tagging.lib.yml",
+    
+    "libs/job_docker_build.lib.yml",
+    "libs/job_docker_publish_alicloud.lib.yml",
+    "libs/job_docker_publish_github.lib.yml",
+    "libs/job_integration_test.lib.yml",
+    "libs/job_integration_tests_legacy.lib.yml",
+    "libs/job_publish_nuget.lib.yml",
+    "libs/job_build_nuget.lib.yml",
+    "libs/job_unit_test.lib.yml",
+    "libs/job_version.lib.yml"
   ]
 }

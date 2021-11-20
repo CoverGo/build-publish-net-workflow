@@ -1,249 +1,81 @@
 #@ load("@ytt:data", "data")
 
-#@ load("@ytt:overlay", "overlay")
-#@overlay/match by=overlay.subset({"name": "Build and publish"}), expects="0+"
 #@ load("integration-tests-legacy-steps.lib.yml", "integration_tests_legacy_steps")
-#@ load("workflows.lib.yml", "pull_request_defaults")
-#@ load("workflows.lib.yml", "image_full_tag")
-#@ load("workflows.lib.yml", "image_versioned_tag")
-#@ load("workflows.lib.yml", "tag_cache")
-#@ load("workflows.lib.yml", "tag_version")
-#@ load("workflows.lib.yml", "login_docker")
-#@ load("workflows.lib.yml", "checkout_private_actions")
-#@ load("workflows.lib.yml", "checkout")
-#@ load("workflows.lib.yml", "build_and_push_docker")
-#@ load("workflows.lib.yml", "image_build_job")
-#@ load("workflows.lib.yml", "get_runner")
-#@ load("workflows.lib.yml", "docker_build_job_name")
-#@ load("workflows.lib.yml", "job_name_from_slug")
-#@ load("workflows.lib.yml", "get_timeout")
-#@ load("build_publish.lib.yml", "set_build_number")
-#@ load("build_publish.lib.yml", "set_version")
-#@ load("build_publish.lib.yml", "get_repository_built_images")
-#@ load("build_publish.lib.yml", "integration_test_steps")
-#@ load("build_publish.lib.yml", "get_integration_test_run_job_name")
-#@ load("build_publish.lib.yml", "get_additional_images_build_jobs")
-#@ load("build_publish.lib.yml", "get_integration_tests_build_jobs")
-#@ load("build_publish.lib.yml", "get_integration_tests_run_jobs")
+#@ load("job_docker_build.lib.yml", "docker")
+#@ load("job_integration_test.lib.yml", "integration_test")
+#@ load("job_unit_test.lib.yml", "unit_test_job")
 
-#@ load("build_publish.lib.yml", "get_unit_tests_job_names")
-#@ load("build_publish.lib.yml", "get_unit_test_job_name")
-#@ load("build_publish.lib.yml", "unit_test_build_and_run_steps")
-#@ load("build_publish.lib.yml", "build_git_branches_condition")
-
-#@ load("@ytt:template", "template")
+#@  load("job_version.lib.yml", "generate_version_job")
+#@  load("job_docker_publish_github.lib.yml", "generate_docker_publish_github")
+#@  load("job_docker_publish_alicloud.lib.yml", "generate_docker_publish_alicloud")
+#@  load("job_publish_nuget.lib.yml", "generate_nuget_publish_job")
+#@  load("job_build_nuget.lib.yml", "generate_nuget_build_job")
+#@  load("job_integration_tests_legacy.lib.yml", "generate_integration_test_legacy_small")
+#@  load("job_integration_tests_legacy.lib.yml", "generate_integration_test_legacy_big")
+#@  load("naming.lib.yml", "job")
+#@  load("steps.lib.yml", "steps")
+#@  load("common.lib.yml", "common")
+#@  load("job_dependency_resolution.lib.yml", "dep")
+#@  load("build_publish_naming.lib.yml", "bpnaming")
 
 
+---
+#@ def generate_jobs(data):
+  #@ jobs = {"version": generate_version_job(data.values)}
 
-name: Build and publish
-"on": #@ pull_request_defaults(data.values)
 
-jobs:
- 
-  version:
-    runs-on: ubuntu-latest
-    name: Get version from git tag
-    outputs:
-      app_version: ${{ steps.version.outputs.app_version }}
-      file_version: ${{ steps.version.outputs.file_version }}
-      information_version: ${{ steps.version.outputs.information_version }}
-      issue_id_slug: ${{ steps.issue-key.outputs.issue_id_slug }}
-      docker_image_ali_cloud_tags: ${{ steps.tags.outputs.docker_image_ali_cloud_tags }}
-      docker_image_ghcr_tags: ${{ steps.tags.outputs.docker_image_ghcr_tags }}
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
-    - #@ checkout_private_actions()
-    - name: Get jira Ticket slug
-      id: issue-key
-      uses: ./.github/actions/get-issue-key
-    - name: Get version from git tags
-      id: version
-      uses: ./.github/actions/get-version
-      with:
-        build-number: #@ set_build_number(data.values)
-        pre-release-version: #@ set_version(data.values)
-    - name: Get docker image tags
-      id: tags
-      env: 
-        ghcr_versioned_tag: #@ image_full_tag(data.values.cache_registry.url,data.values.service.image_name,"${{ steps.version.outputs.app_version }}")
-        ghcr_latest_tag: #@ image_full_tag(data.values.cache_registry.url,data.values.service.image_name,"latest")
-        #@ if hasattr(data.values,"main_registry"):
-        ali_cloud_versioned_tag: #@ image_full_tag(data.values.main_registry.url,data.values.service.image_name,"${{ steps.version.outputs.app_version }}")
-        ali_cloud_latest_tag: #@ image_full_tag(data.values.main_registry.url,data.values.service.image_name,"latest")
-        #@ end
-      run: |
+  #@ if hasattr(data.values,"nuget"):
+  #@  jobs["nuget-build"] = generate_nuget_build_job(data.values)
+  #@  jobs["nuget-publish"]= generate_nuget_publish_job(data.values)
+  #@ end
 
-       ali_cloud_tags=${ali_cloud_versioned_tag}
-       ghcr_tags=${ghcr_versioned_tag}
-        
-       git_ref=${{ github.ref }}
-       branch=${git_ref#refs/heads/}
-       if [[ "$branch" = 'main' || "$branch" = 'master'  ]]; then
-         ali_cloud_tags="${ali_cloud_tags},${ali_cloud_latest_tag}"
-         ghcr_tags="${ghcr_tags},${ghcr_latest_tag}"
-       fi
-        
-       echo final tags for ghcr are:  ${ghcr_tags}
-       echo final tags for ali are: ${ali_cloud_tags}
-       echo ::set-output name=docker_image_ghcr_tags::${ghcr_tags}
-       echo ::set-output name=docker_image_ali_cloud_tags::${ali_cloud_tags}
-        
-#@ if hasattr(data.values,"nuget"):
-#@ if data.values.nuget.enabled:
-  nuget-build: 
-    name: Build nuget package 
-    timeout-minutes: #@ get_timeout(data.values.nuget, data.values)
-    needs:
-      - version
-#@ end
-#@ end
+  #@ if hasattr(data.values,"service"):
+    #@ jobs[job.id.docker_build(data.values.service)] = docker.job.build(data.values.service, data.values)
+  #@ end
   
-#@ if data.values.service.enabled:
-  docker-build-service: 
-    name: #@ "Build {} image".format(data.values.service.name)
-    timeout-minutes: #@ get_timeout(data.values.service, data.values)
-    needs:
-      - version
-#@ end
-
-
-#@ if hasattr(data.values,"unit_test") :
-#@ for unit_test_definition in data.values.unit_test :
-  build-and-run-unit-tests-job: #@ template.replace({get_unit_test_job_name(unit_test_definition): unit_test_build_and_run_steps(unit_test_definition, data.values.cache_registry, data.values)})
-#@ end
-#@ end
+  #@ for unit_test_section in getattr(data.values,"unit_test",[]):
+  #@   build_job_name = job.id.docker_build(unit_test_section)
+  #@   jobs[build_job_name] = unit_test_job.build(unit_test_section,data.values)
+  #@   jobs[job.id.docker_run(unit_test_section)] = unit_test_job.run(unit_test_section,data.values.cache_registry, ["version",build_job_name])
+  #@ end 
   
-  
-#@ if hasattr(data.values,"integration_test") :
-  #@ integration_tests_run_needs = []
-  #@ integration_tests_run_needs.extend(get_integration_tests_build_jobs(data.values.integration_test))
- #@ if hasattr(data.values,"additional_images"):
-   #@ integration_tests_run_needs.extend(get_additional_images_build_jobs(data.values.additional_images))
- #@ end
-  #@ for integration_test_definition in data.values.integration_test :
-  build-integration-test-job: #@ template.replace({docker_build_job_name(integration_test_definition): image_build_job(integration_test_definition, data.values.cache_registry, needs=["version"], job_name="Build "+integration_test_definition.name)})
-  run-integration-tests-job:
-    #@ if hasattr(data.values,"main_registry"):
-      #@ template.replace({get_integration_test_run_job_name(integration_test_definition): integration_test_steps(integration_test_definition, get_repository_built_images(data.values), data.values.cache_registry, data.values.main_registry, integration_tests_run_needs, data.values)})
-    #@ else:
-       #@ template.replace({get_integration_test_run_job_name(integration_test_definition): integration_test_steps(integration_test_definition, get_repository_built_images(data.values), data.values.cache_registry, None, integration_tests_run_needs, data.values)})
+  #@ if hasattr(data.values,"integration_test") :
+    #@ needs = ["version"]
+    #@ if (hasattr(data.values,"additional_images")):
+    #@ needs.extend(dep.get_additional_images_build_jobs(data.values.additional_images))
+    #@ end
+    #@ for integration_test_definition in data.values.integration_test:
+       #@ build_job_id = job.id.docker_build(integration_test_definition)
+       #@ jobs[build_job_id]= integration_test.build(integration_test_definition,data.values)
+       #@ jobs[bpnaming.get_integration_test_run_job_name(integration_test_definition)]= integration_test.run(integration_test_definition,data.values, ["version",build_job_id])
+       # jobs[bpnaming.get_integration_test_run_job_name(integration_test_definition)]= integration_test.run(integration_test_definition, dep.get_repository_built_images(data.values), data.values.cache_registry, needs, data.values)
     #@ end
   #@ end
-#@ end
   
-  docker-publish-github:
-    name: #@ "Publish {} to GitHub".format(data.values.service.name)
-    needs:
-     - version
-     #@ if hasattr(data.values,"integration_test"):
-       #@ for integration_test_run_job_name in get_integration_tests_run_jobs(data.values.integration_test):
-     - #@ integration_test_run_job_name
-       #@ end
-     #@ end
-     #@ if hasattr(data.values,"unit_test"):
-       #@ for unit_test_job_name in get_unit_tests_job_names(data.values.unit_test):
-     - #@ unit_test_job_name
-       #@ end
-      #@ end
-     #@ if (hasattr(data.values,"integration_tests_legacy")):
-     - integration-tests-legacy-small
-     - integration-tests-legacy-big
-     #@ end
-#@ if hasattr(data.values,"main_registry"): 
-  docker-publish-alicloud:
-    name: #@ "Publish {} to AliCloud".format(data.values.service.name)
-    if: #@ build_git_branches_condition(data.values.main_registry)
-    needs:
-        - version
-      #@ if hasattr(data.values,"integration_test"):
-      #@ for integration_test_run_job_name in get_integration_tests_run_jobs(data.values.integration_test):
-        - #@ integration_test_run_job_name
-      #@ end
-      #@ end
-      #@ if hasattr(data.values,"unit_test"):
-      #@ for unit_test_job_name in get_unit_tests_job_names(data.values.unit_test):
-        - #@ unit_test_job_name
-      #@ end
-      #@ end
-      #@ if (hasattr(data.values,"integration_tests_legacy")):
-        - integration-tests-legacy-small
-        - integration-tests-legacy-big
-      #@ end
-#@ end
+  # jobs["docker-publish-github"] = generate_docker_publish_github(data.values)
   
-#@ if hasattr(data.values,"nuget"):
-#@ if data.values.nuget.enabled :
-  nuget-publish:
-    runs-on: ubuntu-latest
-    timeout-minutes: #@ get_timeout(data.values.nuget, data.values)
-    needs:
-    - version
-    #@ if hasattr(data.values,"integration_test"):
-      #@ for integration_test_run_job_name in get_integration_tests_run_jobs(data.values.integration_test):
-    - #@ integration_test_run_job_name
-      #@ end
+  #@ if hasattr(data.values,"main_registry"): 
+    #@ jobs["docker-publish-alicloud"] = generate_docker_publish_alicloud(data.values)
+  #@ end
+
+  #@ if (hasattr(data.values,"integration_tests_legacy")):
+    #@ jobs["integration-tests-legacy-small"]= generate_integration_test_legacy_small(data.values)
+    #@ jobs["integration-tests-legacy-big"]=  generate_integration_test_legacy_big(data.values)
+  #@ end
+  
+  #@ if hasattr(data.values,"additional_images"):
+    #@ for additional_image in data.values.additional_images :
+     #@ jobs[job.id.docker_build(additional_image)] = docker.job.build(additional_image, data.values)
     #@ end
-    - nuget-build
-    #@ if hasattr(data.values,"unit_test"):
-    #@ for unit_test_job_name in get_unit_tests_job_names(data.values.unit_test):
-    - #@ unit_test_job_name
-    #@ end
-    #@ end
-    #@ if (hasattr(data.values,"integration_tests_legacy")):
-    - integration-tests-legacy-small
-    - integration-tests-legacy-big
-    #@ end
-    name: Publish Nuget package
-    env:
-      IMAGE_TAG: #@ tag_cache(data.values.cache_registry, data.values.nuget)
-    steps:
-    - #@ checkout_private_actions()
-    - name: Create docker image with nuget packages
-      run: docker create $IMAGE_TAG --name nuget
-    - name: Copy nuget packages from docker image
-      uses: ./.github/actions/docker-extract
-      with:
-        filter: ancestor=$IMAGE_TAG
-        container-path: #@ data.values.nuget.container_result_path
-        host-path: ./nuget
-    - name: Push generated package to GitHub registry
-      run: dotnet nuget push ./nuget/*.nupkg --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
-        --source https://nuget.pkg.github.com/covergo/index.json
-    - name: Push generated package symbols to GitHub registry
-      run: dotnet nuget push ./nuget/*.snupkg --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
-        --source https://nuget.pkg.github.com/covergo/index.json
-#@ end
+  #@ end
+    
+  #@ return jobs
 #@ end
 
-#@ if (hasattr(data.values,"integration_tests_legacy")):
-  
-  integration-tests-legacy-small:
-    name: Run legacy integration small tenants tests
-    runs-on: #@ data.values.integration_tests_legacy.runner
-    timeout-minutes: #@ get_timeout(data.values.integration_tests_legacy, data.values)
-    needs:
-      - version
-      - docker-build-service
-    steps: #@ integration_tests_legacy_steps(data.values.integration_tests_legacy.repository,[data.values.cache_registry,data.values.main_registry], data.values.integration_tests_legacy.environment, data.values.integration_tests_legacy.test_suites.small_tenants)
-  integration-tests-legacy-big:
-    name: Run legacy integration big tenants tests
-    runs-on: #@ data.values.integration_tests_legacy.runner
-    timeout-minutes: #@ get_timeout(data.values.integration_tests_legacy, data.values)
-    needs:
-      - version
-      - docker-build-service
-    steps: #@ integration_tests_legacy_steps(data.values.integration_tests_legacy.repository, [data.values.cache_registry,data.values.main_registry], data.values.integration_tests_legacy.environment, data.values.integration_tests_legacy.test_suites.big_tenants)
-
-#@ end
-
-#@ if hasattr(data.values,"additional_images"):
-#@ for additional_image in data.values.additional_images :
-  job: #@ template.replace({docker_build_job_name(additional_image): image_build_job(additional_image, data.values.cache_registry, needs=["version"], job_name=additional_image.name)})
-#@ end
-#@ end
+name: Build and publish
+"on": #@ common.workflow_triggers(getattr(data.values,"git",None))
+jobs: #@ generate_jobs(data)
+ 
 
   
 

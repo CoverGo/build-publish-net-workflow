@@ -1,0 +1,13 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:struct", "struct")
+#@ load("naming.lib.yml", "job")
+
+---
+#@ def _get_integration_test_run_job_name(integration_test_definition):
+#@ return job.id.from_slug(integration_test_definition,"run-")
+#@ end
+---
+
+#@ bpnaming = struct.make(
+#@ get_integration_test_run_job_name = _get_integration_test_run_job_name,        
+#@ )

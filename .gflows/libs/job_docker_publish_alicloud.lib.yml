@@ -1,0 +1,37 @@
+#@ load("@ytt:data", "data")
+
+#@ load("common.lib.yml", "common")
+#@ load("steps.lib.yml", "steps")
+#@ load("naming.lib.yml", "job")
+#@ load("job_dependency_resolution.lib.yml", "dep")
+#@ load("build_publish_steps.lib.yml", "bpsteps")
+---
+#@ def generate_docker_publish_alicloud(sections):
+#@ needs = ["version", job.id.docker_build(sections.service)]
+#@ name ="Publish {} to AliCloud".format(sections.service.name)
+#@ customIfExpression = common.build_git_branches_condition(sections.main_registry)
+
+#@ if hasattr(sections,"integration_test"):
+#@ needs.extend(dep.get_integration_tests_run_jobs(sections.integration_test))
+#@ end
+
+#@ if hasattr(sections,"unit_test"):
+#@ needs.extend(dep.get_unit_tests_job_names(sections.unit_test))
+#@ end
+
+#@ if (hasattr(sections,"integration_tests_legacy")):
+#@ needs.append("integration-tests-legacy-small")
+#@ needs.append("integration-tests-legacy-big")
+#@ end
+
+
+#@ steps = generate_docker_publish_alicloud_steps(sections)
+#@ return common.generate_job(sections.service, steps, None, sections, needs, job_name="Push service to AliCloud")
+#@ end
+---
+#@ def generate_docker_publish_alicloud_steps(sections):
+- #@ steps.login_docker(sections.cache_registry)
+- #@ steps.login_docker(sections.main_registry)
+- #@ bpsteps.copy_between_registries_step("${{ needs.version.outputs.docker_image_ghcr_tags }}","${{ needs.version.outputs.docker_image_ali_cloud_tags }}",sections.main_registry.name)
+#@ end
+---
