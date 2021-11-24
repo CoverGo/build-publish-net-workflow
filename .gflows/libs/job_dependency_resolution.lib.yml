@@ -83,14 +83,14 @@
 ---
 #@ def _scan_exports(sections):
 #@ exports = {}
-#@ for section_name in ["service","nuget","integration_tests_legacy"] :
+#@ for section_name in ["service","nuget","integration_tests_legacy",] :
 #@  if hasattr(sections, section_name):
 #@     section_artifacts = _get_exports(getattr(sections, section_name),section_name)
 #@     copyTo(section_artifacts, exports)
 #@  end
 #@ end
 
-#@ for section_name in ["unit_test","integration_test"] :
+#@ for section_name in ["unit_test","integration_test","additional_images"] :
 #@   for subsection in getattr(sections, section_name, {}):
 #       print("got subsection "+subsection.slug)
 #@       section_artifacts =  _get_exports(subsection, subsection.slug)
@@ -158,6 +158,7 @@
 #@ for image in docker_images_for_cache:
 #@   needs.append(_find_job_for_image(image))
 #@ end
+#@ 
 #@ return needs
 #@ end 
 ---

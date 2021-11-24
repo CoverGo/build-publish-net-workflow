@@ -10,10 +10,9 @@
   timeout-minutes: #@ common.get_timeout(sections.integration_tests_legacy, sections)
   needs: 
     - version
-    #@ image_with_tag = sections.integration_tests_legacy.environment.service_under_test.image
-    #@ image = image_with_tag.split(":")[0]
+    #@ image = sections.integration_tests_legacy.environment.service_under_test.image
     - #@ dep.find_job_for_image(image)
-  steps: #@ integration_tests_legacy_steps(sections.integration_tests_legacy.repository,[sections.cache_registry,sections.main_registry], sections.integration_tests_legacy.environment, sections.integration_tests_legacy.test_suites.small_tenants)
+  steps: #@ integration_tests_legacy_steps(sections.integration_tests_legacy.repository,sections.cache_registry,sections.main_registry, sections.integration_tests_legacy.environment, sections.integration_tests_legacy.test_suites.small_tenants)
 #@ end
 ---
 #@ def generate_integration_test_legacy_big(sections):
@@ -25,7 +24,7 @@
     #@ image_with_tag = sections.integration_tests_legacy.environment.service_under_test.image
     #@ image = image_with_tag.split(":")[0]
     - #@ dep.find_job_for_image(image)
-  steps: #@ integration_tests_legacy_steps(sections.integration_tests_legacy.repository, [sections.cache_registry,sections.main_registry], sections.integration_tests_legacy.environment, sections.integration_tests_legacy.test_suites.big_tenants)
+  steps: #@ integration_tests_legacy_steps(sections.integration_tests_legacy.repository, sections.cache_registry,sections.main_registry, sections.integration_tests_legacy.environment, sections.integration_tests_legacy.test_suites.big_tenants)
 #@ end
 
 ---

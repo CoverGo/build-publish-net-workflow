@@ -1,9 +1,10 @@
 #@ load("common.lib.yml", "common")
 #@ load("steps.lib.yml", "steps")
 #@ load("security.lib.yml", "security")
+#@ load("tagging.lib.yml", "tagging")
 #@ load("build_publish_steps.lib.yml", "bpsteps")
 ---
-#@ def integration_tests_legacy_steps(repository, registries, environment, test_suites):
+#@ def integration_tests_legacy_steps(repository, registry,main_registry, environment, test_suites):
 - name: Checkout tests repository
   uses: actions/checkout@v2
   with:
@@ -11,9 +12,8 @@
     ref: #@ repository.branch
     token: #@ repository.token
 - #@  steps.checkout_private_actions()
-#@ for registry in registries:
 - #@ steps.login_docker(registry)
-#@ end
+- #@ steps.login_docker(main_registry)
 - name: Prepare environment for integration tests
   uses: ./launch_environment
   with:
@@ -21,7 +21,8 @@
     mongo-password: #@ environment.mongo_password 
     mongo-url: #@ environment.mongo_url 
     service-under-test: #@ environment.service_under_test.name
-    image-under-test: #@ environment.service_under_test.image
+    image-under-test: #@ tagging.image(registry, environment.service_under_test.image)
+
 - name: Install yarn
   run: yarn install
 #@ for test_case in test_suites.tests:

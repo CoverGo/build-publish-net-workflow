@@ -48,7 +48,6 @@
        #@ build_job_id = job.id.docker_build(integration_test_definition)
        #@ jobs[build_job_id]= integration_test.build(integration_test_definition,data.values)
        #@ jobs[bpnaming.get_integration_test_run_job_name(integration_test_definition)]= integration_test.run(integration_test_definition,data.values, ["version",build_job_id])
-       # jobs[bpnaming.get_integration_test_run_job_name(integration_test_definition)]= integration_test.run(integration_test_definition, dep.get_repository_built_images(data.values), data.values.cache_registry, needs, data.values)
     #@ end
   #@ end
   

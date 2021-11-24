@@ -9,7 +9,6 @@
 #@ def generate_docker_publish_alicloud(sections):
 #@ needs = ["version", job.id.docker_build(sections.service)]
 #@ name ="Publish {} to AliCloud".format(sections.service.name)
-#@ customIfExpression = common.build_git_branches_condition(sections.main_registry)
 
 #@ if hasattr(sections,"integration_test"):
 #@ needs.extend(dep.get_integration_tests_run_jobs(sections.integration_test))
@@ -24,9 +23,9 @@
 #@ needs.append("integration-tests-legacy-big")
 #@ end
 
-
 #@ steps = generate_docker_publish_alicloud_steps(sections)
-#@ return common.generate_job(sections.service, steps, None, sections, needs, job_name="Push service to AliCloud")
+#@ branchCondition = common.build_git_branches_condition(sections.main_registry)
+#@ return common.generate_job(sections.service, steps, None, sections, needs, "Push service to AliCloud",branchCondition)
 #@ end
 ---
 #@ def generate_docker_publish_alicloud_steps(sections):

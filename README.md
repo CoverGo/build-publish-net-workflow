@@ -323,10 +323,20 @@ It uses some gflows packages for reused code and CoverGo-specific GitHub actions
 
 ## Migration from v1 to v2: 
  
-- Add `docker_cache` [array](#Section reference) in sections `nuget`,`unit_test`, `integration_test` , as v2 does not support convention-based dependencies between jobs (e.g. run integration tests only after unit tests) 
-- Remove `enabled` field as it is not used anymore. If you need to disable a section, remove it from config
++ Combine existing docker files into a single [multi-staged](https://docs.docker.com/develop/develop-images/multistage-build/) file 
++ in each config section: 
+  + Change `dockerfile` field to the single dockerfile name
+  + Add `docker_target` field to sections, based on the combined dockerfile targets   
+  + Add `docker_cache` [array](#Section reference) in sections `nuget`,`unit_test`, `integration_test` , as v2 does not support convention-based dependencies between jobs (e.g. run integration tests only after unit tests) 
+  + Remove `enabled` field as it is not used anymore. If you need to disable a section, remove it from config
++ if you use `integration_tests_legacy` section, change format of `environment.service_under_test.image` field to match on of the `image_name` fields from other sections.  
+For example given `ghcr.io/covergo/auth:${{ needs.version.outputs.issue_id_slug }}` should be converted to `covergo/auth`
 - If you don't need a specific filter for git branches to trigger CI, remove `git` section. It will trigger CI on push to any branch
-
+- build-publish v2 uses common libraries v2.2, in case if a repository is using other workflows dependent on the common libraries as well, 
+ they need to be updated to a version supporting common libraries 2.2:  
+ *workflow-check*: v1.9.2  
+ *scan-code-net*: v2.3.1  
+ *deploy-tenant*: v1.1.1
 ## gflows MacOS installation guide 
 
 If you don’t like install gflows using go, here is alternative way:

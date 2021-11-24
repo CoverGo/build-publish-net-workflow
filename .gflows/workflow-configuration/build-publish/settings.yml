@@ -59,12 +59,8 @@ service: #docker-build-and-job
   name: Auth
   slug: auth-service
   dockerfile: Dockerfile
+  docker_target: build-service
   image_name: covergo/auth
-  docker_export:
-    - TestTarget: auth
-    - BuildNuget: covergo/auth-nuget
-    - IntegrationTest: covergo/cases-mariadb-test-integration
-    - test_acceptance: covergo/cases-test-acceptance
 
 
 #Runs an existing image, can build if needed 
@@ -84,6 +80,8 @@ integration_test: #array of docker-build-and-job
     image_name: covergo/cases-mariadb-test-integration
     compose_file: docker-compose.yml
     compose_service_name: cases-test-integration
+    compose_images:
+      - covergo/auth-mongo
     diagnostic_password: 123
     diagnostic_filter: filter*
     cache_type: registry
@@ -118,15 +116,15 @@ integration_test: #array of docker-build-and-job
     cache_from:
       - covergo/auth
       - covergo/auth-test-unit
-      - covergo/cases-mariadb-test-integration
 
 
 #Only build and export docker images
 additional_images: #array of docker-build-and-job 
   - name: Mongo db for Auth
+    slug: auth-mongo
     dockerfile: Mongo.Dockerfile
     image_name: covergo/auth-mongo
-    slug: auth-mongo
+
 
 #Runs an exising image or build it, extract nuget package and publishes it 
 nuget: #docker-build-and-job with special treatment of artifact
@@ -167,7 +165,7 @@ integration_tests_legacy:
   environment:
     service_under_test:
       name: auth
-      image: covergo/auth:local
+      image: covergo/auth
     mongo_user: ${{ secrets.MONGO_USER }}
     mongo_password: ${{ secrets.MONGO_PASSWORD }}
     mongo_url: dds-3ns0c4f035f4d3141258-pub.mongodb.rds.aliyuncs.com:3717,dds-3ns0c4f035f4d3142331-pub.mongodb.rds.aliyuncs.com:3717/admin?replicaSet=mgset-5830817&maxPoolSize=500&waitQueueMultiple=5

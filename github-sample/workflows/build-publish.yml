@@ -163,6 +163,7 @@ jobs:
         tags: ghcr.io/covergo/auth:${{ needs.version.outputs.issue_id_slug }}
         cache-from: type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.issue_id_slug }}
         cache-to: type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.issue_id_slug }},mode=max
+        target: build-service
     - name: Image digest
       run: echo ${{ steps.docker-build-auth-service.outputs.digest }}
   docker-build-auth-test-unit:
@@ -289,6 +290,7 @@ jobs:
     needs:
     - version
     - docker-build-integration-tests
+    - docker-build-auth-mongo
     env:
       RESULTS_PATH: TestResults
     steps:
@@ -494,7 +496,6 @@ jobs:
     - version
     - docker-build-auth-service
     - docker-build-auth-test-unit
-    - docker-build-auth-service
     steps:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v1
@@ -515,7 +516,6 @@ jobs:
         cache-from: |-
           type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.issue_id_slug }}
           type=registry,ref=ghcr.io/covergo/auth-test-unit-cache:${{ needs.version.outputs.issue_id_slug }}
-          type=registry,ref=ghcr.io/covergo/cases-mariadb-test-integration-cache:${{ needs.version.outputs.issue_id_slug }}
           type=registry,ref=ghcr.io/covergo/cases-api-test-integration-cache:${{ needs.version.outputs.issue_id_slug }}
         cache-to: type=registry,ref=ghcr.io/covergo/cases-api-test-integration-cache:${{ needs.version.outputs.issue_id_slug }},mode=max
     - name: Image digest
@@ -597,6 +597,7 @@ jobs:
     name: Push service to AliCloud
     timeout-minutes: 20
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
     needs:
     - version
     - docker-build-auth-service
@@ -664,7 +665,7 @@ jobs:
         mongo-password: ${{ secrets.MONGO_PASSWORD }}
         mongo-url: dds-3ns0c4f035f4d3141258-pub.mongodb.rds.aliyuncs.com:3717,dds-3ns0c4f035f4d3142331-pub.mongodb.rds.aliyuncs.com:3717/admin?replicaSet=mgset-5830817&maxPoolSize=500&waitQueueMultiple=5
         service-under-test: auth
-        image-under-test: covergo/auth:local
+        image-under-test: ghcr.io/covergo/auth:${{ needs.version.outputs.issue_id_slug }}
     - name: Install yarn
       run: yarn install
     - name: Run aag_uat tests
@@ -734,7 +735,7 @@ jobs:
         mongo-password: ${{ secrets.MONGO_PASSWORD }}
         mongo-url: dds-3ns0c4f035f4d3141258-pub.mongodb.rds.aliyuncs.com:3717,dds-3ns0c4f035f4d3142331-pub.mongodb.rds.aliyuncs.com:3717/admin?replicaSet=mgset-5830817&maxPoolSize=500&waitQueueMultiple=5
         service-under-test: auth
-        image-under-test: covergo/auth:local
+        image-under-test: ghcr.io/covergo/auth:${{ needs.version.outputs.issue_id_slug }}
     - name: Install yarn
       run: yarn install
     - name: Run test_uat tests

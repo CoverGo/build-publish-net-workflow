@@ -60,6 +60,12 @@
   #@ end
 ---
 #@ def _integration_test_run_job(integration_test_definition, sections, needs = ["version"]):
+#@ if hasattr(integration_test_definition, "compose_images"):
+#@  for image in integration_test_definition.compose_images:
+#@    needs.append(dep.find_job_for_image(image))
+#@  end
+#@ end
+#@  
 #@ repository_built_images=dep.get_repository_built_images(sections)
 #@ steps = integration_test_run_job_steps(integration_test_definition, repository_built_images, sections.cache_registry)
 #@ return common.generate_job(integration_test_definition, steps ,{"RESULTS_PATH": "TestResults"},sections, needs, job.name.docker_run(integration_test_definition))
