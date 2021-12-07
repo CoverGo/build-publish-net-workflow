@@ -623,7 +623,7 @@ jobs:
     - name: Push Image to AliCloud Container Registry
       uses: akhilerm/tag-push-action@v2.0.0
       with:
-        src: ${{ needs.version.outputs.docker_image_ghcr_tags }}
+        src: ghcr.io/covergo/auth:${{ needs.version.outputs.issue_id_slug }}
         dst: ${{ needs.version.outputs.docker_image_ali_cloud_tags }}
   integration-tests-legacy-small:
     name: Run legacy integration small tenants tests

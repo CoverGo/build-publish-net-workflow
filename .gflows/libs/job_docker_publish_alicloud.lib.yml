@@ -5,6 +5,7 @@
 #@ load("naming.lib.yml", "job")
 #@ load("job_dependency_resolution.lib.yml", "dep")
 #@ load("build_publish_steps.lib.yml", "bpsteps")
+#@ load("tagging.lib.yml", "tagging")
 ---
 #@ def generate_docker_publish_alicloud(sections):
 #@ needs = ["version", job.id.docker_build(sections.service)]
@@ -31,6 +32,6 @@
 #@ def generate_docker_publish_alicloud_steps(sections):
 - #@ steps.login_docker(sections.cache_registry)
 - #@ steps.login_docker(sections.main_registry)
-- #@ bpsteps.copy_between_registries_step("${{ needs.version.outputs.docker_image_ghcr_tags }}","${{ needs.version.outputs.docker_image_ali_cloud_tags }}",sections.main_registry.name)
+- #@ bpsteps.copy_between_registries_step(tagging.image(sections.cache_registry, sections.service),"${{ needs.version.outputs.docker_image_ali_cloud_tags }}",sections.main_registry.name)
 #@ end
 ---
