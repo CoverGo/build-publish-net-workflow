@@ -48,7 +48,7 @@ with:
 #@ end
 ---
 
-#@ def _build_and_push_docker(component, cache_registry, step_name=None, step_id=None, push_image=True, load_image=False, tags=None):
+#@ def _build_and_push_docker(component, cache_registry, step_name=None, step_id=None, push_image=True, load_image=False, tags=None, build_versioned_image = False):
 name: #@ common.get_value(step_name, job.name.docker_build(component.name))
 uses: docker/build-push-action@v2
 #@ if step_id != None : 
@@ -87,8 +87,7 @@ with:
   #@ if hasattr(component,"docker_target"):
   target: #@ component.docker_target
   #@ end
-  #@ provide_version_args = False
-  #@ if provide_version_args:
+  #@ if build_versioned_image:
   build-args: |
     APP_VERSION=${{ needs.version.outputs.app_version }}
     FILE_VERSION=${{ needs.version.outputs.file_version }}

@@ -10,7 +10,7 @@
 
 ---
 #@ def generate_nuget_build_job_steps(nuget, registry):
-  #@ for step in docker.steps.build(nuget, registry, push = False):
+  #@ for step in docker.steps.build(nuget, registry, push = False, build_versioned_image = True):
 - #@ step
   #@ end
 #@ image_tag = tagging.image(registry, nuget)

@@ -6,14 +6,14 @@
 #@ load("steps.lib.yml","steps")
 
 ---
-#@ def _image_build_job_steps(component, registry, tag_build=None, job_name=None, push=True):
+#@ def _image_build_job_steps(component, registry, tag_build=None, job_name=None, push=True,build_versioned_image=False):
   #@ step_id_value=job.id.docker_build(component)
   #@ load_image = not push
   #@ push_image = push
   #@ cache_registry = registry
 - #@ steps.setup_buildx()
 - #@ steps.login_docker(cache_registry)
-- #@ steps.build_and_push_docker(component, cache_registry, step_id=step_id_value, tags=tag_build, load_image=load_image, push_image=push_image)
+- #@ steps.build_and_push_docker(component, cache_registry, step_id=step_id_value, tags=tag_build, load_image=load_image, push_image=push_image,build_versioned_image=build_versioned_image)
 - name: Image digest
   run: #@ "echo ${{ steps."+step_id_value+".outputs.digest }}"
 #@ end
