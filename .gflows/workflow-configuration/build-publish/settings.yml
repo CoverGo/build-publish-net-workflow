@@ -128,12 +128,20 @@ additional_images: #array of docker-build-and-job
 
 #Runs an exising image or build it, extract nuget package and publishes it 
 nuget: #docker-build-and-job with special treatment of artifact
-  name: Auth client nuget
-  slug: auth-nuget
-  image_name: covergo/auth-nuget
-  container_result_path: app/nuget
-  cache_from:
-    - covergo/auth
+  - name: Auth client nuget
+    slug: auth-nuget
+    image_name: covergo/auth-nuget
+    container_result_path: app/nuget
+    cache_from:
+     - covergo/auth
+    publish_after:
+     - acceptance-tests
+  - name: Auth client nuget with default dependencies
+    slug: auth-nuget-default
+    image_name: covergo/auth-nuget-default
+    container_result_path: app/nuget
+    cache_from:
+      - covergo/auth
 
 #Run existing images using compose, custom section
 integration_tests_legacy:

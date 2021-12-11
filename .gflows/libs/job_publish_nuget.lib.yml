@@ -18,13 +18,19 @@
   run: dotnet nuget push ./nuget/*.snupkg --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate --source https://nuget.pkg.github.com/covergo/index.json
 #@ end
 ---
-#@ def default_nuget_dependencies(sections):
+#@ def default_nuget_dependencies(nuget, sections):
+- #@ "nuget-build-" + nuget.slug
+#@ if hasattr(nuget,"publish_after"):
+#@ for needs_to_publish in nuget.publish_after:
+- #@ needs_to_publish
+#@ end
+#@ return
+#@ end 
 #@ if hasattr(sections,"integration_test"):
 #@ for integration_test_run_job_name in dep.get_integration_tests_run_jobs(sections.integration_test):
 - #@ integration_test_run_job_name
   #@ end
 #@ end
-- nuget-build
 #@ if hasattr(sections,"unit_test"):
 #@ for unit_test_job_name in dep.get_unit_tests_job_names(sections.unit_test):
 - #@ unit_test_job_name
@@ -36,9 +42,9 @@
 #@ end
 #@ end 
 ---
-#@ def generate_nuget_publish_job(sections):
+#@ def generate_nuget_publish_job(nuget, sections):
 #@ steps = generate_nuget_publish_job_steps()
-#@ needs = default_nuget_dependencies(sections)
-#@ return common.generate_job(sections.nuget, steps, None, sections,needs, job_name = "Publish "+sections.nuget.name)  
+#@ needs = default_nuget_dependencies(nuget, sections)
+#@ return common.generate_job(nuget, steps, None, sections,needs, job_name = "Publish "+nuget.name)  
 #@ end
 ---

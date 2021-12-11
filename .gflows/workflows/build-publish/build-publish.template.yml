@@ -25,8 +25,19 @@
 
 
   #@ if hasattr(data.values,"nuget"):
-  #@  jobs["nuget-build"] = generate_nuget_build_job(data.values)
-  #@  jobs["nuget-publish"]= generate_nuget_publish_job(data.values)
+  #@  nuget_sections = []
+  #@   
+  #@  if type(data.values.nuget) != type([]):
+  #@    nuget_sections.append(data.values.nuget)
+  #@  else: 
+  #@    nuget_sections = data.values.nuget
+  #@  end
+  #@ 
+  #@  for nuget_section in nuget_sections: 
+  #@     jobs["nuget-build-"+nuget_section.slug] = generate_nuget_build_job(nuget_section, data.values)
+  #@     jobs["nuget-publish-"+nuget_section.slug]= generate_nuget_publish_job(nuget_section, data.values)
+  #@  end
+  #@ 
   #@ end
 
   #@ if hasattr(data.values,"service"):

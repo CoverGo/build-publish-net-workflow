@@ -9,11 +9,11 @@
 
 
 ---
-#@ def generate_nuget_build_job_steps(sections):
-  #@ for step in docker.steps.build(sections.nuget, sections.cache_registry, push = False):
+#@ def generate_nuget_build_job_steps(nuget, registry):
+  #@ for step in docker.steps.build(nuget, registry, push = False):
 - #@ step
   #@ end
-#@ image_tag = tagging.image(sections.cache_registry, sections.nuget)
+#@ image_tag = tagging.image(registry, nuget)
 - name: Create docker image with nuget packages
   run: #@ "docker create {} --name nuget".format(image_tag)
 - #@ steps.checkout_private_actions()
@@ -21,7 +21,7 @@
   uses: ./.github/actions/docker-extract
   with:
     filter: #@ "ancestor={}".format(image_tag)
-    container-path: #@ sections.nuget.container_result_path
+    container-path: #@ nuget.container_result_path
     host-path: ./nuget
 - name: Upload nuget packages as artifacts
   uses: actions/upload-artifact@v2
@@ -30,11 +30,11 @@
     path: ./nuget
 #@ end
 ---
-#@ def generate_nuget_build_job(sections):
-#@ steps = generate_nuget_build_job_steps(sections)
+#@ def generate_nuget_build_job(nuget, sections):
+#@ steps = generate_nuget_build_job_steps(nuget, sections.cache_registry)
 #@ needs = ["version"]
-#@ needs.extend(dep.get_job_needs(sections.nuget))
-#@ return common.generate_job(sections.nuget, steps, None, sections, needs, job_name = "Build "+sections.nuget.name)
+#@ needs.extend(dep.get_job_needs(nuget))
+#@ return common.generate_job(nuget, steps, None, sections, needs, job_name = "Build "+nuget.name)
 #@ end
 ---
 
