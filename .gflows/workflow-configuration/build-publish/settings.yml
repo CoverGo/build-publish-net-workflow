@@ -196,6 +196,9 @@ git:
 versioning:
   use_build_number: false
   use_branch_slug: true
+ # production_branches:
+ #   - my_prod_branch
+ #   - my_prod_branch2
 default_timeout: 20
 cache_registry:
   url: ghcr.io

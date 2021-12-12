@@ -1,25 +1,19 @@
 #@ load("@ytt:data", "data")
+#@ load("@ytt:struct", "struct")
 #@ load("tagging.lib.yml", "tagging")
 #@ load("steps.lib.yml", "steps")
+#@ load("common.lib.yml", "common")
 ---
 #@ def set_version(context):
-#@ if hasattr(context, "versioning"):
-#@ if hasattr(context.versioning,"use_branch_slug"):
-#@ if not context.versioning.use_branch_slug:
+#@ if getattr(getattr(context,"versioning",None),"use_branch_slug", False):
 #@ return "none"
-#@ end 
-#@ end
 #@ end
 #@ return "${{ steps.issue-key.outputs.issue_id_slug }}"
 #@ end
 ---
 #@ def set_build_number(context):
-#@ if hasattr(context, "versioning"):
-#@ if hasattr(context.versioning,"use_build_number"):
-#@ if context.versioning.use_build_number:
+#@ if getattr(getattr(context,"versioning",None),"use_build_number", False):
 #@ return "${{ github.run_number }}"
-#@ end 
-#@ end
 #@ end
 #@ return "none"
 #@ end
@@ -49,6 +43,7 @@ steps:
     with:
       build-number: #@ set_build_number(sections)
       pre-release-version: #@ set_version(sections)
+      production-branches: #@ "\n".join(getattr(getattr(sections,"versioning",None),"production_branches",["master","main"]))
   - name: Get docker image tags
     id: tags
     env:

@@ -35,8 +35,8 @@ name: Checkout GitHub Action Repos
 uses: daspn/private-actions-checkout@v2
 with:
   actions_list: '[
-  "covergo/get-version@v1.4",
-  "covergo/get-issue-key@v1.2",
+  "covergo/get-version@v1.5",
+  "covergo/get-issue-key@v1.3",
   "covergo/docker-extract@v1",
   "covergo/docker-diagnose@v1.5",
   "covergo/set-compose-tags@v1.0.1",
