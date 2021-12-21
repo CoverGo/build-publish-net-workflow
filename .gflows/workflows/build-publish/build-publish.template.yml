@@ -69,8 +69,12 @@
   #@ end
 
   #@ if (hasattr(data.values,"integration_tests_legacy")):
-    #@ jobs["integration-tests-legacy-small"]= generate_integration_test_legacy_small(data.values)
-    #@ jobs["integration-tests-legacy-big"]=  generate_integration_test_legacy_big(data.values)
+    #@ if hasattr( data.values.integration_tests_legacy.test_suites, "small_tenants") :     
+      #@ jobs["integration-tests-legacy-small"]= generate_integration_test_legacy_small(data.values)
+    #@ end
+    #@ if hasattr( data.values.integration_tests_legacy.test_suites, "big_tenants") :   
+     #@ jobs["integration-tests-legacy-big"]=  generate_integration_test_legacy_big(data.values)
+    #@ end
   #@ end
   
   #@ if hasattr(data.values,"additional_images"):

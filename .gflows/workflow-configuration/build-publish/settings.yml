@@ -152,14 +152,14 @@ integration_tests_legacy:
     branch: ${{ github.head_ref }}
     token: ${{ github.token }}
   test_suites:
-    small_tenants:
-      name: Small tenants legacy integration tests
-      tests:
-        - aag_uat
-        - aag_uat
-        - tahoe_uat
-        - apex_uat
-        - asia_uat
+#    small_tenants:
+#      name: Small tenants legacy integration tests
+#      tests:
+#        - aag_uat
+#        - aag_uat
+#        - tahoe_uat
+#        - apex_uat
+#        - asia_uat
     big_tenants:
       name: Big tenants legacy integration tests
       tests:
