@@ -47,7 +47,7 @@
   #@ for unit_test_section in getattr(data.values,"unit_test",[]):
   #@   build_job_name = job.id.docker_build(unit_test_section)
   #@   jobs[build_job_name] = unit_test_job.build(unit_test_section,data.values)
-  #@   jobs[job.id.docker_run(unit_test_section)] = unit_test_job.run(unit_test_section,data.values.cache_registry, ["version",build_job_name])
+  #@   jobs[job.id.docker_run(unit_test_section)] = unit_test_job.run(unit_test_section,data.values.cache_registry, data.values, ["version",build_job_name])
   #@ end 
   
   #@ if hasattr(data.values,"integration_test") :

@@ -16,11 +16,11 @@
 #@   return  docker.job.build(unit_test_section, sections, needs, environment_variables = env )
 #@ end
 ---
-#@ def _generate_run_job(unit_test_section, registry, needs = ["version"]):
+#@ def _generate_run_job(unit_test_section, registry, sections, needs = ["version"]):
 #@   env = {"RESULTS_PATH":"TestResults","UNIT_TEST_IMAGE_TAG":tagging.image(registry, unit_test_section)}
 #@   job_name = job.name.docker_run(unit_test_section)
 #@   steps = unit_test_run_steps(unit_test_section, registry)
-#@   return  common.generate_job(unit_test_section,steps,env, registry, needs, job_name)
+#@   return  common.generate_job(unit_test_section,steps,env, sections, needs, job_name)
 #@ end
 ---
 #@ def unit_test_run_steps(config, registry):
