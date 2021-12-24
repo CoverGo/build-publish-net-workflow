@@ -43,7 +43,7 @@
       latest_commit_sha=$(git rev-parse HEAD)
       echo "commit sha: $latest_commit_sha"
       echo "test result file: $results_file"
-      curl -L -X PUT https://test-reports.behave.pro/REST/1.0/bdd/report \
+      curl -L -X PUT --fail https://test-reports.behave.pro/REST/1.0/bdd/report \
       -H "X-API-KEY: $behave_api_key" \
       -H "X-COMMIT-ID: $latest_commit_sha" \
       -H "X-BUILD-ID: $build_id" \
