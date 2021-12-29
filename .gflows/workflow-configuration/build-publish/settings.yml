@@ -72,6 +72,7 @@ unit_test: #docker-build-and-job
     image_name: covergo/auth-test-unit # image will be picked from this workflow-produced ones, if dokerfile is presented, image will be exported under this name
     cache_from:
       - covergo/auth
+    upload_path: bce
 #Runs existing images in compose, can build if needed
 integration_test: #array of docker-build-and-job 
   - name: Integration tests
@@ -111,6 +112,7 @@ integration_test: #array of docker-build-and-job
     dockerfile: Tests.MariaDb.Integration.Dockerfile
     image_name: covergo/cases-api-test-integration
     container_result_path: app/TestResults
+    upload_path: abc
     compose_file: docker-compose.mariadb.yml
     compose_service_name: cases-mariadb-test-integration
     cache_from:

@@ -68,7 +68,7 @@
 #@  
 #@ repository_built_images=dep.get_repository_built_images(sections)
 #@ steps = integration_test_run_job_steps(integration_test_definition, repository_built_images, sections.cache_registry)
-#@ return common.generate_job(integration_test_definition, steps ,{"RESULTS_PATH": "TestResults"},sections, needs, job.name.docker_run(integration_test_definition))
+#@ return common.generate_job(integration_test_definition, steps ,{"RESULTS_PATH": getattr(integration_test_definition,"upload_path","TestResults")},sections, needs, job.name.docker_run(integration_test_definition))
 #@ end
 ---
 #@ def _integration_test_build_job(integration_test_definition, sections):

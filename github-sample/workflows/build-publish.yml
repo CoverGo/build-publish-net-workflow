@@ -251,7 +251,7 @@ jobs:
     - version
     - docker-build-auth-service
     env:
-      RESULTS_PATH: TestResults
+      RESULTS_PATH: bce
       UNIT_TEST_IMAGE_TAG: ghcr.io/covergo/auth-test-unit:${{ needs.version.outputs.issue_id_slug }}
     steps:
     - name: Set up Docker Buildx
@@ -284,7 +284,7 @@ jobs:
     - version
     - docker-build-auth-test-unit
     env:
-      RESULTS_PATH: TestResults
+      RESULTS_PATH: bce
       UNIT_TEST_IMAGE_TAG: ghcr.io/covergo/auth-test-unit:${{ needs.version.outputs.issue_id_slug }}
     steps:
     - name: Checkout GitHub Action Repos
@@ -552,7 +552,7 @@ jobs:
         latest_commit_sha=$(git rev-parse HEAD)
         echo "commit sha: $latest_commit_sha"
         echo "test result file: $results_file"
-        curl -L -X PUT --fail-with-body https://test-reports.behave.pro/REST/1.0/bdd/report \
+        curl -L -X PUT --fail https://test-reports.behave.pro/REST/1.0/bdd/report \
         -H "X-API-KEY: $behave_api_key" \
         -H "X-COMMIT-ID: $latest_commit_sha" \
         -H "X-BUILD-ID: $build_id" \
@@ -605,7 +605,7 @@ jobs:
     - version
     - docker-build-api-test-integration
     env:
-      RESULTS_PATH: TestResults
+      RESULTS_PATH: abc
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
