@@ -251,7 +251,7 @@ jobs:
     - version
     - docker-build-auth-service
     env:
-      RESULTS_PATH: bce
+      RESULTS_PATH: TestResults
       UNIT_TEST_IMAGE_TAG: ghcr.io/covergo/auth-test-unit:${{ needs.version.outputs.issue_id_slug }}
     steps:
     - name: Set up Docker Buildx
@@ -284,7 +284,7 @@ jobs:
     - version
     - docker-build-auth-test-unit
     env:
-      RESULTS_PATH: bce
+      RESULTS_PATH: TestResults
       UNIT_TEST_IMAGE_TAG: ghcr.io/covergo/auth-test-unit:${{ needs.version.outputs.issue_id_slug }}
     steps:
     - name: Checkout GitHub Action Repos
@@ -319,7 +319,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: Unit tests results
-        path: ${{ env.RESULTS_PATH }}
+        path: "bce\n!fge \n!hep/**/.tmp\n"
     - name: Publish Unit tests results as check
       uses: docker://ghcr.io/enricomi/publish-unit-test-result-action:latest
       if: always()
@@ -425,7 +425,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: Integration tests results
-        path: ${{ env.RESULTS_PATH }}
+        path: TestResults
     - name: Publish Integration tests results as check
       uses: docker://ghcr.io/enricomi/publish-unit-test-result-action:latest
       if: always()
@@ -532,7 +532,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: Acceptance tests results
-        path: ${{ env.RESULTS_PATH }}
+        path: TestResults
     - name: Publish Acceptance tests results as check
       uses: docker://ghcr.io/enricomi/publish-unit-test-result-action:latest
       if: always()
@@ -605,7 +605,7 @@ jobs:
     - version
     - docker-build-api-test-integration
     env:
-      RESULTS_PATH: abc
+      RESULTS_PATH: TestResults
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
@@ -661,7 +661,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: Integration API tests results
-        path: ${{ env.RESULTS_PATH }}
+        path: abc
     - name: Publish Integration API tests results as check
       uses: docker://ghcr.io/enricomi/publish-unit-test-result-action:latest
       if: always()

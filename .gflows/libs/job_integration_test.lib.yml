@@ -8,6 +8,7 @@
 #@ load("security.lib.yml", "security")
 #@ load("job_docker_build.lib.yml", "docker")
 #@ load("job_dependency_resolution.lib.yml", "dep")
+#@ load("configuration.lib.yml", "cfg")
 ---
 #@ def integration_test_run_job_steps(integration_test_definition, repository_built_images, cache_registry):
   - #@ steps.checkout()
@@ -27,7 +28,7 @@
       encrypt-password: #@ security.generate_diagnostic_password(integration_test_definition)
       compose-file: #@ integration_test_definition.compose_file
   - #@ bpsteps.upload_artifacts_step("investigate/*","{} environment diagnostics".format(integration_test_definition.name) )
-  - #@ bpsteps.upload_artifacts_step("${{ env.RESULTS_PATH }}","{} results".format(integration_test_definition.name))
+  - #@ bpsteps.upload_artifacts_step(cfg.get_file_upload_path(integration_test_definition),"{} results".format(integration_test_definition.name))
   #@ if getattr(integration_test_definition,"enable_junit_test_check",True) :
   - #@ bpsteps.publish_test_result_as_check_step("TestResults/{}".format(getattr(integration_test_definition,"junit_result_filename","TestResults.xml")),integration_test_definition.name)
     #@ end
@@ -68,7 +69,7 @@
 #@  
 #@ repository_built_images=dep.get_repository_built_images(sections)
 #@ steps = integration_test_run_job_steps(integration_test_definition, repository_built_images, sections.cache_registry)
-#@ return common.generate_job(integration_test_definition, steps ,{"RESULTS_PATH": getattr(integration_test_definition,"upload_path","TestResults")},sections, needs, job.name.docker_run(integration_test_definition))
+#@ return common.generate_job(integration_test_definition, steps ,{"RESULTS_PATH": "TestResults"},sections, needs, job.name.docker_run(integration_test_definition))
 #@ end
 ---
 #@ def _integration_test_build_job(integration_test_definition, sections):

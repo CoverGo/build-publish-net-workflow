@@ -72,7 +72,10 @@ unit_test: #docker-build-and-job
     image_name: covergo/auth-test-unit # image will be picked from this workflow-produced ones, if dokerfile is presented, image will be exported under this name
     cache_from:
       - covergo/auth
-    upload_path: bce
+    upload_path: |
+      bce
+      !fge 
+      !hep/**/.tmp
 #Runs existing images in compose, can build if needed
 integration_test: #array of docker-build-and-job 
   - name: Integration tests

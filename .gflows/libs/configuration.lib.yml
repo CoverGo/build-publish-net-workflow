@@ -20,5 +20,11 @@
 #@ return getattr(_get_cache_subsection(section),"type", "registry")
 #@ end
 ---
+#@ def _get_file_upload_path(section):
+#@ return getattr(section,"upload_path","TestResults")
+#@ end
+
+---
 #@ cfg = struct.make(get_cache_type = _get_cache_type,
-#@ get_required_docker_cache_images = _get_required_docker_cache_images)
+#@ get_required_docker_cache_images = _get_required_docker_cache_images,
+#@ get_file_upload_path = _get_file_upload_path)
