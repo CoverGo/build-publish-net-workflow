@@ -57,7 +57,7 @@ id: #@ step_id
 #@ if tags == None :
 #@ tags=tagging.image(cache_registry, component)
 #@ end
-#@ cache_gha = struct.make(cache_from="type=gha",cache_to="type=gha, mode=max")
+#@ cache_gha = struct.make(cache_from="type=gha",cache_to="type=gha, mode="+getattr(component,"cache_mode","max"))
 #@ cache_images = []
 #@ for additional_image in cfg.get_required_docker_cache_images(component):
 #@ cache_images.append(tagging.cache_image(cache_registry, additional_image))
@@ -71,7 +71,7 @@ id: #@ step_id
 #@ end
 #@ 
 #@ cache_from_multiline_string = "\n".join(cache_refs)
-#@ cache_registry = struct.make(cache_from =cache_from_multiline_string, cache_to = "type=registry,ref={},mode=max".format(own_cache_image))
+#@ cache_registry = struct.make(cache_from =cache_from_multiline_string, cache_to = "type=registry,ref={},mode={}".format(own_cache_image,getattr(component,"cache_mode","max")))
   
 #@ cache_params = {"gha":cache_gha, "registry":cache_registry}
 

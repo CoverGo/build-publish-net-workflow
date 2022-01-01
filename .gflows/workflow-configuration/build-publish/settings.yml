@@ -70,6 +70,7 @@ unit_test: #docker-build-and-job
     container_result_path: app/TestResults
     dockerfile: Dockerfile
     image_name: covergo/auth-test-unit # image will be picked from this workflow-produced ones, if dokerfile is presented, image will be exported under this name
+    cache_mode: min
     cache_from:
       - covergo/auth
     upload_path: |

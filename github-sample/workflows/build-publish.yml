@@ -273,7 +273,7 @@ jobs:
         cache-from: |-
           type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.issue_id_slug }}
           type=registry,ref=ghcr.io/covergo/auth-test-unit-cache:${{ needs.version.outputs.issue_id_slug }}
-        cache-to: type=registry,ref=ghcr.io/covergo/auth-test-unit-cache:${{ needs.version.outputs.issue_id_slug }},mode=max
+        cache-to: type=registry,ref=ghcr.io/covergo/auth-test-unit-cache:${{ needs.version.outputs.issue_id_slug }},mode=min
     - name: Image digest
       run: echo ${{ steps.docker-build-auth-test-unit.outputs.digest }}
   run-auth-test-unit:
