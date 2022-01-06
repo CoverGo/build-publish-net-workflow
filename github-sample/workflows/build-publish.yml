@@ -237,7 +237,7 @@ jobs:
         file: Dockerfile
         push: true
         load: false
-        tags: ghcr.io/covergo/auth:${{ needs.version.outputs.issue_id_slug }}
+        tags: ${{ needs.version.outputs.docker_image_ghcr_tags }}
         cache-from: type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.issue_id_slug }}
         cache-to: type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.issue_id_slug }},mode=max
         target: build-service

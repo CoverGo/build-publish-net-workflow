@@ -41,7 +41,7 @@
   #@ end
 
   #@ if hasattr(data.values,"service"):
-    #@ jobs[job.id.docker_build(data.values.service)] = docker.job.build(data.values.service, data.values)
+    #@ jobs[job.id.docker_build(data.values.service)] = docker.job.build(data.values.service, data.values, ["version"],"${{ needs.version.outputs.docker_image_ghcr_tags }}")
   #@ end
   
   #@ for unit_test_section in getattr(data.values,"unit_test",[]):
