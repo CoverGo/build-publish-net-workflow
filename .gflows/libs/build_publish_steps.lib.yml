@@ -14,7 +14,7 @@
       uses: ./.github/actions/set-compose-tags
       with:
         images: #@ images
-        target-tag: ${{ needs.version.outputs.issue_id_slug }}
+        target-tag: ${{ needs.version.outputs.app_version }}
         compose-file: #@ integration_test_definition.compose_file
     - name: #@ "Run {}".format(integration_test_definition.name)
       uses: ./.github/actions/run-in-compose

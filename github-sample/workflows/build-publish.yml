@@ -93,11 +93,11 @@ jobs:
         file: Dockerfile
         push: false
         load: true
-        tags: ghcr.io/covergo/auth-nuget:${{ needs.version.outputs.issue_id_slug }}
+        tags: ghcr.io/covergo/auth-nuget:${{ needs.version.outputs.app_version }}
         cache-from: |-
-          type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.issue_id_slug }}
-          type=registry,ref=ghcr.io/covergo/auth-nuget-cache:${{ needs.version.outputs.issue_id_slug }}
-        cache-to: type=registry,ref=ghcr.io/covergo/auth-nuget-cache:${{ needs.version.outputs.issue_id_slug }},mode=max
+          type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.app_version }}
+          type=registry,ref=ghcr.io/covergo/auth-nuget-cache:${{ needs.version.outputs.app_version }}
+        cache-to: type=registry,ref=ghcr.io/covergo/auth-nuget-cache:${{ needs.version.outputs.app_version }},mode=max
         build-args: |
           APP_VERSION=${{ needs.version.outputs.app_version }}
           FILE_VERSION=${{ needs.version.outputs.file_version }}
@@ -105,7 +105,7 @@ jobs:
     - name: Image digest
       run: echo ${{ steps.docker-build-auth-nuget.outputs.digest }}
     - name: Create docker image with nuget packages
-      run: docker create ghcr.io/covergo/auth-nuget:${{ needs.version.outputs.issue_id_slug }} --name nuget
+      run: docker create ghcr.io/covergo/auth-nuget:${{ needs.version.outputs.app_version }} --name nuget
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
@@ -116,7 +116,7 @@ jobs:
     - name: Extract nuget packages from docker image
       uses: ./.github/actions/docker-extract
       with:
-        filter: ancestor=ghcr.io/covergo/auth-nuget:${{ needs.version.outputs.issue_id_slug }}
+        filter: ancestor=ghcr.io/covergo/auth-nuget:${{ needs.version.outputs.app_version }}
         container-path: app/nuget
         host-path: ./nuget
     - name: Upload nuget packages as artifacts
@@ -163,11 +163,11 @@ jobs:
         file: Dockerfile
         push: false
         load: true
-        tags: ghcr.io/covergo/auth-nuget-default:${{ needs.version.outputs.issue_id_slug }}
+        tags: ghcr.io/covergo/auth-nuget-default:${{ needs.version.outputs.app_version }}
         cache-from: |-
-          type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.issue_id_slug }}
-          type=registry,ref=ghcr.io/covergo/auth-nuget-default-cache:${{ needs.version.outputs.issue_id_slug }}
-        cache-to: type=registry,ref=ghcr.io/covergo/auth-nuget-default-cache:${{ needs.version.outputs.issue_id_slug }},mode=max
+          type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.app_version }}
+          type=registry,ref=ghcr.io/covergo/auth-nuget-default-cache:${{ needs.version.outputs.app_version }}
+        cache-to: type=registry,ref=ghcr.io/covergo/auth-nuget-default-cache:${{ needs.version.outputs.app_version }},mode=max
         build-args: |
           APP_VERSION=${{ needs.version.outputs.app_version }}
           FILE_VERSION=${{ needs.version.outputs.file_version }}
@@ -175,7 +175,7 @@ jobs:
     - name: Image digest
       run: echo ${{ steps.docker-build-auth-nuget-default.outputs.digest }}
     - name: Create docker image with nuget packages
-      run: docker create ghcr.io/covergo/auth-nuget-default:${{ needs.version.outputs.issue_id_slug }} --name nuget
+      run: docker create ghcr.io/covergo/auth-nuget-default:${{ needs.version.outputs.app_version }} --name nuget
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
@@ -186,7 +186,7 @@ jobs:
     - name: Extract nuget packages from docker image
       uses: ./.github/actions/docker-extract
       with:
-        filter: ancestor=ghcr.io/covergo/auth-nuget-default:${{ needs.version.outputs.issue_id_slug }}
+        filter: ancestor=ghcr.io/covergo/auth-nuget-default:${{ needs.version.outputs.app_version }}
         container-path: app/nuget
         host-path: ./nuget
     - name: Upload nuget packages as artifacts
@@ -238,8 +238,8 @@ jobs:
         push: true
         load: false
         tags: ${{ needs.version.outputs.docker_image_ghcr_tags }}
-        cache-from: type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.issue_id_slug }}
-        cache-to: type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.issue_id_slug }},mode=max
+        cache-from: type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.app_version }}
+        cache-to: type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.app_version }},mode=max
         target: build-service
     - name: Image digest
       run: echo ${{ steps.docker-build-auth-service.outputs.digest }}
@@ -252,7 +252,7 @@ jobs:
     - docker-build-auth-service
     env:
       RESULTS_PATH: TestResults
-      UNIT_TEST_IMAGE_TAG: ghcr.io/covergo/auth-test-unit:${{ needs.version.outputs.issue_id_slug }}
+      UNIT_TEST_IMAGE_TAG: ghcr.io/covergo/auth-test-unit:${{ needs.version.outputs.app_version }}
     steps:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v1
@@ -269,11 +269,11 @@ jobs:
         file: Dockerfile
         push: true
         load: false
-        tags: ghcr.io/covergo/auth-test-unit:${{ needs.version.outputs.issue_id_slug }}
+        tags: ghcr.io/covergo/auth-test-unit:${{ needs.version.outputs.app_version }}
         cache-from: |-
-          type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.issue_id_slug }}
-          type=registry,ref=ghcr.io/covergo/auth-test-unit-cache:${{ needs.version.outputs.issue_id_slug }}
-        cache-to: type=registry,ref=ghcr.io/covergo/auth-test-unit-cache:${{ needs.version.outputs.issue_id_slug }},mode=min
+          type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.app_version }}
+          type=registry,ref=ghcr.io/covergo/auth-test-unit-cache:${{ needs.version.outputs.app_version }}
+        cache-to: type=registry,ref=ghcr.io/covergo/auth-test-unit-cache:${{ needs.version.outputs.app_version }},mode=min
     - name: Image digest
       run: echo ${{ steps.docker-build-auth-test-unit.outputs.digest }}
   run-auth-test-unit:
@@ -285,7 +285,7 @@ jobs:
     - docker-build-auth-test-unit
     env:
       RESULTS_PATH: TestResults
-      UNIT_TEST_IMAGE_TAG: ghcr.io/covergo/auth-test-unit:${{ needs.version.outputs.issue_id_slug }}
+      UNIT_TEST_IMAGE_TAG: ghcr.io/covergo/auth-test-unit:${{ needs.version.outputs.app_version }}
     steps:
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
@@ -352,12 +352,12 @@ jobs:
         file: Dockerfile
         push: true
         load: false
-        tags: ghcr.io/covergo/cases-mariadb-test-integration:${{ needs.version.outputs.issue_id_slug }}
+        tags: ghcr.io/covergo/cases-mariadb-test-integration:${{ needs.version.outputs.app_version }}
         cache-from: |-
-          type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.issue_id_slug }}
-          type=registry,ref=ghcr.io/covergo/auth-test-unit-cache:${{ needs.version.outputs.issue_id_slug }}
-          type=registry,ref=ghcr.io/covergo/cases-mariadb-test-integration-cache:${{ needs.version.outputs.issue_id_slug }}
-        cache-to: type=registry,ref=ghcr.io/covergo/cases-mariadb-test-integration-cache:${{ needs.version.outputs.issue_id_slug }},mode=max
+          type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.app_version }}
+          type=registry,ref=ghcr.io/covergo/auth-test-unit-cache:${{ needs.version.outputs.app_version }}
+          type=registry,ref=ghcr.io/covergo/cases-mariadb-test-integration-cache:${{ needs.version.outputs.app_version }}
+        cache-to: type=registry,ref=ghcr.io/covergo/cases-mariadb-test-integration-cache:${{ needs.version.outputs.app_version }},mode=max
     - name: Image digest
       run: echo ${{ steps.docker-build-integration-tests.outputs.digest }}
   run-integration-tests:
@@ -390,7 +390,7 @@ jobs:
       uses: ./.github/actions/set-compose-tags
       with:
         images: covergo/auth;covergo/auth-test-unit;covergo/cases-mariadb-test-integration;covergo/cases-test-acceptance;covergo/cases-api-test-integration;covergo/auth-mongo
-        target-tag: ${{ needs.version.outputs.issue_id_slug }}
+        target-tag: ${{ needs.version.outputs.app_version }}
         compose-file: docker-compose.yml
     - name: Run Integration tests
       uses: ./.github/actions/run-in-compose
@@ -402,7 +402,7 @@ jobs:
       if: always()
       uses: ./.github/actions/docker-extract
       with:
-        filter: ancestor=ghcr.io/covergo/cases-mariadb-test-integration:${{ needs.version.outputs.issue_id_slug }}
+        filter: ancestor=ghcr.io/covergo/cases-mariadb-test-integration:${{ needs.version.outputs.app_version }}
         container-path: app/TestResults
         host-path: ./TestResults
     - name: Gather test environment logs
@@ -459,13 +459,13 @@ jobs:
         file: Dockerfile
         push: true
         load: false
-        tags: ghcr.io/covergo/cases-test-acceptance:${{ needs.version.outputs.issue_id_slug }}
+        tags: ghcr.io/covergo/cases-test-acceptance:${{ needs.version.outputs.app_version }}
         cache-from: |-
-          type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.issue_id_slug }}
-          type=registry,ref=ghcr.io/covergo/auth-test-unit-cache:${{ needs.version.outputs.issue_id_slug }}
-          type=registry,ref=ghcr.io/covergo/cases-api-test-integration-cache:${{ needs.version.outputs.issue_id_slug }}
-          type=registry,ref=ghcr.io/covergo/cases-test-acceptance-cache:${{ needs.version.outputs.issue_id_slug }}
-        cache-to: type=registry,ref=ghcr.io/covergo/cases-test-acceptance-cache:${{ needs.version.outputs.issue_id_slug }},mode=max
+          type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.app_version }}
+          type=registry,ref=ghcr.io/covergo/auth-test-unit-cache:${{ needs.version.outputs.app_version }}
+          type=registry,ref=ghcr.io/covergo/cases-api-test-integration-cache:${{ needs.version.outputs.app_version }}
+          type=registry,ref=ghcr.io/covergo/cases-test-acceptance-cache:${{ needs.version.outputs.app_version }}
+        cache-to: type=registry,ref=ghcr.io/covergo/cases-test-acceptance-cache:${{ needs.version.outputs.app_version }},mode=max
     - name: Image digest
       run: echo ${{ steps.docker-build-acceptance-tests.outputs.digest }}
   run-acceptance-tests:
@@ -497,7 +497,7 @@ jobs:
       uses: ./.github/actions/set-compose-tags
       with:
         images: covergo/auth;covergo/auth-test-unit;covergo/cases-mariadb-test-integration;covergo/cases-test-acceptance;covergo/cases-api-test-integration;covergo/auth-mongo
-        target-tag: ${{ needs.version.outputs.issue_id_slug }}
+        target-tag: ${{ needs.version.outputs.app_version }}
         compose-file: docker-compose.yml
     - name: Run Acceptance tests
       uses: ./.github/actions/run-in-compose
@@ -509,7 +509,7 @@ jobs:
       if: always()
       uses: ./.github/actions/docker-extract
       with:
-        filter: ancestor=ghcr.io/covergo/cases-test-acceptance:${{ needs.version.outputs.issue_id_slug }}
+        filter: ancestor=ghcr.io/covergo/cases-test-acceptance:${{ needs.version.outputs.app_version }}
         container-path: app/TestResults
         host-path: ./TestResults
     - name: Gather test environment logs
@@ -589,12 +589,12 @@ jobs:
         file: Tests.MariaDb.Integration.Dockerfile
         push: true
         load: false
-        tags: ghcr.io/covergo/cases-api-test-integration:${{ needs.version.outputs.issue_id_slug }}
+        tags: ghcr.io/covergo/cases-api-test-integration:${{ needs.version.outputs.app_version }}
         cache-from: |-
-          type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.issue_id_slug }}
-          type=registry,ref=ghcr.io/covergo/auth-test-unit-cache:${{ needs.version.outputs.issue_id_slug }}
-          type=registry,ref=ghcr.io/covergo/cases-api-test-integration-cache:${{ needs.version.outputs.issue_id_slug }}
-        cache-to: type=registry,ref=ghcr.io/covergo/cases-api-test-integration-cache:${{ needs.version.outputs.issue_id_slug }},mode=max
+          type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.app_version }}
+          type=registry,ref=ghcr.io/covergo/auth-test-unit-cache:${{ needs.version.outputs.app_version }}
+          type=registry,ref=ghcr.io/covergo/cases-api-test-integration-cache:${{ needs.version.outputs.app_version }}
+        cache-to: type=registry,ref=ghcr.io/covergo/cases-api-test-integration-cache:${{ needs.version.outputs.app_version }},mode=max
     - name: Image digest
       run: echo ${{ steps.docker-build-api-test-integration.outputs.digest }}
   run-api-test-integration:
@@ -626,7 +626,7 @@ jobs:
       uses: ./.github/actions/set-compose-tags
       with:
         images: covergo/auth;covergo/auth-test-unit;covergo/cases-mariadb-test-integration;covergo/cases-test-acceptance;covergo/cases-api-test-integration;covergo/auth-mongo
-        target-tag: ${{ needs.version.outputs.issue_id_slug }}
+        target-tag: ${{ needs.version.outputs.app_version }}
         compose-file: docker-compose.mariadb.yml
     - name: Run Integration API tests
       uses: ./.github/actions/run-in-compose
@@ -638,7 +638,7 @@ jobs:
       if: always()
       uses: ./.github/actions/docker-extract
       with:
-        filter: ancestor=ghcr.io/covergo/cases-api-test-integration:${{ needs.version.outputs.issue_id_slug }}
+        filter: ancestor=ghcr.io/covergo/cases-api-test-integration:${{ needs.version.outputs.app_version }}
         container-path: app/TestResults
         host-path: ./TestResults
     - name: Gather test environment logs
@@ -700,7 +700,7 @@ jobs:
     - name: Push Image to AliCloud Container Registry
       uses: akhilerm/tag-push-action@v2.0.0
       with:
-        src: ghcr.io/covergo/auth:${{ needs.version.outputs.issue_id_slug }}
+        src: ghcr.io/covergo/auth:${{ needs.version.outputs.app_version }}
         dst: ${{ needs.version.outputs.docker_image_ali_cloud_tags }}
   integration-tests-legacy-big:
     name: Run legacy integration big tenants tests
@@ -742,7 +742,7 @@ jobs:
         mongo-password: ${{ secrets.MONGO_PASSWORD }}
         mongo-url: dds-3ns0c4f035f4d3141258-pub.mongodb.rds.aliyuncs.com:3717,dds-3ns0c4f035f4d3142331-pub.mongodb.rds.aliyuncs.com:3717/admin?replicaSet=mgset-5830817&maxPoolSize=500&waitQueueMultiple=5
         service-under-test: auth
-        image-under-test: ghcr.io/covergo/auth:${{ needs.version.outputs.issue_id_slug }}
+        image-under-test: ghcr.io/covergo/auth:${{ needs.version.outputs.app_version }}
     - name: Install yarn
       run: yarn install
     - name: Run test_uat tests
@@ -796,8 +796,8 @@ jobs:
         file: Mongo.Dockerfile
         push: true
         load: false
-        tags: ghcr.io/covergo/auth-mongo:${{ needs.version.outputs.issue_id_slug }}
-        cache-from: type=registry,ref=ghcr.io/covergo/auth-mongo-cache:${{ needs.version.outputs.issue_id_slug }}
-        cache-to: type=registry,ref=ghcr.io/covergo/auth-mongo-cache:${{ needs.version.outputs.issue_id_slug }},mode=max
+        tags: ghcr.io/covergo/auth-mongo:${{ needs.version.outputs.app_version }}
+        cache-from: type=registry,ref=ghcr.io/covergo/auth-mongo-cache:${{ needs.version.outputs.app_version }}
+        cache-to: type=registry,ref=ghcr.io/covergo/auth-mongo-cache:${{ needs.version.outputs.app_version }},mode=max
     - name: Image digest
       run: echo ${{ steps.docker-build-auth-mongo.outputs.digest }}
