@@ -15,6 +15,7 @@
 #@  load("naming.lib.yml", "job")
 #@  load("steps.lib.yml", "steps")
 #@  load("common.lib.yml", "common")
+#@  load("tagging.lib.yml", "tagging")
 #@  load("job_dependency_resolution.lib.yml", "dep")
 #@  load("build_publish_naming.lib.yml", "bpnaming")
 
@@ -40,8 +41,9 @@
   #@ 
   #@ end
 
+  #@ service_image_build_tag = tagging.candidate_image(data.values.cache_registry,data.values.service) 
   #@ if hasattr(data.values,"service"):
-    #@ jobs[job.id.docker_build(data.values.service)] = docker.job.build(data.values.service, data.values, ["version"],"${{ needs.version.outputs.docker_image_ghcr_tags }}")
+    #@ jobs[job.id.docker_build(data.values.service)] = docker.job.build(data.values.service, data.values, ["version"],service_image_build_tag)
   #@ end
   
   #@ for unit_test_section in getattr(data.values,"unit_test",[]):
@@ -62,7 +64,7 @@
     #@ end
   #@ end
   
-  # jobs["docker-publish-github"] = generate_docker_publish_github(data.values)
+  #@ jobs["docker-publish-github"] = generate_docker_publish_github(data.values,service_image_build_tag)
   
   #@ if hasattr(data.values,"main_registry"): 
     #@ jobs["docker-publish-alicloud"] = generate_docker_publish_alicloud(data.values)

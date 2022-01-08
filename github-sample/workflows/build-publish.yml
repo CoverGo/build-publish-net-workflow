@@ -237,7 +237,7 @@ jobs:
         file: Dockerfile
         push: true
         load: false
-        tags: ${{ needs.version.outputs.docker_image_ghcr_tags }}
+        tags: ghcr.io/covergo/auth:candidate-${{ needs.version.outputs.app_version }}
         cache-from: type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.app_version }}
         cache-to: type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.app_version }},mode=max
         target: build-service
@@ -670,6 +670,31 @@ jobs:
         check_name: Integration API tests check
         github_token: ${{ secrets.GITHUB_TOKEN }}
         files: TestResults/TestResults.xml
+  docker-publish-github:
+    name: Tag service image an GitHub
+    timeout-minutes: 20
+    runs-on: ubuntu-latest
+    needs:
+    - version
+    - docker-build-auth-service
+    - run-integration-tests
+    - run-acceptance-tests
+    - run-api-test-integration
+    - run-auth-test-unit
+    - integration-tests-legacy-small
+    - integration-tests-legacy-big
+    steps:
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v1
+      with:
+        registry: ghcr.io
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.CR_PAT_FULL }}
+    - name: Push Image to GitHub Container Registry
+      uses: akhilerm/tag-push-action@v2.0.0
+      with:
+        src: ghcr.io/covergo/auth:candidate-${{ needs.version.outputs.app_version }}
+        dst: ${{ needs.version.outputs.docker_image_ghcr_tags }}
   docker-publish-alicloud:
     name: Push service to AliCloud
     timeout-minutes: 20
@@ -742,7 +767,7 @@ jobs:
         mongo-password: ${{ secrets.MONGO_PASSWORD }}
         mongo-url: dds-3ns0c4f035f4d3141258-pub.mongodb.rds.aliyuncs.com:3717,dds-3ns0c4f035f4d3142331-pub.mongodb.rds.aliyuncs.com:3717/admin?replicaSet=mgset-5830817&maxPoolSize=500&waitQueueMultiple=5
         service-under-test: auth
-        image-under-test: ghcr.io/covergo/auth:${{ needs.version.outputs.app_version }}
+        image-under-test: ghcr.io/covergo/auth:candidate-${{ needs.version.outputs.app_version }}
     - name: Install yarn
       run: yarn install
     - name: Run test_uat tests

@@ -3,8 +3,13 @@
 #@ load("job_docker_build.lib.yml", "docker")
 #@ load("naming.lib.yml", "job")
 #@ load("job_dependency_resolution.lib.yml", "dep")
+#@ load("build_publish_steps.lib.yml", "bpsteps")
+#@ load("steps.lib.yml", "steps")
+#@ load("common.lib.yml", "common")
+#@ load("tagging.lib.yml", "tagging")
+
 ---
-#@ def generate_docker_publish_github(sections):
+#@ def generate_docker_publish_github(sections, tags_from):
 #@ name= "Publish {} to GitHub".format(sections.service.name)
 #@ needs=["version", job.id.docker_build(sections.service)]
 #@ if hasattr(sections,"integration_test"):
@@ -20,6 +25,12 @@
 #@ needs.append("integration-tests-legacy-big")
 #@ end
 
-#@ return docker.job.build(sections.service, sections, tag_build="${{ needs.version.outputs.docker_image_ghcr_tags }}", needs = needs, job_name = name)
+#@ steps = generate_docker_publish_github_steps(sections)
+#@ return common.generate_job(sections.service, steps, None, sections, needs, "Tag service image an GitHub")
+#@ end
+---
+#@ def generate_docker_publish_github_steps(sections):
+- #@ steps.login_docker(sections.cache_registry)
+- #@ bpsteps.copy_between_registries_step(tagging.candidate_image(sections.cache_registry, sections.service),"${{ needs.version.outputs.docker_image_ghcr_tags }}",sections.cache_registry.name)
 #@ end
 ---

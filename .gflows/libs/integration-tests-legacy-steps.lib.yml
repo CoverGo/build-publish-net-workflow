@@ -21,7 +21,7 @@
     mongo-password: #@ environment.mongo_password 
     mongo-url: #@ environment.mongo_url 
     service-under-test: #@ environment.service_under_test.name
-    image-under-test: #@ tagging.image(registry, environment.service_under_test.image)
+    image-under-test: #@ tagging.candidate_image(registry, environment.service_under_test.image)
 
 - name: Install yarn
   run: yarn install
