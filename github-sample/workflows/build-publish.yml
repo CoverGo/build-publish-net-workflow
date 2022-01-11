@@ -58,9 +58,7 @@ jobs:
 
         ali_cloud_tags=${ali_cloud_versioned_tag}
         ghcr_tags=${ghcr_versioned_tag}
-
-        git_ref=${{ github.ref }}
-        branch=${git_ref#refs/heads/}
+        branch=$(git branch --show-current)
         if [[ "$branch" = 'main' || "$branch" = 'master'  ]]; then
           ali_cloud_tags="${ali_cloud_tags},${ali_cloud_latest_tag}"
           ghcr_tags="${ghcr_tags},${ghcr_latest_tag}"
