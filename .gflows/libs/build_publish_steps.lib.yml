@@ -24,7 +24,7 @@
         project-name: integration-test
 #@ end
 ---
-#@ def _collect_results_step(integration_test_definition, cache_registry, filter, hostPath="./TestResults"):
+#@ def _collect_results_step(integration_test_definition, filter):
 name: #@ "Collect {} results".format(integration_test_definition.name)
 if: always()
 uses: ./.github/actions/docker-extract

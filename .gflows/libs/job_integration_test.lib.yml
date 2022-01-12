@@ -10,14 +10,17 @@
 #@ load("job_dependency_resolution.lib.yml", "dep")
 #@ load("configuration.lib.yml", "cfg")
 ---
-#@ def integration_test_run_job_steps(integration_test_definition, repository_built_images, cache_registry):
+#@ def integration_test_run_job_steps(integration_test_definition, repository_built_images, cache_registry, main_registry=None):
   - #@ steps.checkout()
   - #@ steps.checkout_private_actions()
   - #@ steps.login_docker(cache_registry)
+  #@ if(main_registry != None):
+  - #@ steps.login_docker(main_registry)
+  #@ end
 #@ for compose_step in bpsteps.compose_launch_steps(integration_test_definition,repository_built_images):
   - #@ compose_step
 #@ end
-  - #@ bpsteps.collect_results_step(integration_test_definition,cache_registry,tagging.image(cache_registry, integration_test_definition))
+  - #@ bpsteps.collect_results_step(integration_test_definition,tagging.image(cache_registry, integration_test_definition))
   - name: Gather test environment logs
     if: always()
     uses: ./.github/actions/docker-diagnose
@@ -68,7 +71,7 @@
 #@ end
 #@  
 #@ repository_built_images=dep.get_repository_built_images(sections)
-#@ steps = integration_test_run_job_steps(integration_test_definition, repository_built_images, sections.cache_registry)
+#@ steps = integration_test_run_job_steps(integration_test_definition, repository_built_images, sections.cache_registry, getattr(sections,"main_registry",None))
 #@ return common.generate_job(integration_test_definition, steps ,{"RESULTS_PATH": "TestResults"},sections, needs, job.name.docker_run(integration_test_definition))
 #@ end
 ---

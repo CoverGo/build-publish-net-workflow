@@ -34,7 +34,7 @@
     id=$(docker images "$UNIT_TEST_IMAGE_TAG" -q | head -n 1)
     echo "found image id: $id"
     docker run --name unit_tests $id
-- #@ bpsteps.collect_results_step(config,registry,"$UNIT_TEST_IMAGE_TAG")
+- #@ bpsteps.collect_results_step(config,"$UNIT_TEST_IMAGE_TAG")
 - #@ bpsteps.upload_artifacts_step(cfg.get_file_upload_path(config),"{} results".format(config.name))
 - #@ bpsteps.publish_test_result_as_check_step("${{ env.RESULTS_PATH }}/**/*.xml",config.name)
 #@ end
