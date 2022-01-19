@@ -210,7 +210,7 @@ cache_registry:
   url: ghcr.io
   name: GitHub Container Registry
   user: ${{ github.repository_owner }}
-  password: ${{ secrets.CR_PAT_FULL }}
+ # password: ${{ secrets.CR_PAT_FULL }}
 
 main_registry:
   url: registry-intl.cn-hongkong.aliyuncs.com

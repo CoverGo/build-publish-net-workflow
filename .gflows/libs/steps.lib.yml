@@ -10,9 +10,9 @@
 name: #@ "Login to {}".format(registry.name)
 uses: docker/login-action@v1
 with:
-  registry: #@ registry.url
-  username: #@ registry.user
-  password: #@ registry.password
+  registry: #@ getattr(registry,"url","ghcr.io")
+  username: #@ getattr(registry, "user", "${{ github.repository_owner }}")
+  password: #@ getattr(registry, "password","${{ secrets.GITHUB_TOKEN }}")
 #@ end
 ---
 #@ def _checkout():
