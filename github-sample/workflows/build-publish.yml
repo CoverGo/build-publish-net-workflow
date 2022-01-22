@@ -285,7 +285,7 @@ jobs:
     env:
       RESULTS_PATH: TestResults
       UNIT_TEST_IMAGE_TAG: ghcr.io/covergo/auth-test-unit:${{ needs.version.outputs.app_version }}
-      IMAGE_RUN_ARGS: ""
+      IMAGE_RUN_ARGS: '"*.filter" "p aram2" '
     steps:
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2

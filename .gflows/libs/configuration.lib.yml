@@ -25,7 +25,11 @@
 #@ end
 ---
 #@ def _get_image_run_args(section):
-#@ return getattr(section,"image_run_args","")
+#@ args ="";
+#@ for arg in getattr(section,"image_run_args",[]):
+#@  args += "\"{}\" ".format(arg)
+#@ end
+#@ return args
 #@ end
 
 ---
