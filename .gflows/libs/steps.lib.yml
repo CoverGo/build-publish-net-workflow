@@ -82,8 +82,12 @@ with:
   push: #@ push_image
   load: #@ load_image
   tags: #@ tags
+  #@ if cfg.should_load_cache(component):
   cache-from: #@ cache_params[cache_type].cache_from
+  #@ end
+  #@ if cfg.should_push_cache(component):
   cache-to: #@ cache_params[cache_type].cache_to
+  #@ end 
   #@ if hasattr(component,"docker_target"):
   target: #@ component.docker_target
   #@ end
