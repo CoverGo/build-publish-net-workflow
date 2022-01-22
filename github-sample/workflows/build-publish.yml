@@ -31,7 +31,7 @@ jobs:
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
-        actions_list: '[ "covergo/get-version@v1.5", "covergo/get-issue-key@v1.3", "covergo/docker-extract@v1", "covergo/docker-diagnose@v1.5", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v1" ]'
+        actions_list: '[ "covergo/get-version@v1.5", "covergo/get-issue-key@v1.3", "covergo/docker-extract@v1.1", "covergo/docker-diagnose@v1.5", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v1" ]'
         checkout_base_path: ./.github/actions
         app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
         app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}
@@ -84,7 +84,7 @@ jobs:
       with:
         registry: ghcr.io
         username: ${{ github.repository_owner }}
-        password: ${{ secrets.CR_PAT_FULL }}
+        password: ${{ secrets.GITHUB_TOKEN }}
     - name: Build Auth client nuget image
       uses: docker/build-push-action@v2
       id: docker-build-auth-nuget
@@ -94,9 +94,9 @@ jobs:
         load: true
         tags: ghcr.io/covergo/auth-nuget:${{ needs.version.outputs.app_version }}
         cache-from: |-
-          type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.app_version }}
-          type=registry,ref=ghcr.io/covergo/auth-nuget-cache:${{ needs.version.outputs.app_version }}
-        cache-to: type=registry,ref=ghcr.io/covergo/auth-nuget-cache:${{ needs.version.outputs.app_version }},mode=max
+          type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.issue_id_slug }}
+          type=registry,ref=ghcr.io/covergo/auth-nuget-cache:${{ needs.version.outputs.issue_id_slug }}
+        cache-to: type=registry,ref=ghcr.io/covergo/auth-nuget-cache:${{ needs.version.outputs.issue_id_slug }},mode=max
         build-args: |
           APP_VERSION=${{ needs.version.outputs.app_version }}
           FILE_VERSION=${{ needs.version.outputs.file_version }}
@@ -108,7 +108,7 @@ jobs:
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
-        actions_list: '[ "covergo/get-version@v1.5", "covergo/get-issue-key@v1.3", "covergo/docker-extract@v1", "covergo/docker-diagnose@v1.5", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v1" ]'
+        actions_list: '[ "covergo/get-version@v1.5", "covergo/get-issue-key@v1.3", "covergo/docker-extract@v1.1", "covergo/docker-diagnose@v1.5", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v1" ]'
         checkout_base_path: ./.github/actions
         app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
         app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}
@@ -154,7 +154,7 @@ jobs:
       with:
         registry: ghcr.io
         username: ${{ github.repository_owner }}
-        password: ${{ secrets.CR_PAT_FULL }}
+        password: ${{ secrets.GITHUB_TOKEN }}
     - name: Build Auth client nuget with default dependencies image
       uses: docker/build-push-action@v2
       id: docker-build-auth-nuget-default
@@ -164,9 +164,9 @@ jobs:
         load: true
         tags: ghcr.io/covergo/auth-nuget-default:${{ needs.version.outputs.app_version }}
         cache-from: |-
-          type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.app_version }}
-          type=registry,ref=ghcr.io/covergo/auth-nuget-default-cache:${{ needs.version.outputs.app_version }}
-        cache-to: type=registry,ref=ghcr.io/covergo/auth-nuget-default-cache:${{ needs.version.outputs.app_version }},mode=max
+          type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.issue_id_slug }}
+          type=registry,ref=ghcr.io/covergo/auth-nuget-default-cache:${{ needs.version.outputs.issue_id_slug }}
+        cache-to: type=registry,ref=ghcr.io/covergo/auth-nuget-default-cache:${{ needs.version.outputs.issue_id_slug }},mode=max
         build-args: |
           APP_VERSION=${{ needs.version.outputs.app_version }}
           FILE_VERSION=${{ needs.version.outputs.file_version }}
@@ -178,7 +178,7 @@ jobs:
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
-        actions_list: '[ "covergo/get-version@v1.5", "covergo/get-issue-key@v1.3", "covergo/docker-extract@v1", "covergo/docker-diagnose@v1.5", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v1" ]'
+        actions_list: '[ "covergo/get-version@v1.5", "covergo/get-issue-key@v1.3", "covergo/docker-extract@v1.1", "covergo/docker-diagnose@v1.5", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v1" ]'
         checkout_base_path: ./.github/actions
         app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
         app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}
@@ -228,7 +228,7 @@ jobs:
       with:
         registry: ghcr.io
         username: ${{ github.repository_owner }}
-        password: ${{ secrets.CR_PAT_FULL }}
+        password: ${{ secrets.GITHUB_TOKEN }}
     - name: Build Auth image
       uses: docker/build-push-action@v2
       id: docker-build-auth-service
@@ -237,8 +237,8 @@ jobs:
         push: true
         load: false
         tags: ghcr.io/covergo/auth:candidate-${{ needs.version.outputs.app_version }}
-        cache-from: type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.app_version }}
-        cache-to: type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.app_version }},mode=max
+        cache-from: type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.issue_id_slug }}
+        cache-to: type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.issue_id_slug }},mode=max
         target: build-service
     - name: Image digest
       run: echo ${{ steps.docker-build-auth-service.outputs.digest }}
@@ -260,7 +260,7 @@ jobs:
       with:
         registry: ghcr.io
         username: ${{ github.repository_owner }}
-        password: ${{ secrets.CR_PAT_FULL }}
+        password: ${{ secrets.GITHUB_TOKEN }}
     - name: Build Unit tests image
       uses: docker/build-push-action@v2
       id: docker-build-auth-test-unit
@@ -270,9 +270,9 @@ jobs:
         load: false
         tags: ghcr.io/covergo/auth-test-unit:${{ needs.version.outputs.app_version }}
         cache-from: |-
-          type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.app_version }}
-          type=registry,ref=ghcr.io/covergo/auth-test-unit-cache:${{ needs.version.outputs.app_version }}
-        cache-to: type=registry,ref=ghcr.io/covergo/auth-test-unit-cache:${{ needs.version.outputs.app_version }},mode=min
+          type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.issue_id_slug }}
+          type=registry,ref=ghcr.io/covergo/auth-test-unit-cache:${{ needs.version.outputs.issue_id_slug }}
+        cache-to: type=registry,ref=ghcr.io/covergo/auth-test-unit-cache:${{ needs.version.outputs.issue_id_slug }},mode=min
     - name: Image digest
       run: echo ${{ steps.docker-build-auth-test-unit.outputs.digest }}
   run-auth-test-unit:
@@ -285,11 +285,12 @@ jobs:
     env:
       RESULTS_PATH: TestResults
       UNIT_TEST_IMAGE_TAG: ghcr.io/covergo/auth-test-unit:${{ needs.version.outputs.app_version }}
+      IMAGE_RUN_ARGS: ""
     steps:
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
-        actions_list: '[ "covergo/get-version@v1.5", "covergo/get-issue-key@v1.3", "covergo/docker-extract@v1", "covergo/docker-diagnose@v1.5", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v1" ]'
+        actions_list: '[ "covergo/get-version@v1.5", "covergo/get-issue-key@v1.3", "covergo/docker-extract@v1.1", "covergo/docker-diagnose@v1.5", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v1" ]'
         checkout_base_path: ./.github/actions
         app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
         app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}
@@ -298,14 +299,14 @@ jobs:
       with:
         registry: ghcr.io
         username: ${{ github.repository_owner }}
-        password: ${{ secrets.CR_PAT_FULL }}
+        password: ${{ secrets.GITHUB_TOKEN }}
     - name: Pull image covergo/auth-test-unit
       run: docker pull $UNIT_TEST_IMAGE_TAG
     - name: Run Unit tests
       run: |
         id=$(docker images "$UNIT_TEST_IMAGE_TAG" -q | head -n 1)
         echo "found image id: $id"
-        docker run --name unit_tests $id
+        docker run --name unit_tests $id $IMAGE_RUN_ARGS
     - name: Collect Unit tests results
       if: always()
       uses: ./.github/actions/docker-extract
@@ -343,7 +344,7 @@ jobs:
       with:
         registry: ghcr.io
         username: ${{ github.repository_owner }}
-        password: ${{ secrets.CR_PAT_FULL }}
+        password: ${{ secrets.GITHUB_TOKEN }}
     - name: Build Integration tests image
       uses: docker/build-push-action@v2
       id: docker-build-integration-tests
@@ -353,10 +354,10 @@ jobs:
         load: false
         tags: ghcr.io/covergo/cases-mariadb-test-integration:${{ needs.version.outputs.app_version }}
         cache-from: |-
-          type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.app_version }}
-          type=registry,ref=ghcr.io/covergo/auth-test-unit-cache:${{ needs.version.outputs.app_version }}
-          type=registry,ref=ghcr.io/covergo/cases-mariadb-test-integration-cache:${{ needs.version.outputs.app_version }}
-        cache-to: type=registry,ref=ghcr.io/covergo/cases-mariadb-test-integration-cache:${{ needs.version.outputs.app_version }},mode=max
+          type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.issue_id_slug }}
+          type=registry,ref=ghcr.io/covergo/auth-test-unit-cache:${{ needs.version.outputs.issue_id_slug }}
+          type=registry,ref=ghcr.io/covergo/cases-mariadb-test-integration-cache:${{ needs.version.outputs.issue_id_slug }}
+        cache-to: type=registry,ref=ghcr.io/covergo/cases-mariadb-test-integration-cache:${{ needs.version.outputs.issue_id_slug }},mode=max
     - name: Image digest
       run: echo ${{ steps.docker-build-integration-tests.outputs.digest }}
   run-integration-tests:
@@ -375,7 +376,7 @@ jobs:
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
-        actions_list: '[ "covergo/get-version@v1.5", "covergo/get-issue-key@v1.3", "covergo/docker-extract@v1", "covergo/docker-diagnose@v1.5", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v1" ]'
+        actions_list: '[ "covergo/get-version@v1.5", "covergo/get-issue-key@v1.3", "covergo/docker-extract@v1.1", "covergo/docker-diagnose@v1.5", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v1" ]'
         checkout_base_path: ./.github/actions
         app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
         app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}
@@ -384,7 +385,7 @@ jobs:
       with:
         registry: ghcr.io
         username: ${{ github.repository_owner }}
-        password: ${{ secrets.CR_PAT_FULL }}
+        password: ${{ secrets.GITHUB_TOKEN }}
     - name: Login to AliCloud Container Registry
       uses: docker/login-action@v1
       with:
@@ -456,7 +457,7 @@ jobs:
       with:
         registry: ghcr.io
         username: ${{ github.repository_owner }}
-        password: ${{ secrets.CR_PAT_FULL }}
+        password: ${{ secrets.GITHUB_TOKEN }}
     - name: Build Acceptance tests image
       uses: docker/build-push-action@v2
       id: docker-build-acceptance-tests
@@ -466,11 +467,11 @@ jobs:
         load: false
         tags: ghcr.io/covergo/cases-test-acceptance:${{ needs.version.outputs.app_version }}
         cache-from: |-
-          type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.app_version }}
-          type=registry,ref=ghcr.io/covergo/auth-test-unit-cache:${{ needs.version.outputs.app_version }}
-          type=registry,ref=ghcr.io/covergo/cases-api-test-integration-cache:${{ needs.version.outputs.app_version }}
-          type=registry,ref=ghcr.io/covergo/cases-test-acceptance-cache:${{ needs.version.outputs.app_version }}
-        cache-to: type=registry,ref=ghcr.io/covergo/cases-test-acceptance-cache:${{ needs.version.outputs.app_version }},mode=max
+          type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.issue_id_slug }}
+          type=registry,ref=ghcr.io/covergo/auth-test-unit-cache:${{ needs.version.outputs.issue_id_slug }}
+          type=registry,ref=ghcr.io/covergo/cases-api-test-integration-cache:${{ needs.version.outputs.issue_id_slug }}
+          type=registry,ref=ghcr.io/covergo/cases-test-acceptance-cache:${{ needs.version.outputs.issue_id_slug }}
+        cache-to: type=registry,ref=ghcr.io/covergo/cases-test-acceptance-cache:${{ needs.version.outputs.issue_id_slug }},mode=max
     - name: Image digest
       run: echo ${{ steps.docker-build-acceptance-tests.outputs.digest }}
   run-acceptance-tests:
@@ -488,7 +489,7 @@ jobs:
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
-        actions_list: '[ "covergo/get-version@v1.5", "covergo/get-issue-key@v1.3", "covergo/docker-extract@v1", "covergo/docker-diagnose@v1.5", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v1" ]'
+        actions_list: '[ "covergo/get-version@v1.5", "covergo/get-issue-key@v1.3", "covergo/docker-extract@v1.1", "covergo/docker-diagnose@v1.5", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v1" ]'
         checkout_base_path: ./.github/actions
         app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
         app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}
@@ -497,7 +498,7 @@ jobs:
       with:
         registry: ghcr.io
         username: ${{ github.repository_owner }}
-        password: ${{ secrets.CR_PAT_FULL }}
+        password: ${{ secrets.GITHUB_TOKEN }}
     - name: Login to AliCloud Container Registry
       uses: docker/login-action@v1
       with:
@@ -592,7 +593,7 @@ jobs:
       with:
         registry: ghcr.io
         username: ${{ github.repository_owner }}
-        password: ${{ secrets.CR_PAT_FULL }}
+        password: ${{ secrets.GITHUB_TOKEN }}
     - name: Build Integration API tests image
       uses: docker/build-push-action@v2
       id: docker-build-api-test-integration
@@ -602,10 +603,10 @@ jobs:
         load: false
         tags: ghcr.io/covergo/cases-api-test-integration:${{ needs.version.outputs.app_version }}
         cache-from: |-
-          type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.app_version }}
-          type=registry,ref=ghcr.io/covergo/auth-test-unit-cache:${{ needs.version.outputs.app_version }}
-          type=registry,ref=ghcr.io/covergo/cases-api-test-integration-cache:${{ needs.version.outputs.app_version }}
-        cache-to: type=registry,ref=ghcr.io/covergo/cases-api-test-integration-cache:${{ needs.version.outputs.app_version }},mode=max
+          type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.issue_id_slug }}
+          type=registry,ref=ghcr.io/covergo/auth-test-unit-cache:${{ needs.version.outputs.issue_id_slug }}
+          type=registry,ref=ghcr.io/covergo/cases-api-test-integration-cache:${{ needs.version.outputs.issue_id_slug }}
+        cache-to: type=registry,ref=ghcr.io/covergo/cases-api-test-integration-cache:${{ needs.version.outputs.issue_id_slug }},mode=max
     - name: Image digest
       run: echo ${{ steps.docker-build-api-test-integration.outputs.digest }}
   run-api-test-integration:
@@ -623,7 +624,7 @@ jobs:
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
-        actions_list: '[ "covergo/get-version@v1.5", "covergo/get-issue-key@v1.3", "covergo/docker-extract@v1", "covergo/docker-diagnose@v1.5", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v1" ]'
+        actions_list: '[ "covergo/get-version@v1.5", "covergo/get-issue-key@v1.3", "covergo/docker-extract@v1.1", "covergo/docker-diagnose@v1.5", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v1" ]'
         checkout_base_path: ./.github/actions
         app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
         app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}
@@ -632,7 +633,7 @@ jobs:
       with:
         registry: ghcr.io
         username: ${{ github.repository_owner }}
-        password: ${{ secrets.CR_PAT_FULL }}
+        password: ${{ secrets.GITHUB_TOKEN }}
     - name: Login to AliCloud Container Registry
       uses: docker/login-action@v1
       with:
@@ -706,7 +707,7 @@ jobs:
       with:
         registry: ghcr.io
         username: ${{ github.repository_owner }}
-        password: ${{ secrets.CR_PAT_FULL }}
+        password: ${{ secrets.GITHUB_TOKEN }}
     - name: Push Image to GitHub Container Registry
       uses: akhilerm/tag-push-action@v2.0.0
       with:
@@ -732,7 +733,7 @@ jobs:
       with:
         registry: ghcr.io
         username: ${{ github.repository_owner }}
-        password: ${{ secrets.CR_PAT_FULL }}
+        password: ${{ secrets.GITHUB_TOKEN }}
     - name: Login to AliCloud Container Registry
       uses: docker/login-action@v1
       with:
@@ -761,7 +762,7 @@ jobs:
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
-        actions_list: '[ "covergo/get-version@v1.5", "covergo/get-issue-key@v1.3", "covergo/docker-extract@v1", "covergo/docker-diagnose@v1.5", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v1" ]'
+        actions_list: '[ "covergo/get-version@v1.5", "covergo/get-issue-key@v1.3", "covergo/docker-extract@v1.1", "covergo/docker-diagnose@v1.5", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v1" ]'
         checkout_base_path: ./.github/actions
         app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
         app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}
@@ -770,7 +771,7 @@ jobs:
       with:
         registry: ghcr.io
         username: ${{ github.repository_owner }}
-        password: ${{ secrets.CR_PAT_FULL }}
+        password: ${{ secrets.GITHUB_TOKEN }}
     - name: Login to AliCloud Container Registry
       uses: docker/login-action@v1
       with:
@@ -830,7 +831,7 @@ jobs:
       with:
         registry: ghcr.io
         username: ${{ github.repository_owner }}
-        password: ${{ secrets.CR_PAT_FULL }}
+        password: ${{ secrets.GITHUB_TOKEN }}
     - name: Build Mongo db for Auth image
       uses: docker/build-push-action@v2
       id: docker-build-auth-mongo
@@ -839,7 +840,7 @@ jobs:
         push: true
         load: false
         tags: ghcr.io/covergo/auth-mongo:${{ needs.version.outputs.app_version }}
-        cache-from: type=registry,ref=ghcr.io/covergo/auth-mongo-cache:${{ needs.version.outputs.app_version }}
-        cache-to: type=registry,ref=ghcr.io/covergo/auth-mongo-cache:${{ needs.version.outputs.app_version }},mode=max
+        cache-from: type=registry,ref=ghcr.io/covergo/auth-mongo-cache:${{ needs.version.outputs.issue_id_slug }}
+        cache-to: type=registry,ref=ghcr.io/covergo/auth-mongo-cache:${{ needs.version.outputs.issue_id_slug }},mode=max
     - name: Image digest
       run: echo ${{ steps.docker-build-auth-mongo.outputs.digest }}
