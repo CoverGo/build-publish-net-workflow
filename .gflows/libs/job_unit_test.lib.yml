@@ -20,13 +20,15 @@
 #@ def _generate_run_job(unit_test_section, registry, sections, needs = ["version"]):
 #@   env = {"RESULTS_PATH":"TestResults","UNIT_TEST_IMAGE_TAG":tagging.image(registry, unit_test_section),"IMAGE_RUN_ARGS":cfg.get_image_run_args(unit_test_section)}
 #@   job_name = job.name.docker_run(unit_test_section)
-#@   steps = unit_test_run_steps(unit_test_section, registry)
-#@   return  common.generate_job(unit_test_section,steps,env, sections, needs, job_name)
+#@   steps_array = []
+#@   steps_array.append(steps.login_docker(registry))
+#@   steps_array.extend(unit_test_run_steps(unit_test_section, registry))
+#@   return  common.generate_job(unit_test_section,steps_array,env, sections, needs, job_name)
 #@ end
+
 ---
 #@ def unit_test_run_steps(config, registry):
 - #@ steps.checkout_private_actions()
-- #@ steps.login_docker(registry)
 - name: #@ "Pull image {}".format(config.image_name)
   run: #@ "docker pull {}".format("$UNIT_TEST_IMAGE_TAG")
 - name: #@ "Run {}".format(config.name)
@@ -38,7 +40,19 @@
 - #@ bpsteps.upload_artifacts_step(cfg.get_file_upload_path(config),"{} results".format(config.name))
 - #@ bpsteps.publish_test_result_as_check_step("${{ env.RESULTS_PATH }}/**/*.xml",config.name)
 #@ end
-      
+---
+#@ def _generate_build_run_job(section, registry, sections, job_name=None):
+#@ job_name = job.name.build_and_run(section)
+#@ env = {"RESULTS_PATH":"TestResults","UNIT_TEST_IMAGE_TAG":tagging.image(registry, section),"IMAGE_RUN_ARGS":cfg.get_image_run_args(section)}
+#@ needs = ["version"]
+#@ needs.extend(dep.get_job_needs(section))
+#@ steps = []
+#@ steps.extend(docker.steps.build(section, registry))
+#@ steps.extend(unit_test_run_steps(section, registry))
+#@ return common.generate_job(section, steps, env, sections, needs, job_name)
+#@ end
+---
 #@ unit_test_job = struct.make(
-#@  build = _generate_build_job,
-#@  run = _generate_run_job )
+#@   build = _generate_build_job,
+#@   run = _generate_run_job,
+#@   build_and_run = _generate_build_run_job)

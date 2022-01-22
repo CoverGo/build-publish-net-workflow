@@ -5,13 +5,16 @@
 #@ load("steps.lib.yml", "steps")
 #@ load("common.lib.yml", "common")
 #@ load("build_publish_steps.lib.yml", "bpsteps")
-#@ load("build_publish_naming.lib.yml", "bpnaming")
 #@ load("configuration.lib.yml", "cfg")
 ---
 #@ def _get_integration_tests_run_jobs(integration_tests):
 #@ jobs = []
 #@ for integration_test_definition in integration_tests:
-#@   jobs.append(bpnaming.get_integration_test_run_job_name(integration_test_definition))
+#@   if cfg.get_single_job(integration_test_definition):
+#@    jobs.append(job.id.build_and_run(integration_test_definition))
+#@   else:
+#@    jobs.append(job.id.docker_run(integration_test_definition))
+#@   end
 #@ end
 #@ return jobs
 #@ end
@@ -27,7 +30,11 @@
 #@ def _get_unit_tests_job_names(unit_tests):
 #@ jobs = []
 #@ for unit_test_definition in unit_tests:
-#@   jobs.append(job.id.docker_run(unit_test_definition))
+#@   if cfg.get_single_job(unit_test_definition):
+#@    jobs.append(job.id.build_and_run(unit_test_definition))
+#@   else:
+#@    jobs.append(job.id.docker_run(unit_test_definition))
+#@   end
 #@ end
 #@ return jobs
 #@ end
@@ -53,11 +60,12 @@
 #@ end
 ---
 #@ def _get_exports(section, section_name):
-
 #@ exports = {}
-
 #@ if hasattr(section,"dockerfile") and hasattr(section,"image_name"): 
 #@ job_name=job.id.docker_build(section)
+#@ if cfg.get_single_job(section):
+#@   job_name=job.id.build_and_run(section)
+#@ end
 #@ exports[section.image_name]={"section":section_name, "job":job_name, "type":"default_local_docker_image"} 
 # print("found by dockerfile " + section.image_name);
 #@ end

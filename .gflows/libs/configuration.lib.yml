@@ -39,11 +39,15 @@
 #@ end
 #@ return args
 #@ end
-
+---
+#@ def _get_single_job(section):
+#@ return getattr(section, "single_job", False)
+#@ end
 ---
 #@ cfg = struct.make(get_cache_type = _get_cache_type,
 #@ get_required_docker_cache_images = _get_required_docker_cache_images,
 #@ get_file_upload_path = _get_file_upload_path,
 #@ get_image_run_args = _get_image_run_args,
 #@ should_push_cache = _get_cache_push,
-#@ should_load_cache = _should_load_cache)
+#@ should_load_cache = _should_load_cache,
+#@ get_single_job = _get_single_job)

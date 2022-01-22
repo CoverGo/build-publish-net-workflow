@@ -13,7 +13,6 @@
 #@ def integration_test_run_job_steps(integration_test_definition, repository_built_images, cache_registry, main_registry=None):
   - #@ steps.checkout()
   - #@ steps.checkout_private_actions()
-  - #@ steps.login_docker(cache_registry)
   #@ if(main_registry != None):
   - #@ steps.login_docker(main_registry)
   #@ end
@@ -71,8 +70,10 @@
 #@ end
 #@  
 #@ repository_built_images=dep.get_repository_built_images(sections)
-#@ steps = integration_test_run_job_steps(integration_test_definition, repository_built_images, sections.cache_registry, getattr(sections,"main_registry",None))
-#@ return common.generate_job(integration_test_definition, steps ,{"RESULTS_PATH": "TestResults"},sections, needs, job.name.docker_run(integration_test_definition))
+#@ steps_array = []
+#@ steps_array.append(steps.login_docker(sections.cache_registry))
+#@ steps_array.extend(integration_test_run_job_steps(integration_test_definition, repository_built_images, sections.cache_registry, getattr(sections,"main_registry",None)))
+#@ return common.generate_job(integration_test_definition, steps_array ,{"RESULTS_PATH": "TestResults"},sections, needs, job.name.docker_run(integration_test_definition))
 #@ end
 ---
 #@ def _integration_test_build_job(integration_test_definition, sections):
@@ -81,12 +82,32 @@
 #@ return docker.job.build(integration_test_definition, sections, needs)
 #@ end
 ---
+#@ def _integration_test_build_and_run_job(integration_test_definition, sections):
+#@ job_name = job.name.build_and_run(integration_test_definition)
+  
+#@ needs = ["version"]
+#@ needs.extend(dep.get_job_needs(integration_test_definition))
+  
+#@ if hasattr(integration_test_definition, "compose_images"):
+#@  for image in integration_test_definition.compose_images:
+#@    needs.append(dep.find_job_for_image(image))
+#@  end
+#@ end
+#@  
+#@ repository_built_images=dep.get_repository_built_images(sections)
+#@ steps = []
+#@ steps.extend(docker.steps.build(integration_test_definition, sections.cache_registry))
+#@ steps.extend(integration_test_run_job_steps(integration_test_definition, repository_built_images, sections.cache_registry, getattr(sections,"main_registry",None)))
+#@ return common.generate_job(integration_test_definition, steps ,{"RESULTS_PATH": "TestResults"},sections, needs, job_name)
+#@ end
+---
 
 
 
 #@ integration_test = struct.make(
 #@  build = _integration_test_build_job,
-#@  run = _integration_test_run_job)
+#@  run = _integration_test_run_job,
+#@  build_and_run = _integration_test_build_and_run_job)
 
 
 
