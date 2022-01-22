@@ -67,8 +67,13 @@
     #@ end
     #@ for integration_test_definition in data.values.integration_test:
        #@ build_job_id = job.id.docker_build(integration_test_definition)
-       #@ jobs[build_job_id]= integration_test.build(integration_test_definition,data.values)
-       #@ jobs[job.id.docker_run(integration_test_definition)]= integration_test.run(integration_test_definition,data.values, ["version",build_job_id])
+       #@ if cfg.get_single_job(integration_test_definition):
+       #@   build_and_run_job_id = job.id.build_and_run(integration_test_definition)
+       #@   jobs[build_and_run_job_id] = integration_test.build_and_run(integration_test_definition,data.values)
+       #@ else:
+       #@   jobs[build_job_id]= integration_test.build(integration_test_definition,data.values)
+       #@   jobs[job.id.docker_run(integration_test_definition)]= integration_test.run(integration_test_definition,data.values, ["version",build_job_id])
+       #@ end
     #@ end
   #@ end
   
