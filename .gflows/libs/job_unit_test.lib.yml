@@ -18,7 +18,7 @@
 #@ end
 ---
 #@ def _generate_run_job(unit_test_section, registry, sections, needs = ["version"]):
-#@   env = {"RESULTS_PATH":"TestResults","UNIT_TEST_IMAGE_TAG":tagging.image(registry, unit_test_section)}
+#@   env = {"RESULTS_PATH":"TestResults","UNIT_TEST_IMAGE_TAG":tagging.image(registry, unit_test_section),"IMAGE_RUN_ARGS":cfg.get_image_run_args(unit_test_section)}
 #@   job_name = job.name.docker_run(unit_test_section)
 #@   steps = unit_test_run_steps(unit_test_section, registry)
 #@   return  common.generate_job(unit_test_section,steps,env, sections, needs, job_name)
@@ -33,7 +33,7 @@
   run: |
     id=$(docker images "$UNIT_TEST_IMAGE_TAG" -q | head -n 1)
     echo "found image id: $id"
-    docker run --name unit_tests $id
+    docker run --name unit_tests $id $IMAGE_RUN_ARGS
 - #@ bpsteps.collect_results_step(config,"$UNIT_TEST_IMAGE_TAG")
 - #@ bpsteps.upload_artifacts_step(cfg.get_file_upload_path(config),"{} results".format(config.name))
 - #@ bpsteps.publish_test_result_as_check_step("${{ env.RESULTS_PATH }}/**/*.xml",config.name)

@@ -12,6 +12,10 @@ generic_job_example:
   # if dockerfile is missing, this field is considered as a dependency, all jobs will be searched for a one exporting this image name
   # image will be loaded into local docker to use for running or just use as a cache
   image_name: covergo/auth
+  #optional. Array of parameters to pass to docker image during run.
+  image_run_args: 
+  - "arg1"
+  - "arg 2"
   
   #optional, docker cache configuration. Can be a map or an array
   cache_from:
@@ -68,6 +72,9 @@ unit_test: #docker-build-and-job
   - name: Unit tests
     slug: auth-test-unit
     container_result_path: app/TestResults
+    image_run_args:
+      - "*.filter"
+      - "p aram2"
     dockerfile: Dockerfile
     image_name: covergo/auth-test-unit # image will be picked from this workflow-produced ones, if dokerfile is presented, image will be exported under this name
     cache_mode: min
