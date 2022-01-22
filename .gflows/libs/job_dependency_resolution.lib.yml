@@ -10,7 +10,11 @@
 #@ def _get_integration_tests_run_jobs(integration_tests):
 #@ jobs = []
 #@ for integration_test_definition in integration_tests:
-#@   jobs.append(job.id.docker_run(integration_test_definition))
+#@   if cfg.get_single_job(integration_test_definition):
+#@    jobs.append(job.id.build_and_run(integration_test_definition))
+#@   else:
+#@    jobs.append(job.id.docker_run(integration_test_definition))
+#@   end
 #@ end
 #@ return jobs
 #@ end

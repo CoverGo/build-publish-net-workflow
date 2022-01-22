@@ -77,7 +77,7 @@ unit_test: #docker-build-and-job
       - "p aram2"
     dockerfile: Dockerfile
     image_name: covergo/auth-test-unit # image will be picked from this workflow-produced ones, if dokerfile is presented, image will be exported under this name
-    single_job: true
+    single_job: false
     cache_mode: min
     cache_from:
       - covergo/auth
@@ -90,6 +90,7 @@ integration_test: #array of docker-build-and-job
   - name: Integration tests
     slug: integration-tests
     container_result_path: app/TestResults
+    single_job: true
     image_name: covergo/cases-mariadb-test-integration
     compose_file: docker-compose.yml
     compose_service_name: cases-test-integration
