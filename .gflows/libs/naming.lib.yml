@@ -15,6 +15,11 @@
 #@ return "Build {} image".format(name)
 #@ end
 ---
+#@ def _build_and_run_name(component_or_name):
+#@ name = getattr(component_or_name,"name",component_or_name)
+#@ return "Build and run {}".format(name)
+#@ end
+---
 #@ def _docker_run_job_name(component_or_name):
 #@ name = getattr(component_or_name,"name",component_or_name)
 #@ return "Run {}".format(name)
@@ -34,5 +39,6 @@
 #@                      docker_run = _docker_run_id)
 #@ 
 #@ job_name = struct.make(docker_build = _docker_build_job_name,
-#@                        docker_run = _docker_run_job_name)
+#@                        docker_run = _docker_run_job_name,
+#@                        build_and_run= _build_and_run_name)
 #@ job = struct.make(id = job_id, name = job_name, run = _docker_run_job_name)
