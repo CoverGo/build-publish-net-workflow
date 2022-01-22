@@ -15,6 +15,7 @@
 #@  load("naming.lib.yml", "job")
 #@  load("steps.lib.yml", "steps")
 #@  load("common.lib.yml", "common")
+#@  load("configuration.lib.yml", "cfg")
 #@  load("tagging.lib.yml", "tagging")
 #@  load("job_dependency_resolution.lib.yml", "dep")
 #@  load("build_publish_naming.lib.yml", "bpnaming")
@@ -48,14 +49,22 @@
   
   #@ for unit_test_section in getattr(data.values,"unit_test",[]):
   #@   build_job_name = job.id.docker_build(unit_test_section)
-  #@   jobs[build_job_name] = unit_test_job.build(unit_test_section,data.values)
-  #@   jobs[job.id.docker_run(unit_test_section)] = unit_test_job.run(unit_test_section,data.values.cache_registry, data.values, ["version",build_job_name])
+  #@   run_job_name = job.id.docker_run(unit_test_section)
+  #@   
+  #@   if cfg.get_single_job(unit_test_section):
+  #@      build_and_run_job_name = job.id.build_and_run(unit_test_section)
+  #@      jobs[build_and_run_job_name] = unit_test_job.build_and_run(unit_test_section, data.values.cache_registry, data.values)
+  #@   else: 
+  #@      jobs[build_job_name] = unit_test_job.build(unit_test_section,data.values)
+  #@      jobs[run_job_name] = unit_test_job.run(unit_test_section, data.values.cache_registry, data.values, ["version",build_job_name])
+  #@   end
+  #@ 
   #@ end 
   
   #@ if hasattr(data.values,"integration_test") :
     #@ needs = ["version"]
     #@ if (hasattr(data.values,"additional_images")):
-    #@ needs.extend(dep.get_additional_images_build_jobs(data.values.additional_images))
+    #@      needs.extend(dep.get_additional_images_build_jobs(data.values.additional_images))
     #@ end
     #@ for integration_test_definition in data.values.integration_test:
        #@ build_job_id = job.id.docker_build(integration_test_definition)

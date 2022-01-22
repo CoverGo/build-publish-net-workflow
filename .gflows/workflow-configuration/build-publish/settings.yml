@@ -77,6 +77,7 @@ unit_test: #docker-build-and-job
       - "p aram2"
     dockerfile: Dockerfile
     image_name: covergo/auth-test-unit # image will be picked from this workflow-produced ones, if dokerfile is presented, image will be exported under this name
+    single_job: true
     cache_mode: min
     cache_from:
       - covergo/auth
@@ -147,6 +148,7 @@ nuget: #docker-build-and-job with special treatment of artifact
     container_result_path: app/nuget
     cache_from:
      - covergo/auth
+     - covergo/auth-test-unit
     cache_push: false
     publish_after:
      - acceptance-tests
