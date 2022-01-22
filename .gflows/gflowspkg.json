@@ -2,7 +2,6 @@
   "name": "build-publish-net",
   "files": [
     "workflows/build-publish/build-publish.template.yml",
-    "libs/build_publish_naming.lib.yml",
     "libs/build_publish_steps.lib.yml",
     "libs/integration-tests-legacy-steps.lib.yml",
     "libs/job_dependency_resolution.lib.yml",

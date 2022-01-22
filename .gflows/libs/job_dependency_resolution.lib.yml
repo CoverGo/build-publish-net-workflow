@@ -5,13 +5,12 @@
 #@ load("steps.lib.yml", "steps")
 #@ load("common.lib.yml", "common")
 #@ load("build_publish_steps.lib.yml", "bpsteps")
-#@ load("build_publish_naming.lib.yml", "bpnaming")
 #@ load("configuration.lib.yml", "cfg")
 ---
 #@ def _get_integration_tests_run_jobs(integration_tests):
 #@ jobs = []
 #@ for integration_test_definition in integration_tests:
-#@   jobs.append(bpnaming.get_integration_test_run_job_name(integration_test_definition))
+#@   jobs.append(job.id.docker_run(integration_test_definition))
 #@ end
 #@ return jobs
 #@ end
