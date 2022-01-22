@@ -96,7 +96,6 @@ jobs:
         cache-from: |-
           type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.issue_id_slug }}
           type=registry,ref=ghcr.io/covergo/auth-nuget-cache:${{ needs.version.outputs.issue_id_slug }}
-        cache-to: type=registry,ref=ghcr.io/covergo/auth-nuget-cache:${{ needs.version.outputs.issue_id_slug }},mode=max
         build-args: |
           APP_VERSION=${{ needs.version.outputs.app_version }}
           FILE_VERSION=${{ needs.version.outputs.file_version }}

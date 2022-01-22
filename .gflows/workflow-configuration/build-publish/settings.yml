@@ -147,6 +147,7 @@ nuget: #docker-build-and-job with special treatment of artifact
     container_result_path: app/nuget
     cache_from:
      - covergo/auth
+    cache_push: false
     publish_after:
      - acceptance-tests
   - name: Auth client nuget with default dependencies
