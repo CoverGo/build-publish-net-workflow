@@ -65,6 +65,7 @@ service: #docker-build-and-job
   dockerfile: Dockerfile
   docker_target: build-service
   image_name: covergo/auth
+  build_versioned_image: true
 
 
 #Runs an existing image, can build if needed 
