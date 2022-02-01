@@ -91,12 +91,14 @@ with:
   #@ if hasattr(component,"docker_target"):
   target: #@ component.docker_target
   #@ end
+  #@ build_args = []
+  #@ build_args.append("COMMIT_SHA=${{ github.sha }}")
   #@ if build_versioned_image:
-  build-args: |
-    APP_VERSION=${{ needs.version.outputs.app_version }}
-    FILE_VERSION=${{ needs.version.outputs.file_version }}
-    INFORMATIONAL_VERSION=${{ needs.version.outputs.information_version }}
-#@ end
+  #@ build_args.append("APP_VERSION=${{ needs.version.outputs.app_version }}")
+  #@ build_args.append("FILE_VERSION=${{ needs.version.outputs.file_version }}")
+  #@ build_args.append("INFORMATIONAL_VERSION=${{ needs.version.outputs.information_version }}")
+  #@ end
+  build-args: #@ "\n".join(build_args)
 #@ end
 ---
 #@ steps = struct.make(login_docker = _login_docker,
