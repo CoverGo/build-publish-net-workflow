@@ -11,14 +11,14 @@
 
 ---
 #@ def _generate_build_job(unit_test_section,sections):
-#@   env = {"RESULTS_PATH":"TestResults","UNIT_TEST_IMAGE_TAG":tagging.image(sections.cache_registry, unit_test_section)}
+#@   env = {"RESULTS_PATH":cfg.get_host_path_for_docker_extract(unit_test_section),"UNIT_TEST_IMAGE_TAG":tagging.image(sections.cache_registry, unit_test_section)}
 #@   needs = ["version"]
 #@   needs.extend(dep.get_job_needs(unit_test_section))
 #@   return  docker.job.build(unit_test_section, sections, needs, environment_variables = env )
 #@ end
 ---
 #@ def _generate_run_job(unit_test_section, registry, sections, needs = ["version"]):
-#@   env = {"RESULTS_PATH":"TestResults","UNIT_TEST_IMAGE_TAG":tagging.image(registry, unit_test_section),"IMAGE_RUN_ARGS":cfg.get_image_run_args(unit_test_section)}
+#@   env = {"RESULTS_PATH":cfg.get_host_path_for_docker_extract(unit_test_section),"UNIT_TEST_IMAGE_TAG":tagging.image(registry, unit_test_section),"IMAGE_RUN_ARGS":cfg.get_image_run_args(unit_test_section)}
 #@   job_name = job.name.docker_run(unit_test_section)
 #@   steps_array = []
 #@   steps_array.append(steps.login_docker(registry))
@@ -38,12 +38,12 @@
     docker run --name unit_tests $id $IMAGE_RUN_ARGS
 - #@ bpsteps.collect_results_step(config,"$UNIT_TEST_IMAGE_TAG")
 - #@ bpsteps.upload_artifacts_step(cfg.get_file_upload_path(config),"{} results".format(config.name))
-- #@ bpsteps.publish_test_result_as_check_step("${{ env.RESULTS_PATH }}/**/*.xml",config.name)
+- #@ bpsteps.publish_test_result_as_check_step(cfg.get_test_check_source_files(config),config.name)
 #@ end
 ---
 #@ def _generate_build_run_job(section, registry, sections, job_name=None):
 #@ job_name = job.name.build_and_run(section)
-#@ env = {"RESULTS_PATH":"TestResults","UNIT_TEST_IMAGE_TAG":tagging.image(registry, section),"IMAGE_RUN_ARGS":cfg.get_image_run_args(section)}
+#@ env = {"RESULTS_PATH":cfg.get_host_path_for_docker_extract(section),"UNIT_TEST_IMAGE_TAG":tagging.image(registry, section),"IMAGE_RUN_ARGS":cfg.get_image_run_args(section)}
 #@ needs = ["version"]
 #@ needs.extend(dep.get_job_needs(section))
 #@ steps = []

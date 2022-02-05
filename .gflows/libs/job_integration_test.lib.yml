@@ -32,7 +32,7 @@
   - #@ bpsteps.upload_artifacts_step("investigate/*","{} environment diagnostics".format(integration_test_definition.name) )
   - #@ bpsteps.upload_artifacts_step(cfg.get_file_upload_path(integration_test_definition),"{} results".format(integration_test_definition.name))
   #@ if getattr(integration_test_definition,"enable_junit_test_check",True) :
-  - #@ bpsteps.publish_test_result_as_check_step("TestResults/{}".format(getattr(integration_test_definition,"junit_result_filename","TestResults.xml")),integration_test_definition.name)
+  - #@ bpsteps.publish_test_result_as_check_step(cfg.get_test_check_source_files(integration_test_definition),integration_test_definition.name)
     #@ end
   #@ if hasattr(integration_test_definition,"cucumber_result_filename") :
   - name: #@ "Upload {} results to Behave.Pro".format(integration_test_definition.name)
@@ -41,7 +41,7 @@
       behave_api_key: ${{ secrets.BEHAVE_PRO_TOKEN }}
       build_id: ${{ github.run_id }}
       build_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-      results_file_filter: #@ "${{ env.RESULTS_PATH }}/"+getattr(integration_test_definition,"cucumber_result_filename")
+      results_file_filter: #@ cfg.get_host_path_for_docker_extract(integration_test_definition)+"/"+getattr(integration_test_definition,"cucumber_result_filename")
     run: |
       latest_commit_sha=$(git rev-parse HEAD)
       echo "commit sha: $latest_commit_sha"
@@ -77,7 +77,7 @@
 #@ steps_array = []
 #@ steps_array.append(steps.login_docker(sections.cache_registry))
 #@ steps_array.extend(integration_test_run_job_steps(integration_test_definition, repository_built_images, sections.cache_registry, getattr(sections,"main_registry",None)))
-#@ return common.generate_job(integration_test_definition, steps_array ,{"RESULTS_PATH": "TestResults"},sections, needs, job.name.docker_run(integration_test_definition))
+#@ return common.generate_job(integration_test_definition, steps_array ,{"RESULTS_PATH": cfg.get_host_path_for_docker_extract(integration_test_definition)},sections, needs, job.name.docker_run(integration_test_definition))
 #@ end
 ---
 #@ def _integration_test_build_job(integration_test_definition, sections):

@@ -44,10 +44,20 @@
 #@ return getattr(section, "single_job", False)
 #@ end
 ---
+#@ def _get_host_path_for_docker_extract(section):
+#@ return getattr(section, "host_result_path", "./TestResults")
+#@ end
+
+#@ def _get_test_check_source_files(section):
+#@ return getattr(section, "junit_result_filename", "${{ env.RESULTS_PATH }}/**/*.xml")
+#@ end
+---
 #@ cfg = struct.make(get_cache_type = _get_cache_type,
 #@ get_required_docker_cache_images = _get_required_docker_cache_images,
 #@ get_file_upload_path = _get_file_upload_path,
 #@ get_image_run_args = _get_image_run_args,
 #@ should_push_cache = _get_cache_push,
 #@ should_load_cache = _should_load_cache,
-#@ get_single_job = _get_single_job)
+#@ get_single_job = _get_single_job,
+#@ get_host_path_for_docker_extract = _get_host_path_for_docker_extract,
+#@ get_test_check_source_files = _get_test_check_source_files)

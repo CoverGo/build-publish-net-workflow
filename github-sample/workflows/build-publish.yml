@@ -251,7 +251,7 @@ jobs:
     - version
     - docker-build-auth-service
     env:
-      RESULTS_PATH: TestResults
+      RESULTS_PATH: ./TestResults
       UNIT_TEST_IMAGE_TAG: ghcr.io/covergo/auth-test-unit:${{ needs.version.outputs.app_version }}
     steps:
     - name: Set up Docker Buildx
@@ -284,7 +284,7 @@ jobs:
     - version
     - docker-build-auth-test-unit
     env:
-      RESULTS_PATH: TestResults
+      RESULTS_PATH: ./TestResults
       UNIT_TEST_IMAGE_TAG: ghcr.io/covergo/auth-test-unit:${{ needs.version.outputs.app_version }}
       IMAGE_RUN_ARGS: '"*.filter" "p aram2" '
     steps:
@@ -426,7 +426,7 @@ jobs:
         report_individual_runs: "true"
         check_name: Integration tests check
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        files: TestResults/TestResults.xml
+        files: ${{ env.RESULTS_PATH }}/**/*.xml
   docker-build-acceptance-tests:
     name: Build Acceptance tests image
     timeout-minutes: 20
@@ -469,7 +469,7 @@ jobs:
     - version
     - docker-build-acceptance-tests
     env:
-      RESULTS_PATH: TestResults
+      RESULTS_PATH: ./TestResults
     steps:
     - name: Login to GitHub Container Registry
       uses: docker/login-action@v1
@@ -539,26 +539,15 @@ jobs:
         report_individual_runs: "true"
         check_name: Acceptance tests check
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        files: TestResults/TestResultJUnit.xml
+        files: TestResultJUnit.xml
     - name: Upload Acceptance tests results to Behave.Pro
       if: always()
       env:
         behave_api_key: ${{ secrets.BEHAVE_PRO_TOKEN }}
         build_id: ${{ github.run_id }}
         build_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        results_file_filter: ${{ env.RESULTS_PATH }}/cucumberResult.json
-      run: |
-        latest_commit_sha=$(git rev-parse HEAD)
-        echo "commit sha: $latest_commit_sha"
-        echo "test result file: $results_file"
-        for results_file in $(ls "$results_file_filter"); do
-          curl -L -X PUT --fail https://test-reports.behave.pro/REST/1.0/bdd/report \
-          -H "X-API-KEY: $behave_api_key" \
-          -H "X-COMMIT-ID: $latest_commit_sha" \
-          -H "X-BUILD-ID: $build_id" \
-          -H "X-BUILD-URL: $build_url" \
-          --data-binary @"$results_file" \;
-        done;
+        results_file_filter: ./TestResults/cucumberResult.json
+      run: "latest_commit_sha=$(git rev-parse HEAD)\necho \"commit sha: $latest_commit_sha\"\necho \"test result file filter: $results_file_filter\"\nfor results_file in $(ls \"$results_file_filter\") \ndo\n  echo uploading \"$results_file\"\n  curl -L -X PUT --fail https://test-reports.behave.pro/REST/1.0/bdd/report \\\n  -H \"X-API-KEY: $behave_api_key\" \\\n  -H \"X-COMMIT-ID: $latest_commit_sha\" \\\n  -H \"X-BUILD-ID: $build_id\" \\\n  -H \"X-BUILD-URL: $build_url\" \\\n  --data-binary @\"$results_file\" \ndone\n"
     - name: Publish Acceptance tests results as check
       uses: deblockt/cucumber-report-annotations-action@v1.7
       if: always()
@@ -606,7 +595,7 @@ jobs:
     - version
     - docker-build-api-test-integration
     env:
-      RESULTS_PATH: TestResults
+      RESULTS_PATH: ./TestResults
     steps:
     - name: Login to GitHub Container Registry
       uses: docker/login-action@v1
@@ -676,7 +665,7 @@ jobs:
         report_individual_runs: "true"
         check_name: Integration API tests check
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        files: TestResults/TestResults.xml
+        files: ${{ env.RESULTS_PATH }}/**/*.xml
   docker-publish-github:
     name: Tag service image an GitHub
     timeout-minutes: 20

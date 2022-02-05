@@ -125,6 +125,7 @@ integration_test: #array of docker-build-and-job
     dockerfile: Tests.MariaDb.Integration.Dockerfile
     image_name: covergo/cases-api-test-integration
     container_result_path: app/TestResults
+    test_check_result_path: ./TestResults/*.JUnit.xml
     upload_path: abc
     compose_file: docker-compose.mariadb.yml
     compose_service_name: cases-mariadb-test-integration
