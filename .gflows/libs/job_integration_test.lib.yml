@@ -62,7 +62,7 @@
     with:
       name: #@ "{} check".format(integration_test_definition.name)
       access-token: ${{ secrets.GITHUB_TOKEN }}
-      path: #@ "${{ env.RESULTS_PATH }}/"+getattr(integration_test_definition,"cucumber_result_filename")
+      path: #@ cfg.get_host_path_for_docker_extract(integration_test_definition)+"/"+getattr(integration_test_definition,"cucumber_result_filename")
     #@ end
   #@ end
 ---

@@ -49,7 +49,7 @@
 #@ end
 
 #@ def _get_test_check_source_files(section):
-#@ return getattr(section, "junit_result_filename", "${{ env.RESULTS_PATH }}/**/*.xml")
+#@ return _get_host_path_for_docker_extract(section) +"/"+ getattr(section, "junit_result_filename", "**/*.xml")
 #@ end
 ---
 #@ cfg = struct.make(get_cache_type = _get_cache_type,

@@ -328,7 +328,7 @@ jobs:
         report_individual_runs: "true"
         check_name: Unit tests check
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        files: ${{ env.RESULTS_PATH }}/**/*.xml
+        files: ./TestResults/**/*.xml
   build-and-run-integration-tests:
     name: Build and run Integration tests
     timeout-minutes: 20
@@ -426,7 +426,7 @@ jobs:
         report_individual_runs: "true"
         check_name: Integration tests check
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        files: ${{ env.RESULTS_PATH }}/**/*.xml
+        files: ./TestResults/**/*.xml
   docker-build-acceptance-tests:
     name: Build Acceptance tests image
     timeout-minutes: 20
@@ -539,7 +539,7 @@ jobs:
         report_individual_runs: "true"
         check_name: Acceptance tests check
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        files: TestResultJUnit.xml
+        files: ./TestResults/TestResultJUnit.xml
     - name: Upload Acceptance tests results to Behave.Pro
       if: always()
       env:
@@ -554,7 +554,7 @@ jobs:
       with:
         name: Acceptance tests check
         access-token: ${{ secrets.GITHUB_TOKEN }}
-        path: ${{ env.RESULTS_PATH }}/cucumberResult.json
+        path: ./TestResults/cucumberResult.json
   docker-build-api-test-integration:
     name: Build Integration API tests image
     timeout-minutes: 20
@@ -665,7 +665,7 @@ jobs:
         report_individual_runs: "true"
         check_name: Integration API tests check
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        files: ${{ env.RESULTS_PATH }}/**/*.xml
+        files: ./TestResults/*.JUnit.xml
   docker-publish-github:
     name: Tag service image an GitHub
     timeout-minutes: 20
