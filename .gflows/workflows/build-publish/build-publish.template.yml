@@ -23,9 +23,12 @@
 
 ---
 #@ def generate_jobs(data):
-  #@ jobs = {"version": generate_version_job(data.values)}
-  #@ jobs["scan-code"] = generate_scan_code_job(data.values.scan_code, data.values)
+  #@ jobs = {"version": generate_version_job(data.values)}   
   
+  #@ if hasattr(data.values,"scan_code"):
+  #@  jobs["scan-code"] = generate_scan_code_job(data.values.scan_code, data.values)
+  #@ end
+
   #@ if hasattr(data.values,"nuget"):
   #@  nuget_sections = []
   #@   
