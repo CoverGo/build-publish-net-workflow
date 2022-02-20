@@ -1,0 +1,35 @@
+#@ load("common.lib.yml", "common")
+
+---
+#@ def generate_scan_code_job_steps(scan_code, sections):
+#@ test_result_artifacts = []
+
+#@ for unit_test_section in getattr(sections,"unit_test",[]):
+#@ test_result_artifacts.append("{} results".format(unit_test_section.name))
+#@ end 
+
+#@ if hasattr(sections,"integration_test") :
+  #@ for integration_test_definition in sections.integration_test:
+      #@ test_result_artifacts.append("{} results".format(integration_test_definition.name))
+  #@ end
+#@ end
+
+- name: Checkout repository
+  uses: actions/checkout@v2
+  with:
+    fetch-depth: 0
+- name: Scan
+  uses: NazmiAltun/dotnet-parallel-sonar-scan@v1.0.2
+  with:
+    sonar-token: #@ getattr(scan_code, "sonar_token","${{ secrets.SONAR_TOKEN }}")
+    test-result-artifacts: #@ ",".join(test_result_artifacts)
+  env:
+    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#@ end
+---
+#@ def generate_scan_code_job(scan_code, sections):
+#@ steps = generate_scan_code_job_steps(scan_code, sections)
+#@ needs = ["version"]
+#@ return common.generate_job(scan_code, steps, None, sections, needs, "Sonar scan")
+#@ end
+---

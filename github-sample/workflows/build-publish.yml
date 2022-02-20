@@ -69,6 +69,24 @@ jobs:
         echo final tags for ali are: ${ali_cloud_tags}
         echo ::set-output name=docker_image_ghcr_tags::${ghcr_tags}
         echo ::set-output name=docker_image_ali_cloud_tags::${ali_cloud_tags}
+  scan-code:
+    name: Sonar scan
+    timeout-minutes: 20
+    runs-on: ubuntu-latest
+    needs:
+    - version
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - name: Scan
+      uses: NazmiAltun/dotnet-parallel-sonar-scan@v1.0.2
+      with:
+        sonar-token: ${{ secrets.SONAR_TOKEN }}
+        test-result-artifacts: Unit tests results,Integration tests results,Acceptance tests results,Integration API tests results
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   nuget-build-auth-nuget:
     name: Build Auth client nuget
     timeout-minutes: 20

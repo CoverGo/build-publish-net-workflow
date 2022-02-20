@@ -233,9 +233,9 @@ main_registry:
   #default
   branches:
     - main
-    
 
+scan_code:
+  name: Sonar scan
+  slug: scan-code
+  sonar_token: ${{ secrets.SONAR_TOKEN }}
 
-
-    
-    
