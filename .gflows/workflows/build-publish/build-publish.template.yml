@@ -9,7 +9,7 @@
 #@  load("job_docker_publish_github.lib.yml", "generate_docker_publish_github")
 #@  load("job_docker_publish_alicloud.lib.yml", "generate_docker_publish_alicloud")
 #@  load("job_publish_nuget.lib.yml", "generate_nuget_publish_job")
-#@  load("job_scan_code.lib.yml", "generate_scan_code_job")
+#@  load("job_scan_code_net.lib.yml", "generate_scan_code_net_job")
 #@  load("job_build_nuget.lib.yml", "generate_nuget_build_job")
 #@  load("job_integration_tests_legacy.lib.yml", "generate_integration_test_legacy_small")
 #@  load("job_integration_tests_legacy.lib.yml", "generate_integration_test_legacy_big")
@@ -25,8 +25,8 @@
 #@ def generate_jobs(data):
   #@ jobs = {"version": generate_version_job(data.values)}   
   
-  #@ if hasattr(data.values,"scan_code"):
-  #@  jobs["scan-code"] = generate_scan_code_job(data.values.scan_code, data.values)
+  #@ if hasattr(data.values,"scan_code_net"):
+  #@  jobs["scan-code"] = generate_scan_code_net_job(data.values.scan_code_net, data.values)
   #@ end
 
   #@ if hasattr(data.values,"nuget"):
