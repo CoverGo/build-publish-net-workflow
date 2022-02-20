@@ -53,7 +53,15 @@
 #@ end
 ---
 #@ def _get_sonar_token(section):
-#@ return getattr(section, "sonar_token", "${{ secrets.SONAR_TOKEN }}")
+#@ return getattr(section, "token", "${{ secrets.SONAR_TOKEN }}")
+#@ end
+---
+#@ def _get_sonar_organisation(section):
+#@ return getattr(section, "organisation")
+#@ end
+---
+#@ def _get_sonar_project(section):
+#@ return getattr(section, "project")
 #@ end
 ---
 #@ cfg = struct.make(get_cache_type = _get_cache_type,
@@ -65,4 +73,6 @@
 #@ get_single_job = _get_single_job,
 #@ get_host_path_for_docker_extract = _get_host_path_for_docker_extract,
 #@ get_test_check_source_files = _get_test_check_source_files,
-#@ get_sonar_token = _get_sonar_token)
+#@ get_sonar_token = _get_sonar_token,
+#@ get_sonar_organisation = _get_sonar_organisation,
+#@ get_sonar_project=_get_sonar_project)

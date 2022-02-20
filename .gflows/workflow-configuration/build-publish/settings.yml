@@ -237,5 +237,5 @@ main_registry:
 scan_code_net:
   name: Sonar scan
   slug: scan_code_net
-  sonar_token: ${{ secrets.SONAR_TOKEN }}
-
+  token: ${{ secrets.SONAR_TOKEN }}
+  project:  CoverGo_Auth

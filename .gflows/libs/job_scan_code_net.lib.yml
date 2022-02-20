@@ -23,6 +23,12 @@
   with:
     sonar-token: #@ cfg.get_sonar_token(scan_code_net)
     test-result-artifacts: #@ ",".join(test_result_artifacts)
+#@ if hasattr(scan_code_net,"organisation") :
+    organization: #@ cfg.get_sonar_organisation(scan_code_net)
+#@ end
+#@ if hasattr(scan_code_net,"project") :
+    project-key: #@ cfg.get_sonar_project(scan_code_net)
+#@ end
   env:
     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 #@ end
