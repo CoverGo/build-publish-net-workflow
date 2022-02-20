@@ -1,5 +1,5 @@
 #@ load("common.lib.yml", "common")
-
+#@ load("configuration.lib.yml", "cfg")
 ---
 #@ def generate_scan_code_job_steps(scan_code, sections):
 #@ test_result_artifacts = []
@@ -21,7 +21,7 @@
 - name: Scan
   uses: NazmiAltun/dotnet-parallel-sonar-scan@v1.0.2
   with:
-    sonar-token: #@ getattr(scan_code, "sonar_token","${{ secrets.SONAR_TOKEN }}")
+    sonar-token: #@ cfg.get_sonar_token(scan_code)
     test-result-artifacts: #@ ",".join(test_result_artifacts)
   env:
     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
