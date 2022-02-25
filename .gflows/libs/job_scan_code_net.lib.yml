@@ -19,15 +19,36 @@
   with:
     fetch-depth: 0
 - name: Scan
-  uses: NazmiAltun/dotnet-parallel-sonar-scan@v1.0.2
+  uses: NazmiAltun/dotnet-parallel-sonar-scan@v1.1.3
   with:
     sonar-token: #@ cfg.get_sonar_token(scan_code_net)
     test-result-artifacts: #@ ",".join(test_result_artifacts)
-#@ if hasattr(scan_code_net,"organisation") :
-    organization: #@ cfg.get_sonar_organisation(scan_code_net)
+#@ if hasattr(scan_code_net.sonar,"coverage_solution_root_path") :
+    coverage-solution-root-path: #@ cfg.get_sonar_coverage_solution_root_path(scan_code_net)
 #@ end
-#@ if hasattr(scan_code_net,"project") :
+#@ if hasattr(scan_code_net.sonar,"verbose") :
+    verbose: #@ cfg.get_sonar_verbose(scan_code_net)
+#@ end
+#@ if hasattr(scan_code_net.sonar,"dotnet_build_command") :
+    dotnet-build-command: #@ cfg.get_sonar_dotnet_build_command(scan_code_net)
+#@ end
+#@ if hasattr(scan_code_net.sonar,"opencover_reports_paths") :
+    opencover-reports-paths: #@ cfg.get_sonar_opencover_reports_paths(scan_code_net)
+#@ end
+#@ if hasattr(scan_code_net.sonar,"vstest_reports_paths") :
+    vstest-reports-paths: #@ cfg.get_sonar_vstest_reports_paths(scan_code_net)
+#@ end
+#@ if hasattr(scan_code_net.sonar,"project") :
     project-key: #@ cfg.get_sonar_project(scan_code_net)
+#@ end
+#@ if hasattr(scan_code_net.sonar,"organization") :
+    organization: #@ cfg.get_sonar_organization(scan_code_net)
+#@ end
+#@ if hasattr(scan_code_net.sonar,"project_name") :
+    project-name: #@ cfg.get_sonar_project_name(scan_code_net)
+#@ end
+#@ if hasattr(scan_code_net.sonar,"coverage_artifact_pooling_timeout_sec") :
+    coverage-artifact-pooling-timeout-sec: #@ cfg.get_sonar_coverage_artifact_pooling_timeout_sec(scan_code_net)
 #@ end
   env:
     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -53,15 +53,39 @@
 #@ end
 ---
 #@ def _get_sonar_token(section):
-#@ return getattr(section, "token", "${{ secrets.SONAR_TOKEN }}")
+#@ return getattr(section.sonar, "token", "${{ secrets.SONAR_TOKEN }}")
 #@ end
 ---
-#@ def _get_sonar_organisation(section):
-#@ return getattr(section, "organisation")
+#@ def _get_sonar_coverage_solution_root_path(section):
+#@ return getattr(section.sonar, "coverage_solution_root_path")
 #@ end
 ---
-#@ def _get_sonar_project(section):
-#@ return getattr(section, "project")
+#@ def _get_sonar_verbose(section):
+#@ return getattr(section.sonar, "verbose")
+#@ end
+---
+#@ def _get_sonar_dotnet_build_command(section):
+#@ return getattr(section.sonar, "dotnet_build_command")
+#@ end
+---
+#@ def _get_sonar_opencover_reports_paths(section):
+#@ return getattr(section.sonar, "opencover_reports_paths")
+#@ end
+---
+#@ def _get_sonar_vstest_reports_paths(section):
+#@ return getattr(section.sonar, "vstest_reports_paths")
+#@ end
+---
+#@ def _get_sonar_organization(section):
+#@ return getattr(section.sonar, "organisation")
+#@ end
+---
+#@ def _get_sonar_project_name(section):
+#@ return getattr(section.sonar, "project_name")
+#@ end
+---
+#@ def _get_sonar_coverage_artifact_pooling_timeout_sec(section):
+#@ return getattr(section.sonar, "coverage_artifact_pooling_timeout_sec")
 #@ end
 ---
 #@ cfg = struct.make(get_cache_type = _get_cache_type,
@@ -74,5 +98,11 @@
 #@ get_host_path_for_docker_extract = _get_host_path_for_docker_extract,
 #@ get_test_check_source_files = _get_test_check_source_files,
 #@ get_sonar_token = _get_sonar_token,
-#@ get_sonar_organisation = _get_sonar_organisation,
-#@ get_sonar_project=_get_sonar_project)
+#@ get_sonar_coverage_solution_root_path = _get_sonar_coverage_solution_root_path,
+#@ get_sonar_verbose = _get_sonar_verbose,
+#@ get_sonar_dotnet_build_command = _get_sonar_dotnet_build_command,
+#@ get_sonar_opencover_reports_paths = _get_sonar_opencover_reports_paths,
+#@ get_sonar_vstest_reports_paths = _get_sonar_vstest_reports_paths,
+#@ get_sonar_organization = _get_sonar_organization,
+#@ get_sonar_project_name = _get_sonar_project_name,
+#@ get_sonar_coverage_artifact_pooling_timeout_sec = _get_sonar_coverage_artifact_pooling_timeout_sec)
