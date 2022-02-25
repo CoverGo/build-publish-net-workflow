@@ -3,6 +3,7 @@
 #@ load("naming.lib.yml", "job")
 #@ load("tagging.lib.yml", "tagging")
 #@ load("steps.lib.yml", "steps")
+#@ load("configuration.lib.yml", "cfg")
 
 ---
 #@ def _get_compose_service_name_filter_to_diagnose(integration_test_component) :
@@ -31,7 +32,7 @@ uses: ./.github/actions/docker-extract
 with:
   filter: #@ "ancestor="+filter
   container-path: #@ integration_test_definition.container_result_path
-  host-path: ./TestResults
+  host-path: #@ cfg.get_host_path_for_docker_extract(integration_test_definition)
 #@ end 
     
 ---

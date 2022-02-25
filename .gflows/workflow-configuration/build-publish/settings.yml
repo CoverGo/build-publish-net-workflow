@@ -125,6 +125,7 @@ integration_test: #array of docker-build-and-job
     dockerfile: Tests.MariaDb.Integration.Dockerfile
     image_name: covergo/cases-api-test-integration
     container_result_path: app/TestResults
+    test_check_files: "*.JUnit.xml"
     upload_path: abc
     compose_file: docker-compose.mariadb.yml
     compose_service_name: cases-mariadb-test-integration
@@ -232,9 +233,17 @@ main_registry:
   #default
   branches:
     - main
-    
 
-
-
-    
-    
+scan_code_net:
+  name: Sonar Code
+  slug: scan_code_net
+  #optional
+  sonar:
+    coverage_solution_root_path: /sln
+    verbose: 'true'
+    dotnet_build_command: dotnet build -v q -nologo --configuration Release
+    opencover_reports_paths: '/**/*.opencover.test.xml'
+    vstest_reports_paths: '/**/*.test.trx'
+    organisation: covergo
+    project_name: Auth Service
+    coverage_artifact_pooling_timeout_sec: '1200'
