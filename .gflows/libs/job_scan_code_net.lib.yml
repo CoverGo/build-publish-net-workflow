@@ -1,5 +1,6 @@
 #@ load("common.lib.yml", "common")
 #@ load("configuration.lib.yml", "cfg")
+#@ load("job_dependency_resolution.lib.yml", "dep")
 ---
 #@ def generate_scan_code_net_job_steps(scan_code_net, sections):
 #@ test_result_artifacts = []
@@ -61,6 +62,7 @@
 #@ def generate_scan_code_net_job(scan_code_net, sections):
 #@ steps = generate_scan_code_net_job_steps(scan_code_net, sections)
 #@ needs = ["version"]
+#@ needs.extend(dep.get_job_needs(scan_code_net))
 #@ return common.generate_job(scan_code_net, steps, None, sections, needs, "Sonar scan")
 #@ end
 ---

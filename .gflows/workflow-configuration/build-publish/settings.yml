@@ -238,6 +238,9 @@ scan_code_net:
   name: Sonar Code
   slug: scan_code_net
   #optional
+  cache_from:
+    - covergo/auth
+    - covergo/auth-test-unit
   sonar:
     coverage_solution_root_path: /sln
     verbose: 'true'
