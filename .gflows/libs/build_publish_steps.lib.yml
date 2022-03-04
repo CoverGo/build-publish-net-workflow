@@ -10,12 +10,18 @@
 #@ return "name=" + getattr(integration_test_component,"diagnostic_filter", "*")
 #@ end
 ---
-#@ def _compose_launch_steps(integration_test_definition, images):
+#@ def _compose_launch_steps(integration_test_definition, images, service_image):
     - name: Prepare compose file
       uses: ./.github/actions/set-compose-tags
       with:
         images: #@ images
         target-tag: ${{ needs.version.outputs.app_version }}
+        compose-file: #@ integration_test_definition.compose_file
+    - name: Prepare compose file
+      uses: ./.github/actions/set-compose-tags
+      with:
+        images: #@ service_image
+        target-tag: candidate-${{ needs.version.outputs.app_version }}
         compose-file: #@ integration_test_definition.compose_file
     - name: #@ "Run {}".format(integration_test_definition.name)
       uses: ./.github/actions/run-in-compose
