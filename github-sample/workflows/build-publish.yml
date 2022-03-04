@@ -417,6 +417,12 @@ jobs:
         images: covergo/auth;covergo/auth-test-unit;covergo/cases-mariadb-test-integration;covergo/cases-test-acceptance;covergo/cases-api-test-integration;covergo/auth-mongo
         target-tag: ${{ needs.version.outputs.app_version }}
         compose-file: docker-compose.yml
+    - name: Prepare compose file
+      uses: ./.github/actions/set-compose-tags
+      with:
+        images: covergo/auth
+        target-tag: candidate-${{ needs.version.outputs.app_version }}
+        compose-file: docker-compose.yml
     - name: Run Integration tests
       uses: ./.github/actions/run-in-compose
       with:
@@ -530,6 +536,12 @@ jobs:
       with:
         images: covergo/auth;covergo/auth-test-unit;covergo/cases-mariadb-test-integration;covergo/cases-test-acceptance;covergo/cases-api-test-integration;covergo/auth-mongo
         target-tag: ${{ needs.version.outputs.app_version }}
+        compose-file: docker-compose.yml
+    - name: Prepare compose file
+      uses: ./.github/actions/set-compose-tags
+      with:
+        images: covergo/auth
+        target-tag: candidate-${{ needs.version.outputs.app_version }}
         compose-file: docker-compose.yml
     - name: Run Acceptance tests
       uses: ./.github/actions/run-in-compose
@@ -657,6 +669,12 @@ jobs:
       with:
         images: covergo/auth;covergo/auth-test-unit;covergo/cases-mariadb-test-integration;covergo/cases-test-acceptance;covergo/cases-api-test-integration;covergo/auth-mongo
         target-tag: ${{ needs.version.outputs.app_version }}
+        compose-file: docker-compose.mariadb.yml
+    - name: Prepare compose file
+      uses: ./.github/actions/set-compose-tags
+      with:
+        images: covergo/auth
+        target-tag: candidate-${{ needs.version.outputs.app_version }}
         compose-file: docker-compose.mariadb.yml
     - name: Run Integration API tests
       uses: ./.github/actions/run-in-compose
