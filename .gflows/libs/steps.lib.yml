@@ -20,6 +20,16 @@ name: Checkout repository
 uses: actions/checkout@v2
 #@ end 
 ---
+#@ def _generate_docker_meta():
+name: Docker meta
+id: meta
+uses: docker/metadata-action@v3
+with:
+  images: name/app
+  labels: |
+    org.opencontainers.image.version=candidate-${{ needs.version.outputs.app_version }}
+#@ end 
+---
 #@ def _setup_qemu():
 name: Set up QEMU
 uses: docker/setup-qemu-action@v1
@@ -81,6 +91,9 @@ with:
   file: #@ getattr(component,"dockerfile","Dockerfile")
   push: #@ push_image
   load: #@ load_image
+  #@ if cfg.should_generate_docker_meta(component):
+  labels: "${{ steps.meta.outputs.labels }}"
+  #@ end
   tags: #@ tags
   #@ if cfg.should_load_cache(component):
   cache-from: #@ cache_params[cache_type].cache_from
@@ -106,5 +119,6 @@ with:
 #@ setup_qemu = _setup_qemu,
 #@ setup_buildx = _setup_buildx,
 #@ checkout_private_actions = _checkout_private_actions,
-#@ build_and_push_docker = _build_and_push_docker)
+#@ build_and_push_docker = _build_and_push_docker,
+#@ generate_docker_meta = _generate_docker_meta)
 ---

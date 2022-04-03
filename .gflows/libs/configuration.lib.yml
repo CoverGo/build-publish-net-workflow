@@ -88,6 +88,10 @@
 #@ return getattr(section.sonar, "coverage_artifact_pooling_timeout_sec")
 #@ end
 ---
+#@ def _should_generate_docker_meta(section):
+#@ return getattr(section,"generate_docker_meta",False)
+#@ end
+---
 #@ cfg = struct.make(get_cache_type = _get_cache_type,
 #@ get_required_docker_cache_images = _get_required_docker_cache_images,
 #@ get_file_upload_path = _get_file_upload_path,
@@ -105,4 +109,5 @@
 #@ get_sonar_vstest_reports_paths = _get_sonar_vstest_reports_paths,
 #@ get_sonar_organization = _get_sonar_organization,
 #@ get_sonar_project_name = _get_sonar_project_name,
-#@ get_sonar_coverage_artifact_pooling_timeout_sec = _get_sonar_coverage_artifact_pooling_timeout_sec)
+#@ get_sonar_coverage_artifact_pooling_timeout_sec = _get_sonar_coverage_artifact_pooling_timeout_sec,
+#@ should_generate_docker_meta = _should_generate_docker_meta)
