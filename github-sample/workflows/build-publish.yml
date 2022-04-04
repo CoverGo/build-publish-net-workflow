@@ -259,6 +259,12 @@ jobs:
         registry: ghcr.io
         username: ${{ github.repository_owner }}
         password: ${{ secrets.GITHUB_TOKEN }}
+    - name: Docker meta
+      id: meta
+      uses: docker/metadata-action@v3
+      with:
+        images: name/app
+        labels: org.opencontainers.image.version=candidate-${{ needs.version.outputs.app_version }}
     - name: Build Auth image
       uses: docker/build-push-action@v2
       id: docker-build-auth-service
@@ -266,6 +272,7 @@ jobs:
         file: Dockerfile
         push: true
         load: false
+        labels: ${{ steps.meta.outputs.labels }}
         tags: ghcr.io/covergo/auth:candidate-${{ needs.version.outputs.app_version }}
         cache-from: type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.issue_id_slug }}
         cache-to: type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.issue_id_slug }},mode=max

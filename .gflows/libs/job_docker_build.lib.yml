@@ -4,6 +4,7 @@
 #@ load("common.lib.yml","common")
 #@ load("tagging.lib.yml","tagging")
 #@ load("steps.lib.yml","steps")
+#@ load("configuration.lib.yml","cfg")
 
 ---
 #@ def _image_build_job_steps(component, registry, tag_build=None, job_name=None, push=True,build_versioned_image=False):
@@ -13,6 +14,9 @@
   #@ cache_registry = registry
 - #@ steps.setup_buildx()
 - #@ steps.login_docker(cache_registry)
+  #@ if cfg.should_generate_docker_meta(component):
+- #@ steps.generate_docker_meta()
+  #@ end
 - #@ steps.build_and_push_docker(component, cache_registry, step_id=step_id_value, tags=tag_build, load_image=load_image, push_image=push_image,build_versioned_image=build_versioned_image)
 - name: Image digest
   run: #@ "echo ${{ steps."+step_id_value+".outputs.digest }}"

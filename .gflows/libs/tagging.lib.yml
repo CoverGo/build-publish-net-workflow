@@ -18,8 +18,12 @@
 #@ return _registry_image_tag(url, image_name+"-cache", suffix)
 #@ end
 
+#@ def _candidate_tag(suffix = "${{ needs.version.outputs.app_version }}"):
+#@ return "candidate-{}".format(suffix)
+#@ end
+
 #@ def _candidate_image(registry_or_url, image_or_name, suffix = "${{ needs.version.outputs.app_version }}"):
-#@ return _tag(registry_or_url, image_or_name, "candidate-"+suffix)
+#@ return _tag(registry_or_url, image_or_name, _candidate_tag(suffix))
 #@ end
 
 ---
@@ -27,4 +31,5 @@
 #@ tagging = struct.make(with_registry = _registry_image_tag,
 #@                       image = _tag,
 #@                       cache_image=_cache_image,
-#@                       candidate_image=_candidate_image)
+#@                       candidate_image=_candidate_image,
+#@                       candidate_tag=_candidate_tag)
