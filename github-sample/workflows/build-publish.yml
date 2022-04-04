@@ -264,8 +264,7 @@ jobs:
       uses: docker/metadata-action@v3
       with:
         images: name/app
-        labels: |
-          org.opencontainers.image.version=candidate-${{ needs.version.outputs.app_version }}
+        labels: org.opencontainers.image.version=candidate-${{ needs.version.outputs.app_version }}
     - name: Build Auth image
       uses: docker/build-push-action@v2
       id: docker-build-auth-service

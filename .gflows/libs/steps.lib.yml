@@ -21,13 +21,14 @@ uses: actions/checkout@v2
 #@ end 
 ---
 #@ def _generate_docker_meta():
+#@ custom_labels = []
+#@ custom_labels.append("org.opencontainers.image.version={}".format(tagging.candidate_tag()))
 name: Docker meta
 id: meta
 uses: docker/metadata-action@v3
 with:
   images: name/app
-  labels: |
-    org.opencontainers.image.version=candidate-${{ needs.version.outputs.app_version }}
+  labels: #@ "\n".join(custom_labels)
 #@ end 
 ---
 #@ def _setup_qemu():
