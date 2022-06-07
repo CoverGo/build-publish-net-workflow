@@ -23,6 +23,7 @@ runs-on: ubuntu-latest
 name: Get version from git tag
 outputs:
   app_version: ${{ steps.version.outputs.app_version }}
+  is_production: ${{ steps.is_production_check.outputs.is_production }}
   file_version: ${{ steps.version.outputs.file_version }}
   information_version: ${{ steps.version.outputs.information_version }}
   issue_id_slug: ${{ steps.issue-key.outputs.issue_id_slug }}
@@ -68,5 +69,12 @@ steps:
       echo final tags for ali are: ${ali_cloud_tags}
       echo ::set-output name=docker_image_ghcr_tags::${ghcr_tags}
       echo ::set-output name=docker_image_ali_cloud_tags::${ali_cloud_tags}
+  - name: Is production check
+    shell: bash
+    id: is_production_check
+    run: |
+      if [[ ${{ steps.version.outputs.app_version }} =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        echo ::set-output name=is_production::true
+      fi
 #@ end
 ---
