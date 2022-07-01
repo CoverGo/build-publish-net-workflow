@@ -8,7 +8,7 @@
 
 #@ def _login_docker(registry):
 name: #@ "Login to {}".format(registry.name)
-uses: docker/login-action@v1
+uses: docker/login-action@v2
 with:
   registry: #@ getattr(registry,"url","ghcr.io")
   username: #@ getattr(registry, "user", "${{ github.repository_owner }}")
@@ -17,7 +17,7 @@ with:
 ---
 #@ def _checkout():
 name: Checkout repository
-uses: actions/checkout@v2
+uses: actions/checkout@v3
 #@ end 
 ---
 #@ def _generate_docker_meta():
@@ -38,7 +38,7 @@ uses: docker/setup-qemu-action@v1
 ---
 #@ def _setup_buildx():
 name: Set up Docker Buildx
-uses: docker/setup-buildx-action@v1
+uses: docker/setup-buildx-action@v2
 #@ end
 ---
 #@ def _checkout_private_actions():
@@ -61,7 +61,7 @@ with:
 
 #@ def _build_and_push_docker(component, cache_registry, step_name=None, step_id=None, push_image=True, load_image=False, tags=None, build_versioned_image = False):
 name: #@ common.get_value(step_name, job.name.docker_build(component.name))
-uses: docker/build-push-action@v2
+uses: docker/build-push-action@v3
 #@ if step_id != None : 
 id: #@ step_id
 #@ end
@@ -89,6 +89,7 @@ id: #@ step_id
 #@ cache_type = cfg.get_cache_type(component)
 
 with:
+  context: #@ getattr(component,"docker_context",".")
   file: #@ getattr(component,"dockerfile","Dockerfile")
   push: #@ push_image
   load: #@ load_image
