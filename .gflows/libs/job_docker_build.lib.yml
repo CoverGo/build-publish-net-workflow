@@ -12,6 +12,9 @@
   #@ load_image = not push
   #@ push_image = push
   #@ cache_registry = registry
+  #@ if cfg.should_generate_sourcelink(component):
+- #@ steps.checkout()
+  #@ end
 - #@ steps.setup_buildx()
 - #@ steps.login_docker(cache_registry)
   #@ if cfg.should_generate_docker_meta(component):
