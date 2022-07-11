@@ -20,6 +20,7 @@
     "libs/job_scan_code_net.lib.yml",
     "libs/job_build_nuget.lib.yml",
     "libs/job_unit_test.lib.yml",
-    "libs/job_version.lib.yml"
+    "libs/job_version.lib.yml",
+    "libs/job_deploy_tenants.lib.yml"
   ]
 }

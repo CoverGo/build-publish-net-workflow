@@ -1,0 +1,29 @@
+#@ load("@ytt:data", "data")
+---
+#@ def tenant_deploy_steps(deploy, tenant):
+  if: ${{ needs.version.outputs.is_production == 'true' }}
+  runs-on: #@ deploy.runner
+  needs:
+    - version
+    - docker-publish-alicloud
+  name: #@ "Deploy to {}".format(tenant.name)
+  steps:
+  - name: Checkout tokens repository
+    uses: actions/checkout@v2
+    with:
+      repository: #@ deploy.repository.url
+      ref: #@ deploy.repository.branch
+      token: #@ deploy.repository.token
+      path: configs
+  - name: Configure AWS
+    run: #@ "printf  '{}' | aws configure".format(tenant.aws_key)
+  - name: Deploy via kubectl
+    run: #@ "kubectl -n default --kubeconfig ./configs/{} set image deployments/{} {}={}".format(tenant.credentials_path, deploy.service, deploy.service, deploy.image)
+  - name: Check deployment
+    run: #@ "kubectl -n default --kubeconfig ./configs/{} rollout status deployments/{}".format(tenant.credentials_path, deploy.service)
+#@ end
+---
+
+#@ def tenant_get_deployment_job_name(tenant):
+#@ return "deploy-" + tenant.slug
+#@ end

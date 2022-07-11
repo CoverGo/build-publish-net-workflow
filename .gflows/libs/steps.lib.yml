@@ -89,7 +89,9 @@ id: #@ step_id
 #@ cache_type = cfg.get_cache_type(component)
 
 with:
+  #@ if cfg.should_generate_sourcelink(component) or hasattr(component,"docker_context"):
   context: #@ getattr(component,"docker_context",".")
+  #@ end
   file: #@ getattr(component,"dockerfile","Dockerfile")
   push: #@ push_image
   load: #@ load_image
