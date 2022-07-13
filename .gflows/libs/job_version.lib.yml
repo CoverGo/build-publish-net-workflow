@@ -31,7 +31,7 @@ outputs:
   docker_image_ghcr_tags: ${{ steps.tags.outputs.docker_image_ghcr_tags }}
 steps:
   - name: Checkout repository
-    uses: actions/checkout@v2
+    uses: actions/checkout@v3
     with:
       fetch-depth: 0
   - #@  steps.checkout_private_actions()

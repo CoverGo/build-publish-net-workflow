@@ -9,7 +9,7 @@
   name: #@ "Deploy to {}".format(tenant.name)
   steps:
   - name: Checkout tokens repository
-    uses: actions/checkout@v2
+    uses: actions/checkout@v3
     with:
       repository: #@ deploy.repository.url
       ref: #@ deploy.repository.branch
