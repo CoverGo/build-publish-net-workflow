@@ -45,6 +45,10 @@ steps:
       build-number: #@ set_build_number(sections)
       pre-release-version: #@ set_version(sections)
       production-branches: #@ "\n".join(getattr(getattr(sections,"versioning",None),"production_branches",["master","main"]))
+  - name: Set tagged commit
+    if: startsWith(github.ref, 'refs/tags/v')
+    run: |
+      echo "IS_TAGGED_COMMIT=true" >> $GITHUB_ENV
   - name: Get docker image tags
     id: tags
     env:
@@ -55,12 +59,10 @@ steps:
       ali_cloud_latest_tag: #@ tagging.with_registry(sections.main_registry.url,sections.service.image_name,"latest")
       #@ end
     run: |
-      
       ali_cloud_tags=${ali_cloud_versioned_tag}
       ghcr_tags=${ghcr_versioned_tag}
-      
-      branch=$(git branch --show-current)
-      if [[ "$branch" = 'main' || "$branch" = 'master'  ]]; then
+
+      if [[ ${{env.IS_TAGGED_COMMIT}}  = 'true' ]]; then
         ali_cloud_tags="${ali_cloud_tags},${ali_cloud_latest_tag}"
         ghcr_tags="${ghcr_tags},${ghcr_latest_tag}"
       fi
