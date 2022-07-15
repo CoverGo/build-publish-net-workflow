@@ -18,6 +18,7 @@ jobs:
     name: Get version from git tag
     outputs:
       app_version: ${{ steps.version.outputs.app_version }}
+      is_production: ${{ steps.is_production_check.outputs.is_production }}
       file_version: ${{ steps.version.outputs.file_version }}
       information_version: ${{ steps.version.outputs.information_version }}
       issue_id_slug: ${{ steps.issue-key.outputs.issue_id_slug }}
@@ -25,13 +26,13 @@ jobs:
       docker_image_ghcr_tags: ${{ steps.tags.outputs.docker_image_ghcr_tags }}
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         fetch-depth: 0
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
-        actions_list: '[ "covergo/get-version@v1.5", "covergo/get-issue-key@v1.3", "covergo/docker-extract@v1.1", "covergo/docker-diagnose@v1.5", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v1" ]'
+        actions_list: '[ "covergo/get-version@v1.6", "covergo/get-issue-key@v1.3", "covergo/docker-extract@v1.1", "covergo/docker-diagnose@v1.5", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v1" ]'
         checkout_base_path: ./.github/actions
         app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
         app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}
@@ -61,6 +62,11 @@ jobs:
 
         branch=$(git branch --show-current)
         if [[ "$branch" = 'main' || "$branch" = 'master'  ]]; then
+          ali_cloud_tags="${ali_cloud_tags},${branch}"
+          ghcr_tags="${ghcr_tags},${branch}"
+        fi
+
+        if [[ ${GITHUB_REF}  == refs/tags/v* ]]; then
           ali_cloud_tags="${ali_cloud_tags},${ali_cloud_latest_tag}"
           ghcr_tags="${ghcr_tags},${ghcr_latest_tag}"
         fi
@@ -69,6 +75,13 @@ jobs:
         echo final tags for ali are: ${ali_cloud_tags}
         echo ::set-output name=docker_image_ghcr_tags::${ghcr_tags}
         echo ::set-output name=docker_image_ali_cloud_tags::${ali_cloud_tags}
+    - name: Is production check
+      shell: bash
+      id: is_production_check
+      run: |
+        if [[ ${{ steps.version.outputs.app_version }} =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+          echo ::set-output name=is_production::true
+        fi
   scan-code:
     name: Sonar scan
     timeout-minutes: 20
@@ -79,7 +92,7 @@ jobs:
     - docker-build-auth-test-unit
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         fetch-depth: 0
     - name: Scan
@@ -106,15 +119,15 @@ jobs:
     - docker-build-auth-test-unit
     steps:
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1
+      uses: docker/setup-buildx-action@v2
     - name: Login to GitHub Container Registry
-      uses: docker/login-action@v1
+      uses: docker/login-action@v2
       with:
         registry: ghcr.io
         username: ${{ github.repository_owner }}
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Build Auth client nuget image
-      uses: docker/build-push-action@v2
+      uses: docker/build-push-action@v3
       id: docker-build-auth-nuget
       with:
         file: Dockerfile
@@ -137,7 +150,7 @@ jobs:
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
-        actions_list: '[ "covergo/get-version@v1.5", "covergo/get-issue-key@v1.3", "covergo/docker-extract@v1.1", "covergo/docker-diagnose@v1.5", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v1" ]'
+        actions_list: '[ "covergo/get-version@v1.6", "covergo/get-issue-key@v1.3", "covergo/docker-extract@v1.1", "covergo/docker-diagnose@v1.5", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v1" ]'
         checkout_base_path: ./.github/actions
         app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
         app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}
@@ -177,15 +190,15 @@ jobs:
     - docker-build-auth-service
     steps:
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1
+      uses: docker/setup-buildx-action@v2
     - name: Login to GitHub Container Registry
-      uses: docker/login-action@v1
+      uses: docker/login-action@v2
       with:
         registry: ghcr.io
         username: ${{ github.repository_owner }}
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Build Auth client nuget with default dependencies image
-      uses: docker/build-push-action@v2
+      uses: docker/build-push-action@v3
       id: docker-build-auth-nuget-default
       with:
         file: Dockerfile
@@ -208,7 +221,7 @@ jobs:
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
-        actions_list: '[ "covergo/get-version@v1.5", "covergo/get-issue-key@v1.3", "covergo/docker-extract@v1.1", "covergo/docker-diagnose@v1.5", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v1" ]'
+        actions_list: '[ "covergo/get-version@v1.6", "covergo/get-issue-key@v1.3", "covergo/docker-extract@v1.1", "covergo/docker-diagnose@v1.5", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v1" ]'
         checkout_base_path: ./.github/actions
         app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
         app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}
@@ -252,9 +265,9 @@ jobs:
     - version
     steps:
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1
+      uses: docker/setup-buildx-action@v2
     - name: Login to GitHub Container Registry
-      uses: docker/login-action@v1
+      uses: docker/login-action@v2
       with:
         registry: ghcr.io
         username: ${{ github.repository_owner }}
@@ -266,7 +279,7 @@ jobs:
         images: name/app
         labels: org.opencontainers.image.version=candidate-${{ needs.version.outputs.app_version }}
     - name: Build Auth image
-      uses: docker/build-push-action@v2
+      uses: docker/build-push-action@v3
       id: docker-build-auth-service
       with:
         file: Dockerfile
@@ -292,15 +305,15 @@ jobs:
       UNIT_TEST_IMAGE_TAG: ghcr.io/covergo/auth-test-unit:${{ needs.version.outputs.app_version }}
     steps:
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1
+      uses: docker/setup-buildx-action@v2
     - name: Login to GitHub Container Registry
-      uses: docker/login-action@v1
+      uses: docker/login-action@v2
       with:
         registry: ghcr.io
         username: ${{ github.repository_owner }}
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Build Unit tests image
-      uses: docker/build-push-action@v2
+      uses: docker/build-push-action@v3
       id: docker-build-auth-test-unit
       with:
         file: Dockerfile
@@ -327,7 +340,7 @@ jobs:
       IMAGE_RUN_ARGS: '"*.filter" "p aram2" '
     steps:
     - name: Login to GitHub Container Registry
-      uses: docker/login-action@v1
+      uses: docker/login-action@v2
       with:
         registry: ghcr.io
         username: ${{ github.repository_owner }}
@@ -335,7 +348,7 @@ jobs:
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
-        actions_list: '[ "covergo/get-version@v1.5", "covergo/get-issue-key@v1.3", "covergo/docker-extract@v1.1", "covergo/docker-diagnose@v1.5", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v1" ]'
+        actions_list: '[ "covergo/get-version@v1.6", "covergo/get-issue-key@v1.3", "covergo/docker-extract@v1.1", "covergo/docker-diagnose@v1.5", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v1" ]'
         checkout_base_path: ./.github/actions
         app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
         app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}
@@ -380,15 +393,15 @@ jobs:
       RESULTS_PATH: TestResults
     steps:
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1
+      uses: docker/setup-buildx-action@v2
     - name: Login to GitHub Container Registry
-      uses: docker/login-action@v1
+      uses: docker/login-action@v2
       with:
         registry: ghcr.io
         username: ${{ github.repository_owner }}
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Build Integration tests image
-      uses: docker/build-push-action@v2
+      uses: docker/build-push-action@v3
       id: docker-build-integration-tests
       with:
         file: Dockerfile
@@ -404,16 +417,16 @@ jobs:
     - name: Image digest
       run: echo ${{ steps.docker-build-integration-tests.outputs.digest }}
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
-        actions_list: '[ "covergo/get-version@v1.5", "covergo/get-issue-key@v1.3", "covergo/docker-extract@v1.1", "covergo/docker-diagnose@v1.5", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v1" ]'
+        actions_list: '[ "covergo/get-version@v1.6", "covergo/get-issue-key@v1.3", "covergo/docker-extract@v1.1", "covergo/docker-diagnose@v1.5", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v1" ]'
         checkout_base_path: ./.github/actions
         app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
         app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}
     - name: Login to AliCloud Container Registry
-      uses: docker/login-action@v1
+      uses: docker/login-action@v2
       with:
         registry: registry-intl.cn-hongkong.aliyuncs.com
         username: ${{ secrets.ALI_CONTAINER_REGISTRY_USER }}
@@ -483,15 +496,15 @@ jobs:
     - docker-build-api-test-integration
     steps:
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1
+      uses: docker/setup-buildx-action@v2
     - name: Login to GitHub Container Registry
-      uses: docker/login-action@v1
+      uses: docker/login-action@v2
       with:
         registry: ghcr.io
         username: ${{ github.repository_owner }}
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Build Acceptance tests image
-      uses: docker/build-push-action@v2
+      uses: docker/build-push-action@v3
       id: docker-build-acceptance-tests
       with:
         file: Dockerfile
@@ -518,22 +531,22 @@ jobs:
       RESULTS_PATH: ./TestResults
     steps:
     - name: Login to GitHub Container Registry
-      uses: docker/login-action@v1
+      uses: docker/login-action@v2
       with:
         registry: ghcr.io
         username: ${{ github.repository_owner }}
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
-        actions_list: '[ "covergo/get-version@v1.5", "covergo/get-issue-key@v1.3", "covergo/docker-extract@v1.1", "covergo/docker-diagnose@v1.5", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v1" ]'
+        actions_list: '[ "covergo/get-version@v1.6", "covergo/get-issue-key@v1.3", "covergo/docker-extract@v1.1", "covergo/docker-diagnose@v1.5", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v1" ]'
         checkout_base_path: ./.github/actions
         app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
         app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}
     - name: Login to AliCloud Container Registry
-      uses: docker/login-action@v1
+      uses: docker/login-action@v2
       with:
         registry: registry-intl.cn-hongkong.aliyuncs.com
         username: ${{ secrets.ALI_CONTAINER_REGISTRY_USER }}
@@ -617,15 +630,15 @@ jobs:
     - docker-build-auth-test-unit
     steps:
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1
+      uses: docker/setup-buildx-action@v2
     - name: Login to GitHub Container Registry
-      uses: docker/login-action@v1
+      uses: docker/login-action@v2
       with:
         registry: ghcr.io
         username: ${{ github.repository_owner }}
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Build Integration API tests image
-      uses: docker/build-push-action@v2
+      uses: docker/build-push-action@v3
       id: docker-build-api-test-integration
       with:
         file: Tests.MariaDb.Integration.Dockerfile
@@ -651,22 +664,22 @@ jobs:
       RESULTS_PATH: ./TestResults
     steps:
     - name: Login to GitHub Container Registry
-      uses: docker/login-action@v1
+      uses: docker/login-action@v2
       with:
         registry: ghcr.io
         username: ${{ github.repository_owner }}
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
-        actions_list: '[ "covergo/get-version@v1.5", "covergo/get-issue-key@v1.3", "covergo/docker-extract@v1.1", "covergo/docker-diagnose@v1.5", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v1" ]'
+        actions_list: '[ "covergo/get-version@v1.6", "covergo/get-issue-key@v1.3", "covergo/docker-extract@v1.1", "covergo/docker-diagnose@v1.5", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v1" ]'
         checkout_base_path: ./.github/actions
         app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
         app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}
     - name: Login to AliCloud Container Registry
-      uses: docker/login-action@v1
+      uses: docker/login-action@v2
       with:
         registry: registry-intl.cn-hongkong.aliyuncs.com
         username: ${{ secrets.ALI_CONTAINER_REGISTRY_USER }}
@@ -740,7 +753,7 @@ jobs:
     - integration-tests-legacy-big
     steps:
     - name: Login to GitHub Container Registry
-      uses: docker/login-action@v1
+      uses: docker/login-action@v2
       with:
         registry: ghcr.io
         username: ${{ github.repository_owner }}
@@ -754,7 +767,7 @@ jobs:
     name: Push service to AliCloud
     timeout-minutes: 20
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
     needs:
     - version
     - docker-build-auth-service
@@ -766,13 +779,13 @@ jobs:
     - integration-tests-legacy-big
     steps:
     - name: Login to GitHub Container Registry
-      uses: docker/login-action@v1
+      uses: docker/login-action@v2
       with:
         registry: ghcr.io
         username: ${{ github.repository_owner }}
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Login to AliCloud Container Registry
-      uses: docker/login-action@v1
+      uses: docker/login-action@v2
       with:
         registry: registry-intl.cn-hongkong.aliyuncs.com
         username: ${{ secrets.ALI_CONTAINER_REGISTRY_USER }}
@@ -791,7 +804,7 @@ jobs:
     - docker-build-auth-service
     steps:
     - name: Checkout tests repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         repository: covergo/integration-testing
         ref: ${{ github.head_ref }}
@@ -799,18 +812,18 @@ jobs:
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
-        actions_list: '[ "covergo/get-version@v1.5", "covergo/get-issue-key@v1.3", "covergo/docker-extract@v1.1", "covergo/docker-diagnose@v1.5", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v1" ]'
+        actions_list: '[ "covergo/get-version@v1.6", "covergo/get-issue-key@v1.3", "covergo/docker-extract@v1.1", "covergo/docker-diagnose@v1.5", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v1" ]'
         checkout_base_path: ./.github/actions
         app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
         app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}
     - name: Login to GitHub Container Registry
-      uses: docker/login-action@v1
+      uses: docker/login-action@v2
       with:
         registry: ghcr.io
         username: ${{ github.repository_owner }}
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Login to AliCloud Container Registry
-      uses: docker/login-action@v1
+      uses: docker/login-action@v2
       with:
         registry: registry-intl.cn-hongkong.aliyuncs.com
         username: ${{ secrets.ALI_CONTAINER_REGISTRY_USER }}
@@ -863,15 +876,15 @@ jobs:
     - version
     steps:
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1
+      uses: docker/setup-buildx-action@v2
     - name: Login to GitHub Container Registry
-      uses: docker/login-action@v1
+      uses: docker/login-action@v2
       with:
         registry: ghcr.io
         username: ${{ github.repository_owner }}
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Build Mongo db for Auth image
-      uses: docker/build-push-action@v2
+      uses: docker/build-push-action@v3
       id: docker-build-auth-mongo
       with:
         file: Mongo.Dockerfile
