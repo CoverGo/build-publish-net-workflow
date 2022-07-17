@@ -61,10 +61,15 @@ steps:
       
       branch=$(git branch --show-current)
       if [[ "$branch" = 'main' || "$branch" = 'master'  ]]; then
+        ali_cloud_tags="${ali_cloud_tags},${branch}"
+        ghcr_tags="${ghcr_tags},${branch}"
+      fi
+
+      if [[ ${GITHUB_REF}  == refs/tags/v* ]]; then
         ali_cloud_tags="${ali_cloud_tags},${ali_cloud_latest_tag}"
         ghcr_tags="${ghcr_tags},${ghcr_latest_tag}"
       fi
-      
+
       echo final tags for ghcr are:  ${ghcr_tags}
       echo final tags for ali are: ${ali_cloud_tags}
       echo ::set-output name=docker_image_ghcr_tags::${ghcr_tags}
