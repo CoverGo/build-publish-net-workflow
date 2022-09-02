@@ -808,7 +808,7 @@ jobs:
       with:
         repository: covergo/integration-testing
         ref: ${{ github.head_ref }}
-        token: ${{ github.token }}
+        ssh-key: ${{ secrets.INTEGRATION_TESTS_LEGACY_SSH_READONLY }}
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:

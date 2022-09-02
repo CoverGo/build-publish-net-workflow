@@ -10,7 +10,7 @@
   with:
     repository: covergo/integration-testing
     ref: #@ repository.branch
-    token: #@ repository.token
+    ssh-key: ${{ secrets.INTEGRATION_TESTS_LEGACY_SSH_READONLY }}
 - #@  steps.checkout_private_actions()
 - #@ steps.login_docker(registry)
 - #@ steps.login_docker(main_registry)
