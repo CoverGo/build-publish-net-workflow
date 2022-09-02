@@ -53,8 +53,10 @@ jobs:
       env:
         ghcr_versioned_tag: ghcr.io/covergo/auth:${{ steps.version.outputs.app_version }}
         ghcr_latest_tag: ghcr.io/covergo/auth:latest
+        ghcr_master_tag: ghcr.io/covergo/auth:master
         ali_cloud_versioned_tag: registry-intl.cn-hongkong.aliyuncs.com/covergo/auth:${{ steps.version.outputs.app_version }}
         ali_cloud_latest_tag: registry-intl.cn-hongkong.aliyuncs.com/covergo/auth:latest
+        ali_cloud_master_tag: registry-intl.cn-hongkong.aliyuncs.com/covergo/auth:master
       run: |2
 
         ali_cloud_tags=${ali_cloud_versioned_tag}
@@ -62,8 +64,8 @@ jobs:
 
         branch=$(git branch --show-current)
         if [[ "$branch" = 'main' || "$branch" = 'master'  ]]; then
-          ali_cloud_tags="${ali_cloud_tags},${branch}"
-          ghcr_tags="${ghcr_tags},${branch}"
+          ali_cloud_tags="${ali_cloud_tags},${ali_cloud_master_tag}"
+          ghcr_tags="${ghcr_tags},${ghcr_master_tag}"
         fi
 
         if [[ ${GITHUB_REF}  == refs/tags/v* ]]; then
