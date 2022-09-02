@@ -29,6 +29,7 @@
       include-compose: true
       encrypt-password: #@ security.generate_diagnostic_password(integration_test_definition)
       compose-file: #@ integration_test_definition.compose_file
+      project-name: integration-test
   - #@ bpsteps.upload_artifacts_step("investigate/*","{} environment diagnostics".format(integration_test_definition.name) )
   - #@ bpsteps.upload_artifacts_step(cfg.get_file_upload_path(integration_test_definition),"{} results".format(integration_test_definition.name))
   #@ if getattr(integration_test_definition,"enable_junit_test_check",True) :
