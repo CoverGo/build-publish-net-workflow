@@ -50,19 +50,21 @@ steps:
     env:
       ghcr_versioned_tag: #@ tagging.with_registry(sections.cache_registry.url,sections.service.image_name,"${{ steps.version.outputs.app_version }}")
       ghcr_latest_tag: #@ tagging.with_registry(sections.cache_registry.url,sections.service.image_name,"latest")
+      ghcr_master_tag: #@ tagging.with_registry(sections.cache_registry.url,sections.service.image_name,"master")
       #@ if hasattr(sections,"main_registry"):
       ali_cloud_versioned_tag: #@ tagging.with_registry(sections.main_registry.url,sections.service.image_name,"${{ steps.version.outputs.app_version }}")
       ali_cloud_latest_tag: #@ tagging.with_registry(sections.main_registry.url,sections.service.image_name,"latest")
+      ali_cloud_master_tag:  #@ tagging.with_registry(sections.main_registry.url,sections.service.image_name,"master")
       #@ end
     run: |
       
       ali_cloud_tags=${ali_cloud_versioned_tag}
       ghcr_tags=${ghcr_versioned_tag}
-      
+
       branch=$(git branch --show-current)
       if [[ "$branch" = 'main' || "$branch" = 'master'  ]]; then
-        ali_cloud_tags="${ali_cloud_tags},${branch}"
-        ghcr_tags="${ghcr_tags},${branch}"
+        ali_cloud_tags="${ali_cloud_tags},${ali_cloud_master_tag}"
+        ghcr_tags="${ghcr_tags},${ghcr_master_tag}"
       fi
 
       if [[ ${GITHUB_REF}  == refs/tags/v* ]]; then
