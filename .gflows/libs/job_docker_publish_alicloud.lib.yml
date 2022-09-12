@@ -8,7 +8,7 @@
 #@ load("tagging.lib.yml", "tagging")
 ---
 #@ def generate_docker_publish_alicloud(sections):
-#@ needs = ["version", job.id.docker_build(sections.service)]
+#@ needs = ["version", job.id.docker_build(sections.service), "docker-publish-github"]
 #@ name ="Publish {} to AliCloud".format(sections.service.name)
 
 #@ if hasattr(sections,"integration_test"):

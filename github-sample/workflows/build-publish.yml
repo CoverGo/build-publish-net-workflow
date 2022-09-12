@@ -776,6 +776,7 @@ jobs:
     needs:
     - version
     - docker-build-auth-service
+    - docker-publish-github
     - build-and-run-integration-tests
     - run-acceptance-tests
     - run-api-test-integration
