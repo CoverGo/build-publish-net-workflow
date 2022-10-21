@@ -295,6 +295,15 @@ jobs:
         build-args: COMMIT_SHA=${{ github.sha }}
     - name: Image digest
       run: echo ${{ steps.docker-build-auth-service.outputs.digest }}
+    - name: Set up sigstore cosign
+      uses: sigstore/cosign-installer@9becc617647dfa20ae7b1151972e9b3a2c338a2b
+      with:
+        cosign-release: v1.13.1
+    - name: Sign published container image
+      run: cosign sign --key env://COSIGN_PRIVATE_KEY ghcr.io/covergo/auth:${{ needs.version.outputs.app_version }}@${{ steps.docker-build-auth-service.outputs.digest }}
+      env:
+        COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+        COSIGN_PRIVATE_KEY: ${{ secrets.SIGNING_SECRET }}
   docker-build-auth-test-unit:
     name: Build Unit tests image
     timeout-minutes: 20

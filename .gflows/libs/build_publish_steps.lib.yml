@@ -78,10 +78,27 @@ with:
 #      ghcr.io/user/app:1.0.0
 #@ end
 ---
+#@ def _setup_cosign():
+name: Set up sigstore cosign
+uses: sigstore/cosign-installer@9becc617647dfa20ae7b1151972e9b3a2c338a2b
+with:
+  cosign-release: 'v1.13.1'
+#@ end
+---
+#@ def _sign_container_with_cosign(image_name, image_digest):
+name: Sign published container image
+run: #@ "cosign sign --key env://COSIGN_PRIVATE_KEY {0}@{1}".format(image_name, image_digest)
+env:
+  COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+  COSIGN_PRIVATE_KEY: ${{ secrets.SIGNING_SECRET }}
+#@ end
+---
 #@ bpsteps = struct.make(
 #@ compose_launch_steps = _compose_launch_steps,
 #@ collect_results_step =  _collect_results_step,
 #@ upload_artifacts_step = _upload_artifacts_step,
 #@ publish_test_result_as_check_step = _publish_test_result_as_check_step,
 #@ copy_between_registries_step = _copy_between_registries_step,
-#@ get_compose_service_name_filter_to_diagnose = _get_compose_service_name_filter_to_diagnose)
+#@ get_compose_service_name_filter_to_diagnose = _get_compose_service_name_filter_to_diagnose,
+#@ setup_cosign = _setup_cosign,
+#@ sign_container_with_cosign = _sign_container_with_cosign)

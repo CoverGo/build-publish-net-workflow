@@ -41,25 +41,6 @@ name: Set up Docker Buildx
 uses: docker/setup-buildx-action@v2
 #@ end
 ---
-#@ def _setup_cosign():
-name: Set up sigstore cosign
-uses: sigstore/cosign-installer@9becc617647dfa20ae7b1151972e9b3a2c338a2b
-with:
-  cosign-release: 'v1.13.1'
-#@ end
----
-#@ def _save_private_key_for_cosign():
-name: Write signing key to disk (only needed for `cosign sign --key`)
-run: echo "${{ secrets.SIGNING_SECRET }}" > cosign.key
-#@ end
----
-#@ def _sign_container_with_cosign(image_name, image_digest):
-name: Sign published container image
-env:
-  COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
-run: #@ "cosign sign --key cosign.key {0}@{1}".format(image_name, image_digest)
-#@ end
----
 #@ def _checkout_private_actions():
 name: Checkout GitHub Action Repos
 uses: daspn/private-actions-checkout@v2
@@ -143,8 +124,5 @@ with:
 #@ setup_buildx = _setup_buildx,
 #@ checkout_private_actions = _checkout_private_actions,
 #@ build_and_push_docker = _build_and_push_docker,
-#@ generate_docker_meta = _generate_docker_meta,
-#@ setup_cosign = _setup_cosign,
-#@ save_private_key_for_cosign = _save_private_key_for_cosign,
-#@ sign_container_with_cosign = _sign_container_with_cosign)
+#@ generate_docker_meta = _generate_docker_meta)
 ---

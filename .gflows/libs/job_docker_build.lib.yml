@@ -23,11 +23,6 @@
 - #@ steps.build_and_push_docker(component, cache_registry, step_id=step_id_value, tags=tag_build, load_image=load_image, push_image=push_image,build_versioned_image=build_versioned_image)
 - name: Image digest
   run: #@ "echo ${{ steps."+step_id_value+".outputs.digest }}"
-  #@ if cfg.should_sign_docker_container(component):
-- #@ steps.setup_cosign()
-- #@ steps.save_private_key_for_cosign()
-- #@ steps.sign_container_with_cosign(tagging.image(cache_registry, component), "${{ steps." + step_id_value + ".outputs.digest }}")
-  #@ end
 #@ end
 ---
 #@ def _image_build_job(component, sections, needs=["version"], tag_build=None, job_name=None, push=True, environment_variables=None):
