@@ -118,11 +118,34 @@ with:
   build-args: #@ "\n".join(build_args)
 #@ end
 ---
+#@ def _echo_docker_digest(step_id, component):
+name: Image digest
+#@ if cfg.should_output_docker_digest(component):
+env:
+  docker_digest: #@ "${{ steps." + step_id + ".outputs.digest }}"
+run: |
+  echo $docker_digest
+  echo "digest=$docker_digest" >> $GITHUB_OUTPUT
+#@ else:
+run: #@ "echo ${{ steps." + step_id + ".outputs.digest }}"
+#@ end
+#@ end
+---
+#@ def _define_docker_outputs(component):
+#@ if cfg.should_output_docker_digest(component):
+#@ return {"digest": "${{ steps." + job.id.docker_build(component) + ".outputs.digest }}"}
+#@ else:
+#@ return None
+#@ end
+#@ end
+---
 #@ steps = struct.make(login_docker = _login_docker,
 #@ checkout = _checkout,
 #@ setup_qemu = _setup_qemu,
 #@ setup_buildx = _setup_buildx,
 #@ checkout_private_actions = _checkout_private_actions,
 #@ build_and_push_docker = _build_and_push_docker,
-#@ generate_docker_meta = _generate_docker_meta)
+#@ generate_docker_meta = _generate_docker_meta,
+#@ define_docker_outputs = _define_docker_outputs,
+#@ echo_docker_digest = _echo_docker_digest)
 ---

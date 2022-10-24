@@ -32,5 +32,7 @@
 #@ def generate_docker_publish_github_steps(sections):
 - #@ steps.login_docker(sections.cache_registry)
 - #@ bpsteps.copy_between_registries_step(tagging.candidate_image(sections.cache_registry, sections.service),"${{ needs.version.outputs.docker_image_ghcr_tags }}",sections.cache_registry.name)
+- #@ bpsteps.setup_cosign()
+- #@ bpsteps.sign_container_with_cosign("${{ needs.version.outputs.docker_image_ghcr_tags }}", "${{ needs." + job.id.docker_build(data.values.service) + ".outputs.digest }}")
 #@ end
 ---

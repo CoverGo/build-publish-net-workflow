@@ -96,8 +96,8 @@
 #@ return getattr(section,"checkout_repo",False)
 #@ end
 ---
-#@ def _should_sign_docker_container(section):
-#@ return getattr(section, "sign_docker_container", False)
+#@ def _should_output_docker_digest(section):
+#@ return getattr(section, "output_docker_digest", False)
 #@ end
 ---
 #@ cfg = struct.make(get_cache_type = _get_cache_type,
@@ -120,4 +120,4 @@
 #@ get_sonar_coverage_artifact_pooling_timeout_sec = _get_sonar_coverage_artifact_pooling_timeout_sec,
 #@ should_generate_docker_meta = _should_generate_docker_meta,
 #@ should_generate_sourcelink = _should_generate_sourcelink,
-#@ should_sign_docker_container = _should_sign_docker_container)
+#@ should_output_docker_digest = _should_output_docker_digest)
