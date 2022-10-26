@@ -9,5 +9,5 @@ templates:
       - libs
       - libs/jobs
     dependencies:
-      - https://raw.githubusercontent.com/CoverGo/ci-workflow-libraries/v2.2/.gflows
+      - https://raw.githubusercontent.com/CoverGo/ci-workflow-libraries/v2.3/.gflows
 

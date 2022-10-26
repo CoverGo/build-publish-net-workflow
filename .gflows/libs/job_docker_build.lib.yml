@@ -21,14 +21,14 @@
 - #@ steps.generate_docker_meta()
   #@ end
 - #@ steps.build_and_push_docker(component, cache_registry, step_id=step_id_value, tags=tag_build, load_image=load_image, push_image=push_image,build_versioned_image=build_versioned_image)
-- name: Image digest
-  run: #@ "echo ${{ steps."+step_id_value+".outputs.digest }}"
+- #@ steps.echo_docker_digest(step_id_value, component)
 #@ end
 ---
 #@ def _image_build_job(component, sections, needs=["version"], tag_build=None, job_name=None, push=True, environment_variables=None):
-#@ steps = _image_build_job_steps(component, sections.cache_registry, tag_build, job_name,  push)
+#@ stepsYaml = _image_build_job_steps(component, sections.cache_registry, tag_build, job_name,  push)
 #@ job_name = common.get_value(job_name,job.name.docker_build(component))
-#@ return common.generate_job(component, steps, environment_variables, sections, needs, job_name)
+#@ outputs = steps.define_docker_outputs(component)
+#@ return common.generate_job(component, stepsYaml, environment_variables, sections, needs, job_name, outputs=outputs)
 #@ end
 ---
 #@ _docker_jobs = struct.make( build = _image_build_job)

@@ -35,5 +35,7 @@
 - #@ steps.login_docker(sections.cache_registry)
 - #@ steps.login_docker(sections.main_registry)
 - #@ bpsteps.copy_between_registries_step(tagging.image(sections.cache_registry, sections.service),"${{ needs.version.outputs.docker_image_ali_cloud_tags }}",sections.main_registry.name)
+- #@ bpsteps.setup_cosign()
+- #@ bpsteps.sign_container_with_cosign("${{ needs.version.outputs.docker_image_ali_cloud_tags }}", "${{ needs." + job.id.docker_build(data.values.service) + ".outputs.digest }}")
 #@ end
 ---
