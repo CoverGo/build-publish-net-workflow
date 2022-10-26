@@ -33,6 +33,6 @@
 - #@ steps.login_docker(sections.cache_registry)
 - #@ bpsteps.copy_between_registries_step(tagging.candidate_image(sections.cache_registry, sections.service),"${{ needs.version.outputs.docker_image_ghcr_tags }}",sections.cache_registry.name)
 - #@ bpsteps.setup_cosign()
-- #@ bpsteps.sign_container_with_cosign("${{ needs.version.outputs.docker_image_ghcr_tags }}", "${{ needs." + job.id.docker_build(data.values.service) + ".outputs.digest }}")
+- #@ bpsteps.sign_container_with_cosign(tagging.with_registry(sections.cache_registry.url,sections.service.image_name,"${{ needs.version.outputs.app_version }}"), "${{ needs." + job.id.docker_build(data.values.service) + ".outputs.digest }}")
 #@ end
 ---
