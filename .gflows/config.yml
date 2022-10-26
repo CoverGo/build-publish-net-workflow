@@ -9,5 +9,5 @@ templates:
       - libs
       - libs/jobs
     dependencies:
-      - https://raw.githubusercontent.com/CoverGo/ci-workflow-libraries/be-528-sign-docker-image/.gflows
+      - https://raw.githubusercontent.com/CoverGo/ci-workflow-libraries/v2.3/.gflows
 
