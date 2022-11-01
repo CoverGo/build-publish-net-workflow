@@ -7,8 +7,8 @@
 #@ load("job_unit_test.lib.yml", "unit_test_job")
 
 #@  load("job_version.lib.yml", "generate_version_job")
-#@  load("job_docker_publish_github.lib.yml", "generate_docker_publish_github")
-#@  load("job_docker_publish_alicloud.lib.yml", "generate_docker_publish_alicloud")
+#@  load("job_docker_publish_github.lib.yml", "docker_publish_github_job")
+#@  load("job_docker_publish_alicloud.lib.yml", "docker_publish_alicloud_job")
 #@  load("job_publish_nuget.lib.yml", "generate_nuget_publish_job")
 #@  load("job_scan_code_net.lib.yml", "generate_scan_code_net_job")
 #@  load("job_build_nuget.lib.yml", "generate_nuget_build_job")
@@ -48,9 +48,11 @@
   #@ 
   #@ end
 
-  #@ service_image_build_tag = tagging.candidate_image(data.values.cache_registry,data.values.service) 
-  #@ if hasattr(data.values,"service"):
-    #@ jobs[job.id.docker_build(data.values.service)] = docker.job.build(data.values.service, data.values, ["version"],service_image_build_tag)
+  #@ service_sections = dep.get_service_sections(data.values)
+
+  #@ for service_section in service_sections:
+  #@   service_image_build_tag = tagging.candidate_image(data.values.cache_registry, service_section)
+  #@   jobs[job.id.docker_build(service_section)] = docker.job.build(service_section, data.values, ["version"], service_image_build_tag)
   #@ end
   
   #@ for unit_test_section in getattr(data.values,"unit_test",[]):
@@ -84,10 +86,13 @@
     #@ end
   #@ end
   
-  #@ jobs["docker-publish-github"] = generate_docker_publish_github(data.values,service_image_build_tag)
-  
-  #@ if hasattr(data.values,"main_registry"): 
-    #@ jobs["docker-publish-alicloud"] = generate_docker_publish_alicloud(data.values)
+  #@ for service_section in service_sections:
+  #@   service_image_build_tag = tagging.candidate_image(data.values.cache_registry, service_section)
+  #@   jobs[docker_publish_github_job.id(service_section)] = docker_publish_github_job.build(service_section, data.values, service_image_build_tag)
+  #@   
+  #@   if hasattr(data.values,"main_registry"): 
+  #@     jobs[docker_publish_alicloud_job.id(service_section)] = docker_publish_alicloud_job.build(service_section, data.values)
+  #@   end
   #@ end
 
   #@ if (hasattr(data.values,"integration_tests_legacy")):

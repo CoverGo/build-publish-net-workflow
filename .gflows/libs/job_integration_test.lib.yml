@@ -10,13 +10,13 @@
 #@ load("job_dependency_resolution.lib.yml", "dep")
 #@ load("configuration.lib.yml", "cfg")
 ---
-#@ def integration_test_run_job_steps(integration_test_definition, repository_built_images, cache_registry, service_image, main_registry=None):
+#@ def integration_test_run_job_steps(integration_test_definition, repository_built_images, cache_registry, repository_built_images_to_publish, main_registry=None):
   - #@ steps.checkout()
   - #@ steps.checkout_private_actions()
   #@ if(main_registry != None):
   - #@ steps.login_docker(main_registry)
   #@ end
-#@ for compose_step in bpsteps.compose_launch_steps(integration_test_definition,repository_built_images,service_image):
+#@ for compose_step in bpsteps.compose_launch_steps(integration_test_definition, repository_built_images, repository_built_images_to_publish):
   - #@ compose_step
 #@ end
   - #@ bpsteps.collect_results_step(integration_test_definition,tagging.image(cache_registry, integration_test_definition))
@@ -75,9 +75,10 @@
 #@ end
 #@  
 #@ repository_built_images=dep.get_repository_built_images(sections)
+#@ repository_built_images_to_publish=dep.get_repository_built_images_to_publish(sections)
 #@ steps_array = []
 #@ steps_array.append(steps.login_docker(sections.cache_registry))
-#@ steps_array.extend(integration_test_run_job_steps(integration_test_definition, repository_built_images, sections.cache_registry, sections.service.image_name, getattr(sections,"main_registry",None)))
+#@ steps_array.extend(integration_test_run_job_steps(integration_test_definition, repository_built_images, sections.cache_registry, repository_built_images_to_publish, getattr(sections,"main_registry",None)))
 #@ return common.generate_job(integration_test_definition, steps_array ,{"RESULTS_PATH": cfg.get_host_path_for_docker_extract(integration_test_definition)},sections, needs, job.name.docker_run(integration_test_definition))
 #@ end
 ---
@@ -100,9 +101,10 @@
 #@ end
 #@  
 #@ repository_built_images=dep.get_repository_built_images(sections)
+#@ repository_built_images_to_publish=dep.get_repository_built_images_to_publish(sections)
 #@ steps = []
 #@ steps.extend(docker.steps.build(integration_test_definition, sections.cache_registry))
-#@ steps.extend(integration_test_run_job_steps(integration_test_definition, repository_built_images, sections.cache_registry, sections.service.image_name, getattr(sections,"main_registry",None)))
+#@ steps.extend(integration_test_run_job_steps(integration_test_definition, repository_built_images, sections.cache_registry, repository_built_images_to_publish, getattr(sections,"main_registry",None)))
 #@ return common.generate_job(integration_test_definition, steps ,{"RESULTS_PATH": "TestResults"},sections, needs, job_name)
 #@ end
 ---
