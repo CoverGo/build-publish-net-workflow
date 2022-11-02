@@ -65,6 +65,12 @@
       access-token: ${{ secrets.GITHUB_TOKEN }}
       path: #@ cfg.get_host_path_for_docker_extract(integration_test_definition)+"/"+getattr(integration_test_definition,"cucumber_result_filename")
     #@ end
+  #@ if hasattr(integration_test_definition,"coverage_file_name") :
+  - #@ bpsteps.code_coverage_summary(getattr(integration_test_definition,"coverage_file_name"))
+  - #@ bpsteps.add_coverage_step_summary()
+  - #@ bpsteps.find_pr_number()
+  - #@ bpsteps.pull_request_comment("IntegrationTestsCoverage")
+    #@ end
   #@ end
 ---
 #@ def _integration_test_run_job(integration_test_definition, sections, needs = ["version"]):

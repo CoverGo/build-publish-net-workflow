@@ -87,6 +87,7 @@ unit_test: #docker-build-and-job
       bce
       !fge 
       !hep/**/.tmp
+    coverage_file_name: ./TestResults/**/*.cobertura.xml # If coverage file or files in cobertura format are specified it adds steps to publish code coverage summary as check and PR comment.
 #Runs existing images in compose, can build if needed
 integration_test: #array of docker-build-and-job 
   - name: Integration tests
@@ -119,6 +120,7 @@ integration_test: #array of docker-build-and-job
       - covergo/auth
       - covergo/auth-test-unit
       - covergo/cases-api-test-integration
+    coverage_file_name: ./TestResults/*.cobertura.xml # If coverage file or files in cobertura format are specified it adds steps to publish code coverage summary as check and PR comment.
       
   - name: Integration API tests
     slug: api-test-integration

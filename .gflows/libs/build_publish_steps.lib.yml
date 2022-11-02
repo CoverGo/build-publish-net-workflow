@@ -93,6 +93,38 @@ env:
   COSIGN_PRIVATE_KEY: ${{ secrets.SIGNING_SECRET }}
 #@ end
 ---
+#@ def _code_coverage_summary(file_name):
+name: Code Coverage Summary Report
+uses: irongut/CodeCoverageSummary@v1.3.0
+with:
+  filename: #@ file_name
+  badge: true
+  format: markdown
+  indicators: true
+  output: both
+  thresholds: '60 80'
+#@ end
+---
+#@ def _find_pr_number():
+name: Find PR number
+uses: jwalton/gh-find-current-pr@v1
+id: findPr
+#@ end
+---
+#@ def _pull_request_comment(id):
+uses: marocchino/sticky-pull-request-comment@v2
+with:
+  number: ${{ steps.findPr.outputs.pr }}
+  header: #@ id
+  recreate: true
+  path: code-coverage-results.md
+#@ end
+---
+#@ def _add_coverage_step_summary():
+name: Add Coverage Step Summary
+run: cat code-coverage-results.md >> $GITHUB_STEP_SUMMARY
+#@ end
+---
 #@ bpsteps = struct.make(
 #@ compose_launch_steps = _compose_launch_steps,
 #@ collect_results_step =  _collect_results_step,
@@ -101,4 +133,8 @@ env:
 #@ copy_between_registries_step = _copy_between_registries_step,
 #@ get_compose_service_name_filter_to_diagnose = _get_compose_service_name_filter_to_diagnose,
 #@ setup_cosign = _setup_cosign,
-#@ sign_container_with_cosign = _sign_container_with_cosign)
+#@ sign_container_with_cosign = _sign_container_with_cosign,
+#@ code_coverage_summary = _code_coverage_summary,
+#@ find_pr_number = _find_pr_number,
+#@ pull_request_comment = _pull_request_comment,
+#@ add_coverage_step_summary = _add_coverage_step_summary)
