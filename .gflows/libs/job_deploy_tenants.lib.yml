@@ -1,11 +1,16 @@
 #@ load("@ytt:data", "data")
+
+#@ load("tagging.lib.yml", "tagging")
+#@ load("job_docker_publish_alicloud.lib.yml", "get_docker_publish_alicloud_job_ids")
 ---
-#@ def tenant_deploy_steps(deploy, tenant):
+#@ def tenant_deploy_steps(deploy, tenant, registry, services):
   if: ${{ needs.version.outputs.is_production == 'true' }}
   runs-on: #@ deploy.runner
   needs:
     - version
-    - docker-publish-alicloud
+    #@ for alicloud_job_id in get_docker_publish_alicloud_job_ids(services):
+    - #@ alicloud_job_id
+    #@ end
   name: #@ "Deploy to {}".format(tenant.name)
   steps:
   - name: Checkout tokens repository
@@ -17,13 +22,17 @@
       path: configs
   - name: Configure AWS
     run: #@ "printf  '{}' | aws configure".format(tenant.aws_key)
+  #@ if hasattr(deploy, "service"):
+  #@   """Backwards compatibility"""
   - name: Deploy via kubectl
     run: #@ "kubectl -n default --kubeconfig ./configs/{} set image deployments/{} {}={}".format(tenant.credentials_path, deploy.service, deploy.service, deploy.image)
   - name: Check deployment
     run: #@ "kubectl -n default --kubeconfig ./configs/{} rollout status deployments/{}".format(tenant.credentials_path, deploy.service)
-#@ end
----
-
-#@ def tenant_get_deployment_job_name(tenant):
-#@ return "deploy-" + tenant.slug
+  #@ end
+  #@ for image in deploy.images:
+  - name: #@ "Deploy {} via kubectl".format(image.dst)
+    run: #@ "kubectl -n default --kubeconfig ./configs/{} set image deployments/{} {}={}".format(tenant.credentials_path, image.dst, image.dst, tagging.with_registry(registry.url, image.src, "${{ needs.version.outputs.app_version }}"))
+  - name: #@ "Check {} deployment".format(image.dst)
+    run: #@ "kubectl -n default --kubeconfig ./configs/{} rollout status deployments/{}".format(tenant.credentials_path, image.dst)
+  #@ end
 #@ end

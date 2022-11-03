@@ -78,3 +78,11 @@ run: |
 #@ docker_publish_alicloud_job = struct.make(
 #@   id = _docker_publish_alicloud_id,
 #@   build = _generate_docker_publish_alicloud)
+---
+#@ def get_docker_publish_alicloud_job_ids(job_definitions):
+#@   jobs = []
+#@   for job_definition in job_definitions:
+#@     jobs.append(docker_publish_alicloud_job.id(job_definition))
+#@   end
+#@   return jobs
+#@ end
