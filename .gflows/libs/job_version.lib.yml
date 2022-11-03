@@ -27,8 +27,6 @@ outputs:
   file_version: ${{ steps.version.outputs.file_version }}
   information_version: ${{ steps.version.outputs.information_version }}
   issue_id_slug: ${{ steps.issue-key.outputs.issue_id_slug }}
-  docker_image_ali_cloud_tags: ${{ steps.tags.outputs.docker_image_ali_cloud_tags }}
-  docker_image_ghcr_tags: ${{ steps.tags.outputs.docker_image_ghcr_tags }}
 steps:
   - name: Checkout repository
     uses: actions/checkout@v3
@@ -45,37 +43,6 @@ steps:
       build-number: #@ set_build_number(sections)
       pre-release-version: #@ set_version(sections)
       production-branches: #@ "\n".join(getattr(getattr(sections,"versioning",None),"production_branches",["master","main"]))
-  - name: Get docker image tags
-    id: tags
-    env:
-      ghcr_versioned_tag: #@ tagging.with_registry(sections.cache_registry.url,sections.service.image_name,"${{ steps.version.outputs.app_version }}")
-      ghcr_latest_tag: #@ tagging.with_registry(sections.cache_registry.url,sections.service.image_name,"latest")
-      ghcr_master_tag: #@ tagging.with_registry(sections.cache_registry.url,sections.service.image_name,"master")
-      #@ if hasattr(sections,"main_registry"):
-      ali_cloud_versioned_tag: #@ tagging.with_registry(sections.main_registry.url,sections.service.image_name,"${{ steps.version.outputs.app_version }}")
-      ali_cloud_latest_tag: #@ tagging.with_registry(sections.main_registry.url,sections.service.image_name,"latest")
-      ali_cloud_master_tag:  #@ tagging.with_registry(sections.main_registry.url,sections.service.image_name,"master")
-      #@ end
-    run: |
-      
-      ali_cloud_tags=${ali_cloud_versioned_tag}
-      ghcr_tags=${ghcr_versioned_tag}
-
-      branch=$(git branch --show-current)
-      if [[ "$branch" = 'main' || "$branch" = 'master'  ]]; then
-        ali_cloud_tags="${ali_cloud_tags},${ali_cloud_master_tag}"
-        ghcr_tags="${ghcr_tags},${ghcr_master_tag}"
-      fi
-
-      if [[ ${GITHUB_REF}  == refs/tags/v* ]]; then
-        ali_cloud_tags="${ali_cloud_tags},${ali_cloud_latest_tag}"
-        ghcr_tags="${ghcr_tags},${ghcr_latest_tag}"
-      fi
-
-      echo final tags for ghcr are:  ${ghcr_tags}
-      echo final tags for ali are: ${ali_cloud_tags}
-      echo ::set-output name=docker_image_ghcr_tags::${ghcr_tags}
-      echo ::set-output name=docker_image_ali_cloud_tags::${ali_cloud_tags}
   - name: Is production check
     shell: bash
     id: is_production_check

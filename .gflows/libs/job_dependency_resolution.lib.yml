@@ -7,36 +7,24 @@
 #@ load("build_publish_steps.lib.yml", "bpsteps")
 #@ load("configuration.lib.yml", "cfg")
 ---
-#@ def _get_integration_tests_run_jobs(integration_tests):
-#@ jobs = []
-#@ for integration_test_definition in integration_tests:
-#@   if cfg.get_single_job(integration_test_definition):
-#@    jobs.append(job.id.build_and_run(integration_test_definition))
-#@   else:
-#@    jobs.append(job.id.docker_run(integration_test_definition))
+#@ def _get_build_and_run_or_docker_run_jobs(job_definitions):
+#@   jobs = []
+#@   for job_definition in job_definitions:
+#@     if cfg.get_single_job(job_definition):
+#@       jobs.append(job.id.build_and_run(job_definition))
+#@     else:
+#@       jobs.append(job.id.docker_run(job_definition))
+#@     end
 #@   end
-#@ end
-#@ return jobs
+#@   return jobs
 #@ end
 ---
-#@ def _get_additional_images_build_jobs(additional_images):
-#@ jobs = []
-#@ for additional_image in additional_images:
-#@   jobs.append(job.id.docker_build(additional_image))
-#@ end
-#@ return jobs
-#@ end
----
-#@ def _get_unit_tests_job_names(unit_tests):
-#@ jobs = []
-#@ for unit_test_definition in unit_tests:
-#@   if cfg.get_single_job(unit_test_definition):
-#@    jobs.append(job.id.build_and_run(unit_test_definition))
-#@   else:
-#@    jobs.append(job.id.docker_run(unit_test_definition))
+#@ def _get_docker_build_jobs(job_definitions):
+#@   jobs = []
+#@   for job_definition in job_definitions:
+#@     jobs.append(job.id.docker_build(job_definition))
 #@   end
-#@ end
-#@ return jobs
+#@   return jobs
 #@ end
 ---
 # var artifacts = {
@@ -98,7 +86,7 @@
 #@  end
 #@ end
 
-#@ for section_name in ["unit_test","integration_test","additional_images"] :
+#@ for section_name in ["services","unit_test","integration_test","additional_images"] :
 #@   for subsection in getattr(sections, section_name, {}):
 #       print("got subsection "+subsection.slug)
 #@       section_artifacts =  _get_exports(subsection, subsection.slug)
@@ -138,14 +126,38 @@
 #@ jobName = exports[image]["job"]
 #@ return jobName
 #@ end
-
+---
+#@ def _get_service_sections(sections):
+#@   service_sections = []
+#@
+#@   if hasattr(sections,"service"):
+#@     service_sections.append(sections.service)
+#@   end
+#@
+#@   for service_section in getattr(sections,"services",[]):
+#@     service_sections.append(service_section)
+#@   end
+#@   return service_sections
+#@ end
 ---
 #@ def _get_repository_built_images(sections):
 #@ images = []
-#@ images.append(sections.service.image_name)
+#@ if hasattr(sections,"service"):
+#@   images.append(sections.service.image_name)
+#@ end
+#@ append_images_from_section(sections,"services",images)
 #@ append_images_from_section(sections,"unit_test",images)
 #@ append_images_from_section(sections,"integration_test",images)
 #@ append_images_from_section(sections,"additional_images",images)
+#@ return ';'.join(images)
+#@ end
+---
+#@ def _get_repository_built_images_to_publish(sections):
+#@ images = []
+#@ if hasattr(sections,"service"):
+#@   images.append(sections.service.image_name)
+#@ end
+#@ append_images_from_section(sections,"services",images)
 #@ return ';'.join(images)
 #@ end
 ---
@@ -172,10 +184,13 @@
 ---
 
 #@ dep = struct.make(
-#@ get_integration_tests_run_jobs    = _get_integration_tests_run_jobs, 
-#@ get_additional_images_build_jobs  = _get_additional_images_build_jobs,
-#@ get_unit_tests_job_names          = _get_unit_tests_job_names,        
-#@ find_job_for_image                = _find_job_for_image,          
-#@ get_repository_built_images       = _get_repository_built_images,
-#@ get_job_needs                     = _get_job_needs
+#@ get_services_build_jobs                = _get_docker_build_jobs,
+#@ get_integration_tests_run_jobs         = _get_build_and_run_or_docker_run_jobs, 
+#@ get_additional_images_build_jobs       = _get_docker_build_jobs,
+#@ get_unit_tests_job_names               = _get_build_and_run_or_docker_run_jobs,        
+#@ find_job_for_image                     = _find_job_for_image,          
+#@ get_repository_built_images            = _get_repository_built_images,
+#@ get_repository_built_images_to_publish = _get_repository_built_images_to_publish,
+#@ get_job_needs                          = _get_job_needs,
+#@ get_service_sections                   = _get_service_sections
 #@ )

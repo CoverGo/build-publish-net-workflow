@@ -10,7 +10,7 @@
 #@ return "name=" + getattr(integration_test_component,"diagnostic_filter", "*")
 #@ end
 ---
-#@ def _compose_launch_steps(integration_test_definition, images, service_image):
+#@ def _compose_launch_steps(integration_test_definition, images, candidate_images):
     - name: Prepare compose file
       uses: ./.github/actions/set-compose-tags
       with:
@@ -20,7 +20,7 @@
     - name: Prepare compose file
       uses: ./.github/actions/set-compose-tags
       with:
-        images: #@ service_image
+        images: #@ candidate_images
         target-tag: candidate-${{ needs.version.outputs.app_version }}
         compose-file: #@ integration_test_definition.compose_file
     - name: #@ "Run {}".format(integration_test_definition.name)
@@ -65,7 +65,7 @@ with:
   files: #@ filePath
 #@ end
 ---
-#@ def _copy_between_registries_step(tag_from,tag_to, target_registry_name):
+#@ def _copy_between_registries_step(tag_from, tag_to, target_registry_name):
 name: #@ "Push Image to {}".format(target_registry_name) 
 uses: akhilerm/tag-push-action@v2.0.0
 with:

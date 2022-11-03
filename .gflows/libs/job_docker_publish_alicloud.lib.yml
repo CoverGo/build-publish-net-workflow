@@ -1,4 +1,5 @@
 #@ load("@ytt:data", "data")
+#@ load("@ytt:struct", "struct")
 
 #@ load("common.lib.yml", "common")
 #@ load("steps.lib.yml", "steps")
@@ -6,36 +7,74 @@
 #@ load("job_dependency_resolution.lib.yml", "dep")
 #@ load("build_publish_steps.lib.yml", "bpsteps")
 #@ load("tagging.lib.yml", "tagging")
+#@ load("job_docker_publish_github.lib.yml", "get_docker_publish_github_job_ids")
 ---
-#@ def generate_docker_publish_alicloud(sections):
-#@ needs = ["version", job.id.docker_build(sections.service), "docker-publish-github"]
-#@ name ="Publish {} to AliCloud".format(sections.service.name)
-
-#@ if hasattr(sections,"integration_test"):
-#@ needs.extend(dep.get_integration_tests_run_jobs(sections.integration_test))
-#@ end
-
-#@ if hasattr(sections,"unit_test"):
-#@ needs.extend(dep.get_unit_tests_job_names(sections.unit_test))
-#@ end
-
-#@ if (hasattr(sections,"integration_tests_legacy")):
-#@ needs.append("integration-tests-legacy-small")
-#@ needs.append("integration-tests-legacy-big")
-#@ end
-
-#@ steps = generate_docker_publish_alicloud_steps(sections)
-#@ branchCondition = common.build_git_branches_condition(sections.main_registry)
-#@ tagCondition = "startsWith(github.ref, 'refs/tags/')"
-#@ conditions = " || ".join([branchCondition, tagCondition])
-#@ return common.generate_job(sections.service, steps, None, sections, needs, "Push service to AliCloud",conditions)
+#@ def _docker_publish_alicloud_id(image_section):
+#@   return common.job_id(image_section,"docker-publish-alicloud-")
 #@ end
 ---
-#@ def generate_docker_publish_alicloud_steps(sections):
+#@ def _get_versions(image_section, id, sections):
+name: Get docker image tags
+id: #@ id
+env:
+  versioned_tag: #@ tagging.with_registry(sections.main_registry.url,image_section.image_name,"${{ steps.version.outputs.app_version }}")
+  latest_tag: #@ tagging.with_registry(sections.main_registry.url,image_section.image_name,"latest")
+  master_tag:  #@ tagging.with_registry(sections.main_registry.url,image_section.image_name,"master")
+run: |
+  
+  ali_cloud_tags=${versioned_tag}
+
+  branch=$(git branch --show-current)
+  if [[ "$branch" = 'main' || "$branch" = 'master'  ]]; then
+    ali_cloud_tags="${ali_cloud_tags},${master_tag}"
+  fi
+
+  if [[ ${GITHUB_REF}  == refs/tags/v* ]]; then
+    ali_cloud_tags="${ali_cloud_tags},${latest_tag}"
+  fi
+
+  echo final tags for ali are: ${ali_cloud_tags}
+  echo ::set-output name=docker_image_ali_cloud_tags::${ali_cloud_tags}
+#@ end
+---
+#@ def _generate_docker_publish_alicloud(image_section, sections):
+#@   needs = ["version"]
+#@   name = "Publish to AliCloud"
+#@
+#@   service_sections = dep.get_service_sections(sections)
+#@   needs.extend(dep.get_services_build_jobs(service_sections))
+#@   needs.extend(get_docker_publish_github_job_ids(service_sections))
+#@
+#@   if hasattr(sections,"integration_test"):
+#@     needs.extend(dep.get_integration_tests_run_jobs(sections.integration_test))
+#@   end
+#@
+#@   if hasattr(sections,"unit_test"):
+#@     needs.extend(dep.get_unit_tests_job_names(sections.unit_test))
+#@   end
+#@
+#@   if (hasattr(sections,"integration_tests_legacy")):
+#@     needs.append("integration-tests-legacy-small")
+#@     needs.append("integration-tests-legacy-big")
+#@   end
+#@
+#@   steps = _generate_docker_publish_alicloud_steps(image_section, sections)
+#@   branchCondition = common.build_git_branches_condition(sections.main_registry)
+#@   tagCondition = "startsWith(github.ref, 'refs/tags/')"
+#@   conditions = " || ".join([branchCondition, tagCondition])
+#@   return common.generate_job(image_section, steps, None, sections, needs, "Push service to AliCloud",conditions)
+#@ end
+---
+#@ def _generate_docker_publish_alicloud_steps(image_section, sections):
 - #@ steps.login_docker(sections.cache_registry)
 - #@ steps.login_docker(sections.main_registry)
-- #@ bpsteps.copy_between_registries_step(tagging.image(sections.cache_registry, sections.service),"${{ needs.version.outputs.docker_image_ali_cloud_tags }}",sections.main_registry.name)
+#@   get_versions_tags_id = common.job_id(image_section,"alicloud-tags-")
+- #@ _get_versions(image_section, get_versions_tags_id, sections)
+- #@ bpsteps.copy_between_registries_step(tagging.image(sections.cache_registry, image_section),"${{ steps." + get_versions_tags_id + ".docker_image_ali_cloud_tags }}",sections.main_registry.name)
 - #@ bpsteps.setup_cosign()
-- #@ bpsteps.sign_container_with_cosign(tagging.with_registry(sections.main_registry.url,sections.service.image_name,"${{ needs.version.outputs.app_version }}"), "${{ needs." + job.id.docker_build(data.values.service) + ".outputs.digest }}")
+- #@ bpsteps.sign_container_with_cosign(tagging.with_registry(sections.main_registry.url,image_section.image_name,"${{ needs.version.outputs.app_version }}"), "${{ needs." + job.id.docker_build(image_section) + ".outputs.digest }}")
 #@ end
 ---
+#@ docker_publish_alicloud_job = struct.make(
+#@   id = _docker_publish_alicloud_id,
+#@   build = _generate_docker_publish_alicloud)

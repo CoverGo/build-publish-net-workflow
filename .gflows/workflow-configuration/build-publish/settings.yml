@@ -59,6 +59,7 @@ generic_job_example:
   ## end of compose section
 
 #Should Only build and export docker images
+#Deprecated in favor of services
 service: #docker-build-and-job 
   name: Auth
   slug: auth-service
@@ -68,6 +69,15 @@ service: #docker-build-and-job
   generate_docker_meta: true
   output_docker_digest: true
 
+#Should Only build and export docker images
+services:
+  - name: Auth Predeployment
+    slug: auth-predeployment
+    dockerfile: Dockerfile
+    docker_target: build-predeployment
+    image_name: covergo/auth-predeployment
+    generate_docker_meta: true
+    output_docker_digest: true
 
 #Runs an existing image, can build if needed 
 unit_test: #docker-build-and-job 
