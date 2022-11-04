@@ -302,7 +302,9 @@ jobs:
         load: false
         labels: ${{ steps.meta.outputs.labels }}
         tags: ghcr.io/covergo/auth-predeployment:candidate-${{ needs.version.outputs.app_version }}
-        cache-from: type=registry,ref=ghcr.io/covergo/auth-predeployment-cache:${{ needs.version.outputs.issue_id_slug }}
+        cache-from: |-
+          type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.issue_id_slug }}
+          type=registry,ref=ghcr.io/covergo/auth-predeployment-cache:${{ needs.version.outputs.issue_id_slug }}
         cache-to: type=registry,ref=ghcr.io/covergo/auth-predeployment-cache:${{ needs.version.outputs.issue_id_slug }},mode=max
         target: build-predeployment
         build-args: COMMIT_SHA=${{ github.sha }}
@@ -1103,3 +1105,33 @@ jobs:
         build-args: COMMIT_SHA=${{ github.sha }}
     - name: Image digest
       run: echo ${{ steps.docker-build-auth-mongo.outputs.digest }}
+  deploy-tenant-tahoe:
+    if: ${{ needs.version.outputs.is_production == 'true' }}
+    runs-on: self-hosted
+    needs:
+    - version
+    - docker-publish-alicloud-auth-service
+    - docker-publish-alicloud-auth-predeployment
+    name: Deploy to Tahoe
+    steps:
+    - name: Checkout tokens repository
+      uses: actions/checkout@v3
+      with:
+        repository: CoverGo/Documentation
+        ref: master
+        token: ${{ secrets.CR_PAT_FULL }}
+        path: configs
+    - name: Configure AWS
+      run: printf  '${{ secrets.TAHOE_DEPLOY_AWS_KEY }}' | aws configure
+    - name: Deploy via kubectl
+      run: kubectl -n default --kubeconfig ./configs/tenants/tahoe-aws_hk-config set image deployments/covergo-auth covergo-auth=registry-intl.cn-hongkong.aliyuncs.com/covergo/auth:${{ needs.version.outputs.app_version }}
+    - name: Check deployment
+      run: kubectl -n default --kubeconfig ./configs/tenants/tahoe-aws_hk-config rollout status deployments/covergo-auth
+    - name: Deploy covergo-auth-predeployment via kubectl
+      run: kubectl -n default --kubeconfig ./configs/tenants/tahoe-aws_hk-config set image deployments/covergo-auth-predeployment covergo-auth-predeployment=registry-intl.cn-hongkong.aliyuncs.com/covergo/auth-predeployment:${{ needs.version.outputs.app_version }}
+    - name: Check covergo-auth-predeployment deployment
+      run: kubectl -n default --kubeconfig ./configs/tenants/tahoe-aws_hk-config rollout status deployments/covergo-auth-predeployment
+    - name: Deploy covergo-auth via kubectl
+      run: kubectl -n default --kubeconfig ./configs/tenants/tahoe-aws_hk-config set image deployments/covergo-auth covergo-auth=registry-intl.cn-hongkong.aliyuncs.com/covergo/auth:${{ needs.version.outputs.app_version }}
+    - name: Check covergo-auth deployment
+      run: kubectl -n default --kubeconfig ./configs/tenants/tahoe-aws_hk-config rollout status deployments/covergo-auth

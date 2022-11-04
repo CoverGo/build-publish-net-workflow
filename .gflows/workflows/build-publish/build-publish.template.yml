@@ -15,7 +15,6 @@
 #@  load("job_integration_tests_legacy.lib.yml", "generate_integration_test_legacy_small")
 #@  load("job_integration_tests_legacy.lib.yml", "generate_integration_test_legacy_big")
 #@  load("job_deploy_tenants.lib.yml", "tenant_deploy_steps")
-#@  load("job_deploy_tenants.lib.yml", "tenant_get_deployment_job_name")
 #@  load("naming.lib.yml", "job")
 #@  load("steps.lib.yml", "steps")
 #@  load("common.lib.yml", "common")
@@ -110,9 +109,11 @@
     #@ end
   #@ end
   
-  #@ if hasattr(data.values,"deploy_tenants"):
-    #@ for tenant in data.values.deploy_tenants.tenants :
-     #@ jobs["deploy-tenant-{}".format(tenant.slug)] = tenant_deploy_steps(data.values.deploy_tenants, tenant)
+  #@ if hasattr(data.values, "deploy_tenants"):
+    #@ deploy_tenants_registry_section = getattr(data.values, data.values.deploy_tenants.registry)
+
+    #@ for tenant in data.values.deploy_tenants.tenants:
+    #@   jobs[common.job_id(tenant, "deploy-tenant-")] = tenant_deploy_steps(data.values.deploy_tenants, tenant, deploy_tenants_registry_section, service_sections)
     #@ end
   #@ end
   
@@ -122,7 +123,3 @@
 name: Build and publish
 "on": #@ common.workflow_triggers(getattr(data.values,"git",None))
 jobs: #@ generate_jobs(data)
- 
-
-  
-

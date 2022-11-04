@@ -58,19 +58,18 @@ generic_job_example:
   diagnostic_filter: filter*
   ## end of compose section
 
-#Should Only build and export docker images
 #Deprecated in favor of services
-service: #docker-build-and-job 
-  name: Auth
-  slug: auth-service
-  dockerfile: Dockerfile
-  docker_target: build-service
-  image_name: covergo/auth
-  generate_docker_meta: true
-  output_docker_digest: true
+#service:  
 
 #Should Only build and export docker images
 services:
+  - name: Auth
+    slug: auth-service
+    dockerfile: Dockerfile
+    docker_target: build-service
+    image_name: covergo/auth
+    generate_docker_meta: true
+    output_docker_digest: true
   - name: Auth Predeployment
     slug: auth-predeployment
     dockerfile: Dockerfile
@@ -78,6 +77,8 @@ services:
     image_name: covergo/auth-predeployment
     generate_docker_meta: true
     output_docker_digest: true
+    cache_from:
+      - covergo/auth
 
 #Runs an existing image, can build if needed 
 unit_test: #docker-build-and-job 
@@ -262,3 +263,36 @@ scan_code_net:
     organisation: covergo
     project_name: Auth Service
     coverage_artifact_pooling_timeout_sec: '1200'
+
+deploy_tenants:
+  runner: self-hosted
+  repository:
+    url: CoverGo/Documentation
+    branch: master
+    token: ${{ secrets.CR_PAT_FULL }}
+  
+  # Legacy way
+  service: covergo-auth
+  image: registry-intl.cn-hongkong.aliyuncs.com/covergo/auth:${{ needs.version.outputs.app_version }}
+
+  # New way
+  images:
+    - src: covergo/auth-predeployment
+      dst: covergo-auth-predeployment # image name in tenant k8s config
+    - src: covergo/auth
+      dst: covergo-auth
+  registry: main_registry
+
+  tenants:
+    - name: Tahoe
+      slug: tahoe
+      aws_key: ${{ secrets.TAHOE_DEPLOY_AWS_KEY }}
+      credentials_path: tenants/tahoe-aws_hk-config
+  triggers:
+    workflows:
+      - Build and publish
+    conditions:
+      - completed
+    branches:
+      - master
+      - main
