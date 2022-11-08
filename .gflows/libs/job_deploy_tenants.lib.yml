@@ -29,7 +29,7 @@
   - name: Check deployment
     run: #@ "kubectl -n default --kubeconfig ./configs/{} rollout status deployments/{}".format(tenant.credentials_path, deploy.service)
   #@ end
-  #@ for image in deploy.images:
+  #@ for image in getattr(deploy, "images", []):
   - name: #@ "Deploy {} via kubectl".format(image.dst)
     run: #@ "kubectl -n default --kubeconfig ./configs/{} set image deployments/{} {}={}".format(tenant.credentials_path, image.dst, image.dst, tagging.with_registry(registry.url, image.src, "${{ needs.version.outputs.app_version }}"))
   - name: #@ "Check {} deployment".format(image.dst)
