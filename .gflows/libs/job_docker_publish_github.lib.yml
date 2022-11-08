@@ -34,7 +34,7 @@
 #@   end
 
 #@   steps = _generate_docker_publish_github_steps(image_section, sections)
-#@   return common.generate_job(image_section, steps, None, sections, needs, "Tag service image an GitHub")
+#@   return common.generate_job(image_section, steps, None, sections, needs, "Tag service image in GitHub")
 #@   end
 ---
 #@ def _get_versions(image_section, id, sections):
@@ -64,6 +64,7 @@ run: |
 #@ def _generate_docker_publish_github_steps(image_section, sections):
 - #@ steps.login_docker(sections.cache_registry)
 #@   get_versions_tags_id = common.job_id(image_section,"github-tags-")
+- #@ steps.checkout()
 - #@ _get_versions(image_section, get_versions_tags_id, sections)
 - #@ bpsteps.copy_between_registries_step(tagging.candidate_image(sections.cache_registry, image_section),"${{ steps." + get_versions_tags_id + ".outputs.docker_image_ghcr_tags }}",sections.cache_registry.name)
 - #@ bpsteps.setup_cosign()

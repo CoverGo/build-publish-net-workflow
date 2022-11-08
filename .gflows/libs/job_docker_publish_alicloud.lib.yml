@@ -66,6 +66,7 @@ run: |
 #@ end
 ---
 #@ def _generate_docker_publish_alicloud_steps(image_section, sections):
+- #@ steps.checkout()
 - #@ steps.login_docker(sections.cache_registry)
 - #@ steps.login_docker(sections.main_registry)
 #@   get_versions_tags_id = common.job_id(image_section,"alicloud-tags-")
