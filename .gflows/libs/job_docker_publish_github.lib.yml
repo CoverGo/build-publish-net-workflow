@@ -16,10 +16,10 @@
 #@ def _generate_docker_publish_github(image_section, sections, tags_from):
 #@   name = "Publish to GitHub"
 #@   needs = ["version"]
-#@   
+#@
 #@   service_sections = dep.get_service_sections(sections)
 #@   needs.extend(dep.get_services_build_jobs(service_sections))
-#@ 
+#@
 #@   if hasattr(sections,"integration_test"):
 #@     needs.extend(dep.get_integration_tests_run_jobs(sections.integration_test))
 #@   end
@@ -41,11 +41,11 @@
 name: Get docker image tags
 id: #@ id
 env:
-  versioned_tag: #@ tagging.with_registry(sections.cache_registry.url,image_section.image_name,"${{ steps.version.outputs.app_version }}")
+  versioned_tag: #@ tagging.with_registry(sections.cache_registry.url,image_section.image_name,"${{ needs.version.outputs.app_version }}")
   latest_tag: #@ tagging.with_registry(sections.cache_registry.url,image_section.image_name,"latest")
   master_tag: #@ tagging.with_registry(sections.cache_registry.url,image_section.image_name,"master")
 run: |
-  
+
   ghcr_tags=${versioned_tag}
 
   branch=$(git branch --show-current)

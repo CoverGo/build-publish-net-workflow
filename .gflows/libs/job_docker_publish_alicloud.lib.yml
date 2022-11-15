@@ -17,11 +17,11 @@
 name: Get docker image tags
 id: #@ id
 env:
-  versioned_tag: #@ tagging.with_registry(sections.main_registry.url,image_section.image_name,"${{ steps.version.outputs.app_version }}")
+  versioned_tag: #@ tagging.with_registry(sections.main_registry.url,image_section.image_name,"${{ needs.version.outputs.app_version }}")
   latest_tag: #@ tagging.with_registry(sections.main_registry.url,image_section.image_name,"latest")
   master_tag:  #@ tagging.with_registry(sections.main_registry.url,image_section.image_name,"master")
 run: |
-  
+
   ali_cloud_tags=${versioned_tag}
 
   branch=$(git branch --show-current)
