@@ -1127,7 +1127,7 @@ jobs:
       with:
         repository: CoverGo/Documentation
         ref: master
-        token: ${{ secrets.CR_PAT_FULL }}
+        ssh-key: ${{ secrets.DOCUMENTATION_SSH_READONLY }}
         path: configs
     - name: Configure AWS
       run: printf  '${{ secrets.TAHOE_DEPLOY_AWS_KEY }}' | aws configure
