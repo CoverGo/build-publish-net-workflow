@@ -18,7 +18,7 @@
     with:
       repository: #@ deploy.repository.url
       ref: #@ deploy.repository.branch
-      token: #@ deploy.repository.token
+      ssh-key: ${{ secrets.DOCUMENTATION_SSH_READONLY }}
       path: configs
   - name: Configure AWS
     run: #@ "printf  '{}' | aws configure".format(tenant.aws_key)
