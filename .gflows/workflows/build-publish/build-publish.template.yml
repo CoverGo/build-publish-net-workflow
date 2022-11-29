@@ -51,7 +51,7 @@
 
   #@ for service_section in service_sections:
   #@   service_image_build_tag = tagging.candidate_image(data.values.cache_registry, service_section)
-  #@   jobs[job.id.docker_build(service_section)] = docker.job.build(service_section, data.values, ["version"], service_image_build_tag)
+  #@   jobs[job.id.docker_build(service_section)] = docker.job.build(service_section, data.values, ["version"], service_image_build_tag, build_versioned_image=True )
   #@ end
   
   #@ for unit_test_section in getattr(data.values,"unit_test",[]):
