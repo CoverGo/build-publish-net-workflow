@@ -264,6 +264,7 @@ jobs:
         cache-to: type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.issue_id_slug }},mode=max
         target: build-service
         build-args: |-
+          NOW="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
           COMMIT_SHA=${{ github.sha }}
           APP_VERSION=${{ needs.version.outputs.app_version }}
           FILE_VERSION=${{ needs.version.outputs.file_version }}

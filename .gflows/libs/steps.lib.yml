@@ -109,6 +109,9 @@ with:
   target: #@ component.docker_target
   #@ end
   #@ build_args = []
+  #@ if hasattr(component,"build_args"):
+  #@  build_args += component.build_args
+  #@ end
   #@ build_args.append("COMMIT_SHA=${{ github.sha }}")
   #@ if build_versioned_image:
   #@ build_args.append("APP_VERSION=${{ needs.version.outputs.app_version }}")
