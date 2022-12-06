@@ -114,6 +114,7 @@ with:
   #@ end
   #@ build_args.append("COMMIT_SHA=${{ github.sha }}")
   #@ if build_versioned_image:
+  #@ build_args.append("BUILD_DATETIME=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.created'] }}")
   #@ build_args.append("APP_VERSION=${{ needs.version.outputs.app_version }}")
   #@ build_args.append("FILE_VERSION=${{ needs.version.outputs.file_version }}")
   #@ build_args.append("INFORMATIONAL_VERSION=${{ needs.version.outputs.information_version }}")
