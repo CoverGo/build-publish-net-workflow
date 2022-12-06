@@ -70,6 +70,8 @@ services:
     image_name: covergo/auth
     generate_docker_meta: true
     output_docker_digest: true
+    build_args: 
+      - NOW="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
   - name: Auth Predeployment
     slug: auth-predeployment
     dockerfile: Dockerfile
