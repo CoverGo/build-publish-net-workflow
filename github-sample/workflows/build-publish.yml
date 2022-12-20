@@ -46,6 +46,7 @@ jobs:
         production-branches: |-
           master
           main
+        release-candidate-version: false
     - name: Is production check
       shell: bash
       id: is_production_check

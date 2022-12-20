@@ -18,6 +18,13 @@
 #@ return "none"
 #@ end
 ---
+#@ def get_release_candidate_version_flag(context):
+#@ if getattr(getattr(context,"versioning",None),"release_candidate_version", True):
+#@ return True
+#@ end
+#@ return False
+#@ end
+---
 #@ def generate_version_job(sections):
 runs-on: ubuntu-latest
 name: Get version from git tag
@@ -43,7 +50,8 @@ steps:
       build-number: #@ set_build_number(sections)
       pre-release-version: #@ set_version(sections)
       production-branches: #@ "\n".join(getattr(getattr(sections,"versioning",None),"production_branches",["master","main"]))
-  - name: Is production check
+      release-candidate-version: #@ get_release_candidate_version_flag(sections)
+  - name: Is production check 
     shell: bash
     id: is_production_check
     run: |

@@ -229,6 +229,7 @@ git:
 versioning:
   use_build_number: false
   use_branch_slug: true
+  release_candidate_version: false
  # production_branches:
  #   - my_prod_branch
  #   - my_prod_branch2
