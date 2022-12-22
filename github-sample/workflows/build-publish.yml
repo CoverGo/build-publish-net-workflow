@@ -112,6 +112,7 @@ jobs:
           type=registry,ref=ghcr.io/covergo/auth-nuget-cache:${{ needs.version.outputs.issue_id_slug }}
         build-args: |-
           COMMIT_SHA=${{ github.sha }}
+          GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
           BUILD_DATETIME=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.created'] }}
           APP_VERSION=${{ needs.version.outputs.app_version }}
           FILE_VERSION=${{ needs.version.outputs.file_version }}
@@ -184,6 +185,7 @@ jobs:
         cache-to: type=registry,ref=ghcr.io/covergo/auth-nuget-default-cache:${{ needs.version.outputs.issue_id_slug }},mode=max
         build-args: |-
           COMMIT_SHA=${{ github.sha }}
+          GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
           BUILD_DATETIME=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.created'] }}
           APP_VERSION=${{ needs.version.outputs.app_version }}
           FILE_VERSION=${{ needs.version.outputs.file_version }}
@@ -269,6 +271,7 @@ jobs:
         build-args: |-
           NOW="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
           COMMIT_SHA=${{ github.sha }}
+          GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
           BUILD_DATETIME=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.created'] }}
           APP_VERSION=${{ needs.version.outputs.app_version }}
           FILE_VERSION=${{ needs.version.outputs.file_version }}
@@ -318,6 +321,7 @@ jobs:
         target: build-predeployment
         build-args: |-
           COMMIT_SHA=${{ github.sha }}
+          GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
           BUILD_DATETIME=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.created'] }}
           APP_VERSION=${{ needs.version.outputs.app_version }}
           FILE_VERSION=${{ needs.version.outputs.file_version }}
@@ -359,7 +363,9 @@ jobs:
           type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.issue_id_slug }}
           type=registry,ref=ghcr.io/covergo/auth-test-unit-cache:${{ needs.version.outputs.issue_id_slug }}
         cache-to: type=registry,ref=ghcr.io/covergo/auth-test-unit-cache:${{ needs.version.outputs.issue_id_slug }},mode=min
-        build-args: COMMIT_SHA=${{ github.sha }}
+        build-args: |-
+          COMMIT_SHA=${{ github.sha }}
+          GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
     - name: Image digest
       run: echo ${{ steps.docker-build-auth-test-unit.outputs.digest }}
   run-auth-test-unit:
@@ -448,7 +454,9 @@ jobs:
           type=registry,ref=ghcr.io/covergo/auth-test-unit-cache:${{ needs.version.outputs.issue_id_slug }}
           type=registry,ref=ghcr.io/covergo/cases-mariadb-test-integration-cache:${{ needs.version.outputs.issue_id_slug }}
         cache-to: type=registry,ref=ghcr.io/covergo/cases-mariadb-test-integration-cache:${{ needs.version.outputs.issue_id_slug }},mode=max
-        build-args: COMMIT_SHA=${{ github.sha }}
+        build-args: |-
+          COMMIT_SHA=${{ github.sha }}
+          GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
     - name: Image digest
       run: echo ${{ steps.docker-build-integration-tests.outputs.digest }}
     - name: Checkout repository
@@ -553,7 +561,9 @@ jobs:
           type=registry,ref=ghcr.io/covergo/cases-api-test-integration-cache:${{ needs.version.outputs.issue_id_slug }}
           type=registry,ref=ghcr.io/covergo/cases-test-acceptance-cache:${{ needs.version.outputs.issue_id_slug }}
         cache-to: type=registry,ref=ghcr.io/covergo/cases-test-acceptance-cache:${{ needs.version.outputs.issue_id_slug }},mode=max
-        build-args: COMMIT_SHA=${{ github.sha }}
+        build-args: |-
+          COMMIT_SHA=${{ github.sha }}
+          GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
     - name: Image digest
       run: echo ${{ steps.docker-build-acceptance-tests.outputs.digest }}
   run-acceptance-tests:
@@ -687,7 +697,9 @@ jobs:
           type=registry,ref=ghcr.io/covergo/auth-test-unit-cache:${{ needs.version.outputs.issue_id_slug }}
           type=registry,ref=ghcr.io/covergo/cases-api-test-integration-cache:${{ needs.version.outputs.issue_id_slug }}
         cache-to: type=registry,ref=ghcr.io/covergo/cases-api-test-integration-cache:${{ needs.version.outputs.issue_id_slug }},mode=max
-        build-args: COMMIT_SHA=${{ github.sha }}
+        build-args: |-
+          COMMIT_SHA=${{ github.sha }}
+          GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
     - name: Image digest
       run: echo ${{ steps.docker-build-api-test-integration.outputs.digest }}
   run-api-test-integration:
@@ -1124,7 +1136,9 @@ jobs:
         tags: ghcr.io/covergo/auth-mongo:${{ needs.version.outputs.app_version }}
         cache-from: type=registry,ref=ghcr.io/covergo/auth-mongo-cache:${{ needs.version.outputs.issue_id_slug }}
         cache-to: type=registry,ref=ghcr.io/covergo/auth-mongo-cache:${{ needs.version.outputs.issue_id_slug }},mode=max
-        build-args: COMMIT_SHA=${{ github.sha }}
+        build-args: |-
+          COMMIT_SHA=${{ github.sha }}
+          GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
     - name: Image digest
       run: echo ${{ steps.docker-build-auth-mongo.outputs.digest }}
   deploy-tenant-tahoe:

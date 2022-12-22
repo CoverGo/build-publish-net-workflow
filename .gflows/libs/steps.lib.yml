@@ -18,7 +18,7 @@ with:
 #@ def _checkout():
 name: Checkout repository
 uses: actions/checkout@v3
-#@ end 
+#@ end
 ---
 #@ def _generate_docker_meta():
 #@ custom_labels = []
@@ -29,12 +29,12 @@ uses: docker/metadata-action@v3
 with:
   images: name/app
   labels: #@ "\n".join(custom_labels)
-#@ end 
+#@ end
 ---
 #@ def _setup_qemu():
 name: Set up QEMU
 uses: docker/setup-qemu-action@v1
-#@ end 
+#@ end
 ---
 #@ def _setup_buildx():
 name: Set up Docker Buildx
@@ -62,7 +62,7 @@ with:
 #@ def _build_and_push_docker(component, cache_registry, step_name=None, step_id=None, push_image=True, load_image=False, tags=None, build_versioned_image = False):
 name: #@ common.get_value(step_name, job.name.docker_build(component.name))
 uses: docker/build-push-action@v3
-#@ if step_id != None : 
+#@ if step_id != None :
 id: #@ step_id
 #@ end
 #@ if tags == None :
@@ -80,10 +80,10 @@ id: #@ step_id
 #@ for cache_image in cache_images:
 #@  cache_refs.append("type=registry,ref={}".format(cache_image))
 #@ end
-#@ 
+#@
 #@ cache_from_multiline_string = "\n".join(cache_refs)
 #@ cache_registry = struct.make(cache_from =cache_from_multiline_string, cache_to = "type=registry,ref={},mode={}".format(own_cache_image,getattr(component,"cache_mode","max")))
-  
+
 #@ cache_params = {"gha":cache_gha, "registry":cache_registry}
 
 #@ cache_type = cfg.get_cache_type(component)
@@ -104,7 +104,7 @@ with:
   #@ end
   #@ if cfg.should_push_cache(component):
   cache-to: #@ cache_params[cache_type].cache_to
-  #@ end 
+  #@ end
   #@ if hasattr(component,"docker_target"):
   target: #@ component.docker_target
   #@ end
@@ -113,6 +113,7 @@ with:
   #@  build_args += component.build_args
   #@ end
   #@ build_args.append("COMMIT_SHA=${{ github.sha }}")
+  #@ build_args.append("GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}")
   #@ if build_versioned_image:
   #@ build_args.append("BUILD_DATETIME=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.created'] }}")
   #@ build_args.append("APP_VERSION=${{ needs.version.outputs.app_version }}")
