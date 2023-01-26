@@ -67,7 +67,7 @@ with:
 ---
 #@ def _copy_between_registries_step(tag_from, tag_to, target_registry_name):
 name: #@ "Push Image to {}".format(target_registry_name) 
-uses: akhilerm/tag-push-action@v2.0.0
+uses: akhilerm/tag-push-action@v2.1.0
 with:
   src: #@ tag_from
   #docker.io/user/app:1.0.0

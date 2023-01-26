@@ -117,6 +117,10 @@ jobs:
           APP_VERSION=${{ needs.version.outputs.app_version }}
           FILE_VERSION=${{ needs.version.outputs.file_version }}
           INFORMATIONAL_VERSION=${{ needs.version.outputs.information_version }}
+        platforms: |-
+          linux/amd64
+          linux/arm64
+          linux/arm/v8
     - name: Image digest
       run: echo ${{ steps.docker-build-auth-nuget.outputs.digest }}
     - name: Create docker image with nuget packages
@@ -190,6 +194,10 @@ jobs:
           APP_VERSION=${{ needs.version.outputs.app_version }}
           FILE_VERSION=${{ needs.version.outputs.file_version }}
           INFORMATIONAL_VERSION=${{ needs.version.outputs.information_version }}
+        platforms: |-
+          linux/amd64
+          linux/arm64
+          linux/arm/v8
     - name: Image digest
       run: echo ${{ steps.docker-build-auth-nuget-default.outputs.digest }}
     - name: Create docker image with nuget packages
@@ -276,6 +284,10 @@ jobs:
           APP_VERSION=${{ needs.version.outputs.app_version }}
           FILE_VERSION=${{ needs.version.outputs.file_version }}
           INFORMATIONAL_VERSION=${{ needs.version.outputs.information_version }}
+        platforms: |-
+          linux/amd64
+          linux/arm64
+          linux/arm/v8
     - name: Image digest
       env:
         docker_digest: ${{ steps.docker-build-auth-service.outputs.digest }}
@@ -326,6 +338,10 @@ jobs:
           APP_VERSION=${{ needs.version.outputs.app_version }}
           FILE_VERSION=${{ needs.version.outputs.file_version }}
           INFORMATIONAL_VERSION=${{ needs.version.outputs.information_version }}
+        platforms: |-
+          linux/amd64
+          linux/arm64
+          linux/arm/v8
     - name: Image digest
       env:
         docker_digest: ${{ steps.docker-build-auth-predeployment.outputs.digest }}
@@ -366,6 +382,10 @@ jobs:
         build-args: |-
           COMMIT_SHA=${{ github.sha }}
           GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
+        platforms: |-
+          linux/amd64
+          linux/arm64
+          linux/arm/v8
     - name: Image digest
       run: echo ${{ steps.docker-build-auth-test-unit.outputs.digest }}
   run-auth-test-unit:
@@ -457,6 +477,10 @@ jobs:
         build-args: |-
           COMMIT_SHA=${{ github.sha }}
           GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
+        platforms: |-
+          linux/amd64
+          linux/arm64
+          linux/arm/v8
     - name: Image digest
       run: echo ${{ steps.docker-build-integration-tests.outputs.digest }}
     - name: Checkout repository
@@ -564,6 +588,10 @@ jobs:
         build-args: |-
           COMMIT_SHA=${{ github.sha }}
           GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
+        platforms: |-
+          linux/amd64
+          linux/arm64
+          linux/arm/v8
     - name: Image digest
       run: echo ${{ steps.docker-build-acceptance-tests.outputs.digest }}
   run-acceptance-tests:
@@ -700,6 +728,10 @@ jobs:
         build-args: |-
           COMMIT_SHA=${{ github.sha }}
           GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
+        platforms: |-
+          linux/amd64
+          linux/arm64
+          linux/arm/v8
     - name: Image digest
       run: echo ${{ steps.docker-build-api-test-integration.outputs.digest }}
   run-api-test-integration:
@@ -833,7 +865,7 @@ jobs:
         echo final tags for ghcr are:  ${ghcr_tags}
         echo ::set-output name=docker_image_ghcr_tags::${ghcr_tags}
     - name: Push Image to GitHub Container Registry
-      uses: akhilerm/tag-push-action@v2.0.0
+      uses: akhilerm/tag-push-action@v2.1.0
       with:
         src: ghcr.io/covergo/auth:candidate-${{ needs.version.outputs.app_version }}
         dst: ${{ steps.github-tags-auth-service.outputs.docker_image_ghcr_tags }}
@@ -900,7 +932,7 @@ jobs:
         echo final tags for ali are: ${ali_cloud_tags}
         echo ::set-output name=docker_image_ali_cloud_tags::${ali_cloud_tags}
     - name: Push Image to AliCloud Container Registry
-      uses: akhilerm/tag-push-action@v2.0.0
+      uses: akhilerm/tag-push-action@v2.1.0
       with:
         src: ghcr.io/covergo/auth:${{ needs.version.outputs.app_version }}
         dst: ${{ steps.alicloud-tags-auth-service.outputs.docker_image_ali_cloud_tags }}
@@ -958,7 +990,7 @@ jobs:
         echo final tags for ghcr are:  ${ghcr_tags}
         echo ::set-output name=docker_image_ghcr_tags::${ghcr_tags}
     - name: Push Image to GitHub Container Registry
-      uses: akhilerm/tag-push-action@v2.0.0
+      uses: akhilerm/tag-push-action@v2.1.0
       with:
         src: ghcr.io/covergo/auth-predeployment:candidate-${{ needs.version.outputs.app_version }}
         dst: ${{ steps.github-tags-auth-predeployment.outputs.docker_image_ghcr_tags }}
@@ -1025,7 +1057,7 @@ jobs:
         echo final tags for ali are: ${ali_cloud_tags}
         echo ::set-output name=docker_image_ali_cloud_tags::${ali_cloud_tags}
     - name: Push Image to AliCloud Container Registry
-      uses: akhilerm/tag-push-action@v2.0.0
+      uses: akhilerm/tag-push-action@v2.1.0
       with:
         src: ghcr.io/covergo/auth-predeployment:${{ needs.version.outputs.app_version }}
         dst: ${{ steps.alicloud-tags-auth-predeployment.outputs.docker_image_ali_cloud_tags }}
@@ -1139,6 +1171,10 @@ jobs:
         build-args: |-
           COMMIT_SHA=${{ github.sha }}
           GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
+        platforms: |-
+          linux/amd64
+          linux/arm64
+          linux/arm/v8
     - name: Image digest
       run: echo ${{ steps.docker-build-auth-mongo.outputs.digest }}
   deploy-tenant-tahoe:

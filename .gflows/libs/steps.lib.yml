@@ -121,6 +121,11 @@ with:
   #@ build_args.append("INFORMATIONAL_VERSION=${{ needs.version.outputs.information_version }}")
   #@ end
   build-args: #@ "\n".join(build_args)
+  #@ platforms = []
+  #@ platforms.append("linux/amd64")
+  #@ platforms.append("linux/arm64")
+  #@ platforms.append("linux/arm/v8")
+  platforms: #@ "\n".join(platforms)
 #@ end
 ---
 #@ def _echo_docker_digest(step_id, component):
