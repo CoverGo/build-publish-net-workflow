@@ -61,7 +61,7 @@ with:
 
 #@ def _build_and_push_docker(component, cache_registry, step_name=None, step_id=None, push_image=True, load_image=False, tags=None, build_versioned_image = False):
 name: #@ common.get_value(step_name, job.name.docker_build(component.name))
-uses: docker/build-push-action@v3
+uses: docker/build-push-action@v3.2.0
 #@ if step_id != None :
 id: #@ step_id
 #@ end

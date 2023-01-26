@@ -99,7 +99,7 @@ jobs:
         username: ${{ github.repository_owner }}
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Build Auth client nuget image
-      uses: docker/build-push-action@v3
+      uses: docker/build-push-action@v3.2.0
       id: docker-build-auth-nuget
       with:
         file: Dockerfile
@@ -172,7 +172,7 @@ jobs:
         username: ${{ github.repository_owner }}
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Build Auth client nuget with default dependencies image
-      uses: docker/build-push-action@v3
+      uses: docker/build-push-action@v3.2.0
       id: docker-build-auth-nuget-default
       with:
         file: Dockerfile
@@ -257,7 +257,7 @@ jobs:
         images: name/app
         labels: org.opencontainers.image.version=candidate-${{ needs.version.outputs.app_version }}
     - name: Build Auth image
-      uses: docker/build-push-action@v3
+      uses: docker/build-push-action@v3.2.0
       id: docker-build-auth-service
       with:
         file: Dockerfile
@@ -306,7 +306,7 @@ jobs:
         images: name/app
         labels: org.opencontainers.image.version=candidate-${{ needs.version.outputs.app_version }}
     - name: Build Auth Predeployment image
-      uses: docker/build-push-action@v3
+      uses: docker/build-push-action@v3.2.0
       id: docker-build-auth-predeployment
       with:
         file: Dockerfile
@@ -352,7 +352,7 @@ jobs:
         username: ${{ github.repository_owner }}
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Build Unit tests image
-      uses: docker/build-push-action@v3
+      uses: docker/build-push-action@v3.2.0
       id: docker-build-auth-test-unit
       with:
         file: Dockerfile
@@ -442,7 +442,7 @@ jobs:
         username: ${{ github.repository_owner }}
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Build Integration tests image
-      uses: docker/build-push-action@v3
+      uses: docker/build-push-action@v3.2.0
       id: docker-build-integration-tests
       with:
         file: Dockerfile
@@ -548,7 +548,7 @@ jobs:
         username: ${{ github.repository_owner }}
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Build Acceptance tests image
-      uses: docker/build-push-action@v3
+      uses: docker/build-push-action@v3.2.0
       id: docker-build-acceptance-tests
       with:
         file: Dockerfile
@@ -685,7 +685,7 @@ jobs:
         username: ${{ github.repository_owner }}
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Build Integration API tests image
-      uses: docker/build-push-action@v3
+      uses: docker/build-push-action@v3.2.0
       id: docker-build-api-test-integration
       with:
         file: Tests.MariaDb.Integration.Dockerfile
@@ -1127,7 +1127,7 @@ jobs:
         username: ${{ github.repository_owner }}
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Build Mongo db for Auth image
-      uses: docker/build-push-action@v3
+      uses: docker/build-push-action@v3.2.0
       id: docker-build-auth-mongo
       with:
         file: Mongo.Dockerfile
