@@ -99,7 +99,7 @@ jobs:
         username: ${{ github.repository_owner }}
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Build Auth client nuget image
-      uses: docker/build-push-action@v3.2.0
+      uses: docker/build-push-action@v3
       id: docker-build-auth-nuget
       with:
         file: Dockerfile
@@ -117,10 +117,7 @@ jobs:
           APP_VERSION=${{ needs.version.outputs.app_version }}
           FILE_VERSION=${{ needs.version.outputs.file_version }}
           INFORMATIONAL_VERSION=${{ needs.version.outputs.information_version }}
-        platforms: |-
-          linux/amd64
-          linux/arm64
-          linux/arm/v8
+        provenance: "false"
     - name: Image digest
       run: echo ${{ steps.docker-build-auth-nuget.outputs.digest }}
     - name: Create docker image with nuget packages
@@ -176,7 +173,7 @@ jobs:
         username: ${{ github.repository_owner }}
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Build Auth client nuget with default dependencies image
-      uses: docker/build-push-action@v3.2.0
+      uses: docker/build-push-action@v3
       id: docker-build-auth-nuget-default
       with:
         file: Dockerfile
@@ -194,10 +191,7 @@ jobs:
           APP_VERSION=${{ needs.version.outputs.app_version }}
           FILE_VERSION=${{ needs.version.outputs.file_version }}
           INFORMATIONAL_VERSION=${{ needs.version.outputs.information_version }}
-        platforms: |-
-          linux/amd64
-          linux/arm64
-          linux/arm/v8
+        provenance: "false"
     - name: Image digest
       run: echo ${{ steps.docker-build-auth-nuget-default.outputs.digest }}
     - name: Create docker image with nuget packages
@@ -265,7 +259,7 @@ jobs:
         images: name/app
         labels: org.opencontainers.image.version=candidate-${{ needs.version.outputs.app_version }}
     - name: Build Auth image
-      uses: docker/build-push-action@v3.2.0
+      uses: docker/build-push-action@v3
       id: docker-build-auth-service
       with:
         file: Dockerfile
@@ -284,10 +278,7 @@ jobs:
           APP_VERSION=${{ needs.version.outputs.app_version }}
           FILE_VERSION=${{ needs.version.outputs.file_version }}
           INFORMATIONAL_VERSION=${{ needs.version.outputs.information_version }}
-        platforms: |-
-          linux/amd64
-          linux/arm64
-          linux/arm/v8
+        provenance: "false"
     - name: Image digest
       env:
         docker_digest: ${{ steps.docker-build-auth-service.outputs.digest }}
@@ -318,7 +309,7 @@ jobs:
         images: name/app
         labels: org.opencontainers.image.version=candidate-${{ needs.version.outputs.app_version }}
     - name: Build Auth Predeployment image
-      uses: docker/build-push-action@v3.2.0
+      uses: docker/build-push-action@v3
       id: docker-build-auth-predeployment
       with:
         file: Dockerfile
@@ -338,10 +329,7 @@ jobs:
           APP_VERSION=${{ needs.version.outputs.app_version }}
           FILE_VERSION=${{ needs.version.outputs.file_version }}
           INFORMATIONAL_VERSION=${{ needs.version.outputs.information_version }}
-        platforms: |-
-          linux/amd64
-          linux/arm64
-          linux/arm/v8
+        provenance: "false"
     - name: Image digest
       env:
         docker_digest: ${{ steps.docker-build-auth-predeployment.outputs.digest }}
@@ -368,7 +356,7 @@ jobs:
         username: ${{ github.repository_owner }}
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Build Unit tests image
-      uses: docker/build-push-action@v3.2.0
+      uses: docker/build-push-action@v3
       id: docker-build-auth-test-unit
       with:
         file: Dockerfile
@@ -382,10 +370,7 @@ jobs:
         build-args: |-
           COMMIT_SHA=${{ github.sha }}
           GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
-        platforms: |-
-          linux/amd64
-          linux/arm64
-          linux/arm/v8
+        provenance: "false"
     - name: Image digest
       run: echo ${{ steps.docker-build-auth-test-unit.outputs.digest }}
   run-auth-test-unit:
@@ -462,7 +447,7 @@ jobs:
         username: ${{ github.repository_owner }}
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Build Integration tests image
-      uses: docker/build-push-action@v3.2.0
+      uses: docker/build-push-action@v3
       id: docker-build-integration-tests
       with:
         file: Dockerfile
@@ -477,10 +462,7 @@ jobs:
         build-args: |-
           COMMIT_SHA=${{ github.sha }}
           GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
-        platforms: |-
-          linux/amd64
-          linux/arm64
-          linux/arm/v8
+        provenance: "false"
     - name: Image digest
       run: echo ${{ steps.docker-build-integration-tests.outputs.digest }}
     - name: Checkout repository
@@ -572,7 +554,7 @@ jobs:
         username: ${{ github.repository_owner }}
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Build Acceptance tests image
-      uses: docker/build-push-action@v3.2.0
+      uses: docker/build-push-action@v3
       id: docker-build-acceptance-tests
       with:
         file: Dockerfile
@@ -588,10 +570,7 @@ jobs:
         build-args: |-
           COMMIT_SHA=${{ github.sha }}
           GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
-        platforms: |-
-          linux/amd64
-          linux/arm64
-          linux/arm/v8
+        provenance: "false"
     - name: Image digest
       run: echo ${{ steps.docker-build-acceptance-tests.outputs.digest }}
   run-acceptance-tests:
@@ -713,7 +692,7 @@ jobs:
         username: ${{ github.repository_owner }}
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Build Integration API tests image
-      uses: docker/build-push-action@v3.2.0
+      uses: docker/build-push-action@v3
       id: docker-build-api-test-integration
       with:
         file: Tests.MariaDb.Integration.Dockerfile
@@ -728,10 +707,7 @@ jobs:
         build-args: |-
           COMMIT_SHA=${{ github.sha }}
           GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
-        platforms: |-
-          linux/amd64
-          linux/arm64
-          linux/arm/v8
+        provenance: "false"
     - name: Image digest
       run: echo ${{ steps.docker-build-api-test-integration.outputs.digest }}
   run-api-test-integration:
@@ -1159,7 +1135,7 @@ jobs:
         username: ${{ github.repository_owner }}
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Build Mongo db for Auth image
-      uses: docker/build-push-action@v3.2.0
+      uses: docker/build-push-action@v3
       id: docker-build-auth-mongo
       with:
         file: Mongo.Dockerfile
@@ -1171,10 +1147,7 @@ jobs:
         build-args: |-
           COMMIT_SHA=${{ github.sha }}
           GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
-        platforms: |-
-          linux/amd64
-          linux/arm64
-          linux/arm/v8
+        provenance: "false"
     - name: Image digest
       run: echo ${{ steps.docker-build-auth-mongo.outputs.digest }}
   deploy-tenant-tahoe:
