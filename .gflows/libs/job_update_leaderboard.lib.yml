@@ -1,0 +1,20 @@
+#@ load("naming.lib.yml", "job")
+#@ load("steps.lib.yml", "steps")
+#@ load("common.lib.yml", "common")
+
+---
+#@ def generate_update_leaderboard_job_steps(update_leaderboard_section):
+- uses: victorx64/pr-label@v0
+  with:
+    #@ if hasattr(update_leaderboard_section,"git-pathspec") :
+    git-pathspec: #@ update_leaderboard_section["git-pathspec"]
+    #@ end
+#@ end
+---
+#@ def update_leaderboard_job(update_leaderboard_section):
+#@ steps = generate_update_leaderboard_job_steps(update_leaderboard_section)
+#@ branchCondition = common.build_git_branches_condition(update_leaderboard_section)
+#@ return common.generate_job(update_leaderboard_section, steps, None, None, None, None, branchCondition)
+#@ end
+---
+
