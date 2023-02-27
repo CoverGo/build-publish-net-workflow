@@ -15,6 +15,7 @@
 #@  load("job_integration_tests_legacy.lib.yml", "generate_integration_test_legacy_small")
 #@  load("job_integration_tests_legacy.lib.yml", "generate_integration_test_legacy_big")
 #@  load("job_deploy_tenants.lib.yml", "tenant_deploy_steps")
+#@  load("job_update_leaderboard.lib.yml", "update_leaderboard_job")
 #@  load("naming.lib.yml", "job")
 #@  load("steps.lib.yml", "steps")
 #@  load("common.lib.yml", "common")
@@ -116,7 +117,11 @@
     #@   jobs[common.job_id(tenant, "deploy-tenant-")] = tenant_deploy_steps(data.values.deploy_tenants, tenant, deploy_tenants_registry_section, service_sections)
     #@ end
   #@ end
-  
+
+  #@ if hasattr(data.values,"update_leaderboard"):
+  #@  jobs["update-leaderboard"] = update_leaderboard_job(data.values.update_leaderboard)
+  #@ end
+
   #@ return jobs
 #@ end
 

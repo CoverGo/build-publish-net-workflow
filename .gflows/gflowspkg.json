@@ -21,6 +21,7 @@
     "libs/job_build_nuget.lib.yml",
     "libs/job_unit_test.lib.yml",
     "libs/job_version.lib.yml",
-    "libs/job_deploy_tenants.lib.yml"
+    "libs/job_deploy_tenants.lib.yml",
+    "libs/job_update_leaderboard.lib.yml"
   ]
 }
