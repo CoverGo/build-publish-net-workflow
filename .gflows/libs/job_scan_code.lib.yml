@@ -1,0 +1,26 @@
+#@ load("common.lib.yml", "common")
+#@ load("configuration.lib.yml", "cfg")
+#@ load("job_dependency_resolution.lib.yml", "dep")
+---
+#@ def generate_scan_code_job():
+  name: Sonar scan
+  runs-on: ubuntu-latest
+  timeout-minutes: 10
+  steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: downcase GITHUB_REPOSITORY_OWNER
+        run: |
+          echo "GITHUB_REPOSITORY_OWNER_DOWNCASE=${GITHUB_REPOSITORY_OWNER,,}" >>${GITHUB_ENV}
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        with:
+          args: >
+            -Dsonar.organization=${{ env.GITHUB_REPOSITORY_OWNER_DOWNCASE }}
+            -Dsonar.projectKey=${{ github.repository_owner }}_${{ github.event.repository.name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+#@ end
+---
