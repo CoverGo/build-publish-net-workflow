@@ -1,7 +1,7 @@
 # Overview
 
 Build-publish workflow template generates a GithubCI workflow which converts a repository source code into published Docker images.
-The template is designed for .Net backend microservice repositories.
+The template is mostly intended for .Net backend microservice repositories, however it can also be used for non-.Net services to implement some common logic like image versioning and code scanning.
 Template produces hi-quality, production-ready workflow taking care of common aspect like unit, integration and acceptance testing,
 nuget publishing, build cache, versioning, docker images tagging, test result collection and so on.
 Template is designed for mid-size organisations to generate a workflow with gflows cli local tools using a configuration file.

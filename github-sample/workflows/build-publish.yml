@@ -30,7 +30,7 @@ jobs:
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
-        actions_list: '[ "covergo/get-version@v1.7", "covergo/get-issue-key@v1.3", "covergo/docker-extract@v1.1", "covergo/docker-diagnose@v1.8", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v1.1" ]'
+        actions_list: '[ "covergo/get-version@v1.8", "covergo/get-issue-key@v1.3", "covergo/docker-extract@v1.1", "covergo/docker-diagnose@v1.8", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v1.1" ]'
         checkout_base_path: ./.github/actions
         app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
         app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}
@@ -54,7 +54,7 @@ jobs:
         if [[ ${{ steps.version.outputs.app_version }} =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
           echo ::set-output name=is_production::true
         fi
-  scan-code:
+  scan-code-net:
     name: Sonar scan
     timeout-minutes: 20
     runs-on: ubuntu-latest
@@ -81,6 +81,25 @@ jobs:
         coverage-artifact-pooling-timeout-sec: "1200"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  scan-code:
+    name: Sonar scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    - name: downcase GITHUB_REPOSITORY_OWNER
+      run: |
+        echo "GITHUB_REPOSITORY_OWNER_DOWNCASE=${GITHUB_REPOSITORY_OWNER,,}" >>${GITHUB_ENV}
+    - name: SonarCloud Scan
+      uses: SonarSource/sonarcloud-github-action@master
+      with:
+        args: |
+          -Dsonar.organization=${{ env.GITHUB_REPOSITORY_OWNER_DOWNCASE }} -Dsonar.projectKey=${{ github.repository_owner }}_${{ github.event.repository.name }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
   nuget-build-auth-nuget:
     name: Build Auth client nuget
     timeout-minutes: 20
@@ -113,7 +132,7 @@ jobs:
         build-args: |-
           COMMIT_SHA=${{ github.sha }}
           GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
-          BUILD_DATETIME=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.created'] }}
+          BUILD_DATETIME=${{ steps.meta.outputs.json && fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.created'] }}
           APP_VERSION=${{ needs.version.outputs.app_version }}
           FILE_VERSION=${{ needs.version.outputs.file_version }}
           INFORMATIONAL_VERSION=${{ needs.version.outputs.information_version }}
@@ -125,7 +144,7 @@ jobs:
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
-        actions_list: '[ "covergo/get-version@v1.7", "covergo/get-issue-key@v1.3", "covergo/docker-extract@v1.1", "covergo/docker-diagnose@v1.8", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v1.1" ]'
+        actions_list: '[ "covergo/get-version@v1.8", "covergo/get-issue-key@v1.3", "covergo/docker-extract@v1.1", "covergo/docker-diagnose@v1.8", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v1.1" ]'
         checkout_base_path: ./.github/actions
         app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
         app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}
@@ -187,7 +206,7 @@ jobs:
         build-args: |-
           COMMIT_SHA=${{ github.sha }}
           GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
-          BUILD_DATETIME=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.created'] }}
+          BUILD_DATETIME=${{ steps.meta.outputs.json && fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.created'] }}
           APP_VERSION=${{ needs.version.outputs.app_version }}
           FILE_VERSION=${{ needs.version.outputs.file_version }}
           INFORMATIONAL_VERSION=${{ needs.version.outputs.information_version }}
@@ -199,7 +218,7 @@ jobs:
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
-        actions_list: '[ "covergo/get-version@v1.7", "covergo/get-issue-key@v1.3", "covergo/docker-extract@v1.1", "covergo/docker-diagnose@v1.8", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v1.1" ]'
+        actions_list: '[ "covergo/get-version@v1.8", "covergo/get-issue-key@v1.3", "covergo/docker-extract@v1.1", "covergo/docker-diagnose@v1.8", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v1.1" ]'
         checkout_base_path: ./.github/actions
         app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
         app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}
@@ -274,7 +293,7 @@ jobs:
           NOW="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
           COMMIT_SHA=${{ github.sha }}
           GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
-          BUILD_DATETIME=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.created'] }}
+          BUILD_DATETIME=${{ steps.meta.outputs.json && fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.created'] }}
           APP_VERSION=${{ needs.version.outputs.app_version }}
           FILE_VERSION=${{ needs.version.outputs.file_version }}
           INFORMATIONAL_VERSION=${{ needs.version.outputs.information_version }}
@@ -325,7 +344,7 @@ jobs:
         build-args: |-
           COMMIT_SHA=${{ github.sha }}
           GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
-          BUILD_DATETIME=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.created'] }}
+          BUILD_DATETIME=${{ steps.meta.outputs.json && fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.created'] }}
           APP_VERSION=${{ needs.version.outputs.app_version }}
           FILE_VERSION=${{ needs.version.outputs.file_version }}
           INFORMATIONAL_VERSION=${{ needs.version.outputs.information_version }}
@@ -394,7 +413,7 @@ jobs:
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
-        actions_list: '[ "covergo/get-version@v1.7", "covergo/get-issue-key@v1.3", "covergo/docker-extract@v1.1", "covergo/docker-diagnose@v1.8", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v1.1" ]'
+        actions_list: '[ "covergo/get-version@v1.8", "covergo/get-issue-key@v1.3", "covergo/docker-extract@v1.1", "covergo/docker-diagnose@v1.8", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v1.1" ]'
         checkout_base_path: ./.github/actions
         app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
         app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}
@@ -470,7 +489,7 @@ jobs:
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
-        actions_list: '[ "covergo/get-version@v1.7", "covergo/get-issue-key@v1.3", "covergo/docker-extract@v1.1", "covergo/docker-diagnose@v1.8", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v1.1" ]'
+        actions_list: '[ "covergo/get-version@v1.8", "covergo/get-issue-key@v1.3", "covergo/docker-extract@v1.1", "covergo/docker-diagnose@v1.8", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v1.1" ]'
         checkout_base_path: ./.github/actions
         app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
         app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}
@@ -594,7 +613,7 @@ jobs:
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
-        actions_list: '[ "covergo/get-version@v1.7", "covergo/get-issue-key@v1.3", "covergo/docker-extract@v1.1", "covergo/docker-diagnose@v1.8", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v1.1" ]'
+        actions_list: '[ "covergo/get-version@v1.8", "covergo/get-issue-key@v1.3", "covergo/docker-extract@v1.1", "covergo/docker-diagnose@v1.8", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v1.1" ]'
         checkout_base_path: ./.github/actions
         app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
         app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}
@@ -731,7 +750,7 @@ jobs:
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
-        actions_list: '[ "covergo/get-version@v1.7", "covergo/get-issue-key@v1.3", "covergo/docker-extract@v1.1", "covergo/docker-diagnose@v1.8", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v1.1" ]'
+        actions_list: '[ "covergo/get-version@v1.8", "covergo/get-issue-key@v1.3", "covergo/docker-extract@v1.1", "covergo/docker-diagnose@v1.8", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v1.1" ]'
         checkout_base_path: ./.github/actions
         app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
         app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}
@@ -1063,7 +1082,7 @@ jobs:
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
-        actions_list: '[ "covergo/get-version@v1.7", "covergo/get-issue-key@v1.3", "covergo/docker-extract@v1.1", "covergo/docker-diagnose@v1.8", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v1.1" ]'
+        actions_list: '[ "covergo/get-version@v1.8", "covergo/get-issue-key@v1.3", "covergo/docker-extract@v1.1", "covergo/docker-diagnose@v1.8", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v1.1" ]'
         checkout_base_path: ./.github/actions
         app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
         app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}
