@@ -1,3 +1,5 @@
+# Example build-publish settings file
+
 #@data/values
 ---
 
@@ -266,6 +268,9 @@ scan_code_net:
     organisation: covergo
     project_name: Auth Service
     coverage_artifact_pooling_timeout_sec: '1200'
+
+scan_code:
+  name: Sonar scan
 
 deploy_tenants:
   runner: self-hosted
