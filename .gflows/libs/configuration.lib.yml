@@ -84,6 +84,10 @@
 #@ return getattr(section.sonar, "project_name")
 #@ end
 ---
+#@ def _get_sonar_project(section):
+#@ return getattr(section.sonar, "project")
+#@ end
+---
 #@ def _get_sonar_coverage_artifact_pooling_timeout_sec(section):
 #@ return getattr(section.sonar, "coverage_artifact_pooling_timeout_sec")
 #@ end
