@@ -121,6 +121,7 @@
 #@ get_sonar_vstest_reports_paths = _get_sonar_vstest_reports_paths,
 #@ get_sonar_organization = _get_sonar_organization,
 #@ get_sonar_project_name = _get_sonar_project_name,
+#@ get_sonar_project = _get_sonar_project,
 #@ get_sonar_coverage_artifact_pooling_timeout_sec = _get_sonar_coverage_artifact_pooling_timeout_sec,
 #@ should_generate_docker_meta = _should_generate_docker_meta,
 #@ should_generate_sourcelink = _should_generate_sourcelink,
