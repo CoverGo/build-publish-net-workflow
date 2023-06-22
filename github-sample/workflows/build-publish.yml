@@ -685,9 +685,22 @@ jobs:
         build_id: ${{ github.run_id }}
         build_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         results_file_filter: ./TestResults/cucumberResult.json
-      run: "latest_commit_sha=$(git rev-parse HEAD)\necho \"commit sha: $latest_commit_sha\"\necho \"test result file filter: $results_file_filter\"\nfor results_file in $(ls \"$results_file_filter\") \ndo\n  echo uploading \"$results_file\"\n  curl -L -X PUT --fail https://test-reports.behave.pro/REST/1.0/bdd/report \\\n  -H \"X-API-KEY: $behave_api_key\" \\\n  -H \"X-COMMIT-ID: $latest_commit_sha\" \\\n  -H \"X-BUILD-ID: $build_id\" \\\n  -H \"X-BUILD-URL: $build_url\" \\\n  --data-binary @\"$results_file\" \ndone\n"
+      run: |
+        latest_commit_sha=$(git rev-parse HEAD)
+        echo "commit sha: $latest_commit_sha"
+        echo "test result file filter: $results_file_filter"
+        for results_file in $(ls "$results_file_filter")
+        do
+          echo uploading "$results_file"
+          curl -L -X PUT --fail https://test-reports.behave.pro/REST/1.0/bdd/report \
+          -H "X-API-KEY: $behave_api_key" \
+          -H "X-COMMIT-ID: $latest_commit_sha" \
+          -H "X-BUILD-ID: $build_id" \
+          -H "X-BUILD-URL: $build_url" \
+          --data-binary @"$results_file"
+        done
     - name: Publish Acceptance tests results as check
-      uses: deblockt/cucumber-report-annotations-action@v1.7
+      uses: deblockt/cucumber-report-annotations-action@v1.11
       if: always()
       with:
         name: Acceptance tests check
