@@ -47,7 +47,7 @@
       latest_commit_sha=$(git rev-parse HEAD)
       echo "commit sha: $latest_commit_sha"
       echo "test result file filter: $results_file_filter"
-      for results_file in $(ls "$results_file_filter") 
+      for results_file in $(ls "$results_file_filter")
       do
         echo uploading "$results_file"
         curl -L -X PUT --fail https://test-reports.behave.pro/REST/1.0/bdd/report \
@@ -55,10 +55,10 @@
         -H "X-COMMIT-ID: $latest_commit_sha" \
         -H "X-BUILD-ID: $build_id" \
         -H "X-BUILD-URL: $build_url" \
-        --data-binary @"$results_file" 
+        --data-binary @"$results_file"
       done
   - name: #@ "Publish {} results as check".format(integration_test_definition.name)
-    uses: deblockt/cucumber-report-annotations-action@v1.7
+    uses: deblockt/cucumber-report-annotations-action@v1.11
     if: always()
     with:
       name: #@ "{} check".format(integration_test_definition.name)
@@ -73,7 +73,7 @@
 #@    needs.append(dep.find_job_for_image(image))
 #@  end
 #@ end
-#@  
+#@
 #@ repository_built_images=dep.get_repository_built_images(sections)
 #@ repository_built_images_to_publish=dep.get_repository_built_images_to_publish(sections)
 #@ steps_array = []
@@ -90,16 +90,16 @@
 ---
 #@ def _integration_test_build_and_run_job(integration_test_definition, sections):
 #@ job_name = job.name.build_and_run(integration_test_definition)
-  
+
 #@ needs = ["version"]
 #@ needs.extend(dep.get_job_needs(integration_test_definition))
-  
+
 #@ if hasattr(integration_test_definition, "compose_images"):
 #@  for image in integration_test_definition.compose_images:
 #@    needs.append(dep.find_job_for_image(image))
 #@  end
 #@ end
-#@  
+#@
 #@ repository_built_images=dep.get_repository_built_images(sections)
 #@ repository_built_images_to_publish=dep.get_repository_built_images_to_publish(sections)
 #@ steps = []
@@ -118,5 +118,4 @@
 
 
 
-      
-      
+
