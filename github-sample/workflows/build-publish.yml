@@ -117,6 +117,8 @@ jobs:
     steps:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
+      with:
+        version: v0.11.2
     - name: Login to GitHub Container Registry
       uses: docker/login-action@v2
       with:
@@ -193,6 +195,8 @@ jobs:
     steps:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
+      with:
+        version: v0.11.2
     - name: Login to GitHub Container Registry
       uses: docker/login-action@v2
       with:
@@ -275,6 +279,8 @@ jobs:
     steps:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
+      with:
+        version: v0.11.2
     - name: Login to GitHub Container Registry
       uses: docker/login-action@v2
       with:
@@ -327,6 +333,8 @@ jobs:
     steps:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
+      with:
+        version: v0.11.2
     - name: Login to GitHub Container Registry
       uses: docker/login-action@v2
       with:
@@ -382,6 +390,8 @@ jobs:
     steps:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
+      with:
+        version: v0.11.2
     - name: Login to GitHub Container Registry
       uses: docker/login-action@v2
       with:
@@ -475,6 +485,8 @@ jobs:
     steps:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
+      with:
+        version: v0.11.2
     - name: Login to GitHub Container Registry
       uses: docker/login-action@v2
       with:
@@ -584,6 +596,8 @@ jobs:
     steps:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
+      with:
+        version: v0.11.2
     - name: Login to GitHub Container Registry
       uses: docker/login-action@v2
       with:
@@ -737,6 +751,8 @@ jobs:
     steps:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
+      with:
+        version: v0.11.2
     - name: Login to GitHub Container Registry
       uses: docker/login-action@v2
       with:
@@ -1182,6 +1198,8 @@ jobs:
     steps:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
+      with:
+        version: v0.11.2
     - name: Login to GitHub Container Registry
       uses: docker/login-action@v2
       with:
