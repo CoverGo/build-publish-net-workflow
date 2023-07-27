@@ -1,0 +1,21 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:struct", "struct")
+#@ load("naming.lib.yml", "job")
+#@ load("tagging.lib.yml", "tagging")
+#@ load("steps.lib.yml", "steps")
+#@ load("configuration.lib.yml", "cfg")
+
+---
+#@ def _update_version(version):
+name: #@ "Publish {} helm chart".format(version)
+env:
+  version: #@ version
+run: |
+  helm lint .
+  echo ${{ secrets.GITHUB_TOKEN }} | helm registry login ghcr.io -u $ --password-stdin
+  helm package . --version $version --app-version $version
+  helm push .*-$version.tgz oci://ghcr.io/${{ github.repository_owner }}
+#@ end
+---
+#@ helmsteps = struct.make(
+#@ update_version = _update_version)
