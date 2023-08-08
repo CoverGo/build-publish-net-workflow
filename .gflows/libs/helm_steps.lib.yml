@@ -12,6 +12,7 @@ name: #@ "Publish helm chart"
 uses: peter-evans/repository-dispatch@v2
 with:
   event-type: helm_release
+  client-payload: '{"ref_name": "${{ github.ref_name }}"}'
 #@ end
 ---
 #@ helmsteps = struct.make(
