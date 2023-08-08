@@ -982,7 +982,8 @@ jobs:
       with:
         src: ghcr.io/covergo/auth:${{ needs.version.outputs.app_version }}
         dst: ${{ steps.alicloud-tags-auth-service.outputs.docker_image_ali_cloud_tags }}
-    - name: Publish helm chart
+    - if: github.ref_type == 'tag'
+      name: Publish helm chart
       uses: peter-evans/repository-dispatch@v2
       with:
         event-type: helm_release
@@ -1111,7 +1112,8 @@ jobs:
       with:
         src: ghcr.io/covergo/auth-predeployment:${{ needs.version.outputs.app_version }}
         dst: ${{ steps.alicloud-tags-auth-predeployment.outputs.docker_image_ali_cloud_tags }}
-    - name: Publish helm chart
+    - if: github.ref_type == 'tag'
+      name: Publish helm chart
       uses: peter-evans/repository-dispatch@v2
       with:
         event-type: helm_release

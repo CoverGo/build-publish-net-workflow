@@ -7,6 +7,7 @@
 
 ---
 #@ def _update_helmchart(version):
+if: github.ref_type == 'tag'
 name: #@ "Publish helm chart"
 uses: peter-evans/repository-dispatch@v2
 with:
