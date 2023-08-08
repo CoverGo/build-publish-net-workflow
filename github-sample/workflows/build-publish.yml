@@ -982,6 +982,10 @@ jobs:
       with:
         src: ghcr.io/covergo/auth:${{ needs.version.outputs.app_version }}
         dst: ${{ steps.alicloud-tags-auth-service.outputs.docker_image_ali_cloud_tags }}
+    - name: Publish helm chart
+      uses: peter-evans/repository-dispatch@v2
+      with:
+        event-type: helm_release
     - name: Set up sigstore cosign
       uses: sigstore/cosign-installer@9becc617647dfa20ae7b1151972e9b3a2c338a2b
       with:
@@ -1107,6 +1111,10 @@ jobs:
       with:
         src: ghcr.io/covergo/auth-predeployment:${{ needs.version.outputs.app_version }}
         dst: ${{ steps.alicloud-tags-auth-predeployment.outputs.docker_image_ali_cloud_tags }}
+    - name: Publish helm chart
+      uses: peter-evans/repository-dispatch@v2
+      with:
+        event-type: helm_release
     - name: Set up sigstore cosign
       uses: sigstore/cosign-installer@9becc617647dfa20ae7b1151972e9b3a2c338a2b
       with:
