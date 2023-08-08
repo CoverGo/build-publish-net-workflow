@@ -1,0 +1,17 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:struct", "struct")
+#@ load("naming.lib.yml", "job")
+#@ load("tagging.lib.yml", "tagging")
+#@ load("steps.lib.yml", "steps")
+#@ load("configuration.lib.yml", "cfg")
+
+---
+#@ def _update_helmchart(version):
+name: #@ "Publish helm chart"
+uses: peter-evans/repository-dispatch@v2
+with:
+  event-type: helm_release
+#@ end
+---
+#@ helmsteps = struct.make(
+#@ update_helmchart = _update_helmchart)
