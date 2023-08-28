@@ -272,6 +272,10 @@ scan_code_net:
 scan_code:
   name: Sonar scan
 
+scan_image:
+  name: Trivy scan
+  image: registry-intl.cn-hongkong.aliyuncs.com/covergo/auth:${{ needs.version.outputs.app_version }}
+
 deploy_tenants:
   runner: self-hosted
   repository:
