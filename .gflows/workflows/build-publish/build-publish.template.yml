@@ -3,6 +3,7 @@
 
 #@ load("integration-tests-legacy-steps.lib.yml", "integration_tests_legacy_steps")
 #@ load("job_docker_build.lib.yml", "docker")
+#@ load("job_scan_image.lib.yml", "generate_scan_image_job")
 #@ load("job_integration_test.lib.yml", "integration_test")
 #@ load("job_unit_test.lib.yml", "unit_test_job")
 
@@ -113,6 +114,10 @@
     #@ for additional_image in data.values.additional_images :
      #@ jobs[job.id.docker_build(additional_image)] = docker.job.build(additional_image, data.values)
     #@ end
+  #@ end
+
+  #@ if hasattr(data.values,"scan_image"):
+    #@ jobs["scan-image"] = generate_scan_image_job(data.values.scan_image, service_sections)
   #@ end
   
   #@ if hasattr(data.values, "deploy_tenants"):
