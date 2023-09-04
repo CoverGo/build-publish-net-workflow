@@ -1236,7 +1236,7 @@ jobs:
         provenance: "false"
     - name: Image digest
       run: echo ${{ steps.docker-build-auth-mongo.outputs.digest }}
-  scan-image:
+  scan-image-auth-service:
     name: Trivy scan
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -1255,6 +1255,28 @@ jobs:
       uses: aquasecurity/trivy-action@master
       with:
         image-ref: registry-intl.cn-hongkong.aliyuncs.com/covergo/auth:${{ needs.version.outputs.app_version }}
+        format: table
+        vuln-type: os,library
+        severity: CRITICAL,HIGH
+  scan-image-auth-predeployment:
+    name: Trivy scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs:
+    - version
+    - docker-publish-alicloud-auth-service
+    - docker-publish-alicloud-auth-predeployment
+    steps:
+    - name: Login to AliCloud Container Registry
+      uses: docker/login-action@v2
+      with:
+        registry: registry-intl.cn-hongkong.aliyuncs.com
+        username: ${{ secrets.ALI_CONTAINER_REGISTRY_USER }}
+        password: ${{ secrets.ALI_CONTAINER_REGISTRY_PASSWORD }}
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: registry-intl.cn-hongkong.aliyuncs.com/covergo/auth-predeployment:${{ needs.version.outputs.app_version }}
         format: table
         vuln-type: os,library
         severity: CRITICAL,HIGH
