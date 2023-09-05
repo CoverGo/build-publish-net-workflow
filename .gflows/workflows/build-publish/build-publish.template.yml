@@ -137,7 +137,7 @@
 
   #@ if hasattr(data.values,"service"):
   #@   if hasattr(data.values,"scan_image"):
-  #@     generate_scan_image_sub_job(service, data.values, service_sections)
+  #@     generate_scan_image_sub_job(data.values.service, data.values, service_sections)
   #@   end
   #@ end
   
