@@ -26,6 +26,7 @@
 #@  load("job_dependency_resolution.lib.yml", "dep")
 
 
+
 ---
 #@ def generate_jobs(data):
   #@ jobs = {"version": generate_version_job(data.values)}   
@@ -116,8 +117,28 @@
     #@ end
   #@ end
 
-  #@ if hasattr(data.values,"scan_image"):
-    #@ jobs["scan-image"] = generate_scan_image_job(data.values.scan_image, service_sections)
+  #@ def generate_scan_image_sub_job(service, values, service_sections):
+  #@   if hasattr(values,"scan_image"):
+  #@     if hasattr(values,"main_registry"): 
+  #@       jobs["scan-image-{}".format(service.slug)] = generate_scan_image_job(service.image_name, service_sections, values.main_registry)
+  #@     else:
+  #@       if hasattr(values,"cache_registry"):
+  #@         jobs["scan-image-{}".format(service.slug)] = generate_scan_image_job(service.image_name, service_sections, values.cache_registry)
+  #@       end
+  #@     end
+  #@   end
+  #@ end
+
+  #@ if hasattr(data.values,"services"):
+  #@   for service in getattr(data.values,"services",[]):
+  #@     generate_scan_image_sub_job(service, data.values, service_sections)
+  #@   end
+  #@ end
+
+  #@ if hasattr(data.values,"service"):
+  #@   if hasattr(data.values,"scan_image"):
+  #@     generate_scan_image_sub_job(service, data.values, service_sections)
+  #@   end
   #@ end
   
   #@ if hasattr(data.values, "deploy_tenants"):
