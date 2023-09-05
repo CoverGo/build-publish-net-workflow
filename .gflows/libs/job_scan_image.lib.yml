@@ -2,7 +2,6 @@
 #@ load("@ytt:struct", "struct")
 #@ load("tagging.lib.yml", "tagging")
 #@ load("job_docker_publish_alicloud.lib.yml", "get_docker_publish_alicloud_job_ids")
-#@ load("steps.lib.yml", "steps")
 
 ---
 #@ def generate_scan_image_job(image_name, services, registry):
@@ -15,7 +14,6 @@
     - #@ alicloud_job_id
     #@ end
   steps:
-    - #@ steps.login_docker(registry)
     - name: Run Trivy vulnerability scanner
       uses: aquasecurity/trivy-action@master
       with:
@@ -23,5 +21,8 @@
         format: 'table'
         vuln-type: 'os,library'
         severity: 'CRITICAL,HIGH'
+      env:
+        TRIVY_USERNAME: #@ getattr(registry, "user", "${{ github.repository_owner }}")
+        TRIVY_PASSWORD: #@ getattr(registry, "password","${{ secrets.GITHUB_TOKEN }}")
 #@ end
 ---
