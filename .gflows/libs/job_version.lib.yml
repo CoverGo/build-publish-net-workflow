@@ -4,13 +4,6 @@
 #@ load("steps.lib.yml", "steps")
 #@ load("common.lib.yml", "common")
 ---
-#@ def set_version(context):
-#@ if getattr(getattr(context,"versioning",None),"use_branch_slug", False):
-#@ return "none"
-#@ end
-#@ return "${{ steps.issue-key.outputs.issue_id_slug }}"
-#@ end
----
 #@ def set_build_number(context):
 #@ if getattr(getattr(context,"versioning",None),"use_build_number", False):
 #@ return "${{ github.run_number }}"
@@ -18,44 +11,34 @@
 #@ return "none"
 #@ end
 ---
-#@ def get_release_candidate_version_flag(context):
-#@ if getattr(getattr(context,"versioning",None),"release_candidate_version", True):
-#@ return True
-#@ end
-#@ return False
-#@ end
----
 #@ def generate_version_job(sections):
 runs-on: ubuntu-latest
 name: Get version from git tag
 outputs:
-  app_version: ${{ steps.version.outputs.app_version }}
+  app_version: ${{ steps.version.outputs.semVer }}
   is_production: ${{ steps.is_production_check.outputs.is_production }}
-  file_version: ${{ steps.version.outputs.file_version }}
-  information_version: ${{ steps.version.outputs.information_version }}
-  issue_id_slug: ${{ steps.issue-key.outputs.issue_id_slug }}
+  file_version: ${{ steps.version.outputs.assemblySemFileVer }}
+  information_version: ${{ steps.steps.version.outputs.informationalVersion }}
+  issue_id_slug: ${{ steps.version.outputs.preReleaseLabel }}
 steps:
   - name: Checkout repository
     uses: actions/checkout@v3
     with:
       fetch-depth: 0
-  - #@  steps.checkout_private_actions()
-  - name: Get jira Ticket slug
-    id: issue-key
-    uses: ./.github/actions/get-issue-key
-  - name: Get version from git tags
-    id: version
-    uses: ./.github/actions/get-version
+  - name: Install GitVersion
+    uses: gittools/actions/gitversion/setup@v0
     with:
-      build-number: #@ set_build_number(sections)
-      pre-release-version: #@ set_version(sections)
-      production-branches: #@ "\n".join(getattr(getattr(sections,"versioning",None),"production_branches",["master","main"]))
-      release-candidate-version: #@ get_release_candidate_version_flag(sections)
-  - name: Is production check 
+      versionSpec: '5.x'
+  - name: Determine Version
+    id:   version
+    uses: gittools/actions/gitversion/execute@v0
+    with:
+      useConfigFile: true
+  - name: Is production check
     shell: bash
     id: is_production_check
     run: |
-      if [[ ${{ steps.version.outputs.app_version }} =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+      if [[ ${{ steps.version.outputs.semVer }} =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
         echo ::set-output name=is_production::true
       fi
 #@ end
