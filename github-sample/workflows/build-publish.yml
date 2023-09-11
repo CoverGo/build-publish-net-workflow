@@ -20,7 +20,7 @@ jobs:
       app_version: ${{ steps.version.outputs.semVer }}
       is_production: ${{ steps.is_production_check.outputs.is_production }}
       file_version: ${{ steps.version.outputs.assemblySemFileVer }}
-      information_version: ${{ steps.steps.version.outputs.informationalVersion }}
+      information_version: ${{ steps.version.outputs.informationalVersion }}
       issue_id_slug: ${{ steps.version.outputs.preReleaseLabel }}
     steps:
     - name: Checkout repository
