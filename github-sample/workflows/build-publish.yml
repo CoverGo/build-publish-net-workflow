@@ -20,7 +20,7 @@ jobs:
       app_version: ${{ steps.version.outputs.semVer }}
       is_production: ${{ steps.is_production_check.outputs.is_production }}
       file_version: ${{ steps.version.outputs.assemblySemFileVer }}
-      information_version: ${{ steps.steps.version.outputs.informationalVersion }}
+      information_version: ${{ steps.version.outputs.informationalVersion }}
       issue_id_slug: ${{ steps.version.outputs.preReleaseLabel }}
     steps:
     - name: Checkout repository
@@ -123,9 +123,9 @@ jobs:
         load: true
         tags: ghcr.io/covergo/auth-nuget:${{ needs.version.outputs.app_version }}
         cache-from: |-
-          type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.issue_id_slug }}
-          type=registry,ref=ghcr.io/covergo/auth-test-unit-cache:${{ needs.version.outputs.issue_id_slug }}
-          type=registry,ref=ghcr.io/covergo/auth-nuget-cache:${{ needs.version.outputs.issue_id_slug }}
+          type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.issue_id_slug != '' && needs.version.outputs.issue_id_slug || 'cache' }}
+          type=registry,ref=ghcr.io/covergo/auth-test-unit-cache:${{ needs.version.outputs.issue_id_slug != '' && needs.version.outputs.issue_id_slug || 'cache' }}
+          type=registry,ref=ghcr.io/covergo/auth-nuget-cache:${{ needs.version.outputs.issue_id_slug != '' && needs.version.outputs.issue_id_slug || 'cache' }}
         build-args: |-
           COMMIT_SHA=${{ github.sha }}
           GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
@@ -201,9 +201,9 @@ jobs:
         load: true
         tags: ghcr.io/covergo/auth-nuget-default:${{ needs.version.outputs.app_version }}
         cache-from: |-
-          type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.issue_id_slug }}
-          type=registry,ref=ghcr.io/covergo/auth-nuget-default-cache:${{ needs.version.outputs.issue_id_slug }}
-        cache-to: type=registry,ref=ghcr.io/covergo/auth-nuget-default-cache:${{ needs.version.outputs.issue_id_slug }},mode=max
+          type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.issue_id_slug != '' && needs.version.outputs.issue_id_slug || 'cache' }}
+          type=registry,ref=ghcr.io/covergo/auth-nuget-default-cache:${{ needs.version.outputs.issue_id_slug != '' && needs.version.outputs.issue_id_slug || 'cache' }}
+        cache-to: type=registry,ref=ghcr.io/covergo/auth-nuget-default-cache:${{ needs.version.outputs.issue_id_slug != '' && needs.version.outputs.issue_id_slug || 'cache' }},mode=max
         build-args: |-
           COMMIT_SHA=${{ github.sha }}
           GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
@@ -291,8 +291,8 @@ jobs:
         load: false
         labels: ${{ steps.meta.outputs.labels }}
         tags: ghcr.io/covergo/auth:candidate-${{ needs.version.outputs.app_version }}
-        cache-from: type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.issue_id_slug }}
-        cache-to: type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.issue_id_slug }},mode=max
+        cache-from: type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.issue_id_slug != '' && needs.version.outputs.issue_id_slug || 'cache' }}
+        cache-to: type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.issue_id_slug != '' && needs.version.outputs.issue_id_slug || 'cache' }},mode=max
         target: build-service
         build-args: |-
           NOW="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
@@ -346,9 +346,9 @@ jobs:
         labels: ${{ steps.meta.outputs.labels }}
         tags: ghcr.io/covergo/auth-predeployment:candidate-${{ needs.version.outputs.app_version }}
         cache-from: |-
-          type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.issue_id_slug }}
-          type=registry,ref=ghcr.io/covergo/auth-predeployment-cache:${{ needs.version.outputs.issue_id_slug }}
-        cache-to: type=registry,ref=ghcr.io/covergo/auth-predeployment-cache:${{ needs.version.outputs.issue_id_slug }},mode=max
+          type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.issue_id_slug != '' && needs.version.outputs.issue_id_slug || 'cache' }}
+          type=registry,ref=ghcr.io/covergo/auth-predeployment-cache:${{ needs.version.outputs.issue_id_slug != '' && needs.version.outputs.issue_id_slug || 'cache' }}
+        cache-to: type=registry,ref=ghcr.io/covergo/auth-predeployment-cache:${{ needs.version.outputs.issue_id_slug != '' && needs.version.outputs.issue_id_slug || 'cache' }},mode=max
         target: build-predeployment
         build-args: |-
           COMMIT_SHA=${{ github.sha }}
@@ -396,9 +396,9 @@ jobs:
         load: false
         tags: ghcr.io/covergo/auth-test-unit:${{ needs.version.outputs.app_version }}
         cache-from: |-
-          type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.issue_id_slug }}
-          type=registry,ref=ghcr.io/covergo/auth-test-unit-cache:${{ needs.version.outputs.issue_id_slug }}
-        cache-to: type=registry,ref=ghcr.io/covergo/auth-test-unit-cache:${{ needs.version.outputs.issue_id_slug }},mode=min
+          type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.issue_id_slug != '' && needs.version.outputs.issue_id_slug || 'cache' }}
+          type=registry,ref=ghcr.io/covergo/auth-test-unit-cache:${{ needs.version.outputs.issue_id_slug != '' && needs.version.outputs.issue_id_slug || 'cache' }}
+        cache-to: type=registry,ref=ghcr.io/covergo/auth-test-unit-cache:${{ needs.version.outputs.issue_id_slug != '' && needs.version.outputs.issue_id_slug || 'cache' }},mode=min
         build-args: |-
           COMMIT_SHA=${{ github.sha }}
           GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
@@ -491,10 +491,10 @@ jobs:
         load: false
         tags: ghcr.io/covergo/cases-mariadb-test-integration:${{ needs.version.outputs.app_version }}
         cache-from: |-
-          type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.issue_id_slug }}
-          type=registry,ref=ghcr.io/covergo/auth-test-unit-cache:${{ needs.version.outputs.issue_id_slug }}
-          type=registry,ref=ghcr.io/covergo/cases-mariadb-test-integration-cache:${{ needs.version.outputs.issue_id_slug }}
-        cache-to: type=registry,ref=ghcr.io/covergo/cases-mariadb-test-integration-cache:${{ needs.version.outputs.issue_id_slug }},mode=max
+          type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.issue_id_slug != '' && needs.version.outputs.issue_id_slug || 'cache' }}
+          type=registry,ref=ghcr.io/covergo/auth-test-unit-cache:${{ needs.version.outputs.issue_id_slug != '' && needs.version.outputs.issue_id_slug || 'cache' }}
+          type=registry,ref=ghcr.io/covergo/cases-mariadb-test-integration-cache:${{ needs.version.outputs.issue_id_slug != '' && needs.version.outputs.issue_id_slug || 'cache' }}
+        cache-to: type=registry,ref=ghcr.io/covergo/cases-mariadb-test-integration-cache:${{ needs.version.outputs.issue_id_slug != '' && needs.version.outputs.issue_id_slug || 'cache' }},mode=max
         build-args: |-
           COMMIT_SHA=${{ github.sha }}
           GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
@@ -602,11 +602,11 @@ jobs:
         load: false
         tags: ghcr.io/covergo/cases-test-acceptance:${{ needs.version.outputs.app_version }}
         cache-from: |-
-          type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.issue_id_slug }}
-          type=registry,ref=ghcr.io/covergo/auth-test-unit-cache:${{ needs.version.outputs.issue_id_slug }}
-          type=registry,ref=ghcr.io/covergo/cases-api-test-integration-cache:${{ needs.version.outputs.issue_id_slug }}
-          type=registry,ref=ghcr.io/covergo/cases-test-acceptance-cache:${{ needs.version.outputs.issue_id_slug }}
-        cache-to: type=registry,ref=ghcr.io/covergo/cases-test-acceptance-cache:${{ needs.version.outputs.issue_id_slug }},mode=max
+          type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.issue_id_slug != '' && needs.version.outputs.issue_id_slug || 'cache' }}
+          type=registry,ref=ghcr.io/covergo/auth-test-unit-cache:${{ needs.version.outputs.issue_id_slug != '' && needs.version.outputs.issue_id_slug || 'cache' }}
+          type=registry,ref=ghcr.io/covergo/cases-api-test-integration-cache:${{ needs.version.outputs.issue_id_slug != '' && needs.version.outputs.issue_id_slug || 'cache' }}
+          type=registry,ref=ghcr.io/covergo/cases-test-acceptance-cache:${{ needs.version.outputs.issue_id_slug != '' && needs.version.outputs.issue_id_slug || 'cache' }}
+        cache-to: type=registry,ref=ghcr.io/covergo/cases-test-acceptance-cache:${{ needs.version.outputs.issue_id_slug != '' && needs.version.outputs.issue_id_slug || 'cache' }},mode=max
         build-args: |-
           COMMIT_SHA=${{ github.sha }}
           GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
@@ -757,10 +757,10 @@ jobs:
         load: false
         tags: ghcr.io/covergo/cases-api-test-integration:${{ needs.version.outputs.app_version }}
         cache-from: |-
-          type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.issue_id_slug }}
-          type=registry,ref=ghcr.io/covergo/auth-test-unit-cache:${{ needs.version.outputs.issue_id_slug }}
-          type=registry,ref=ghcr.io/covergo/cases-api-test-integration-cache:${{ needs.version.outputs.issue_id_slug }}
-        cache-to: type=registry,ref=ghcr.io/covergo/cases-api-test-integration-cache:${{ needs.version.outputs.issue_id_slug }},mode=max
+          type=registry,ref=ghcr.io/covergo/auth-cache:${{ needs.version.outputs.issue_id_slug != '' && needs.version.outputs.issue_id_slug || 'cache' }}
+          type=registry,ref=ghcr.io/covergo/auth-test-unit-cache:${{ needs.version.outputs.issue_id_slug != '' && needs.version.outputs.issue_id_slug || 'cache' }}
+          type=registry,ref=ghcr.io/covergo/cases-api-test-integration-cache:${{ needs.version.outputs.issue_id_slug != '' && needs.version.outputs.issue_id_slug || 'cache' }}
+        cache-to: type=registry,ref=ghcr.io/covergo/cases-api-test-integration-cache:${{ needs.version.outputs.issue_id_slug != '' && needs.version.outputs.issue_id_slug || 'cache' }},mode=max
         build-args: |-
           COMMIT_SHA=${{ github.sha }}
           GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
@@ -1215,8 +1215,8 @@ jobs:
         push: true
         load: false
         tags: ghcr.io/covergo/auth-mongo:${{ needs.version.outputs.app_version }}
-        cache-from: type=registry,ref=ghcr.io/covergo/auth-mongo-cache:${{ needs.version.outputs.issue_id_slug }}
-        cache-to: type=registry,ref=ghcr.io/covergo/auth-mongo-cache:${{ needs.version.outputs.issue_id_slug }},mode=max
+        cache-from: type=registry,ref=ghcr.io/covergo/auth-mongo-cache:${{ needs.version.outputs.issue_id_slug != '' && needs.version.outputs.issue_id_slug || 'cache' }}
+        cache-to: type=registry,ref=ghcr.io/covergo/auth-mongo-cache:${{ needs.version.outputs.issue_id_slug != '' && needs.version.outputs.issue_id_slug || 'cache' }},mode=max
         build-args: |-
           COMMIT_SHA=${{ github.sha }}
           GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}

@@ -12,7 +12,7 @@
 #@ return _registry_image_tag(url, image_name, suffix)
 #@ end
 
-#@ def _cache_image(registry_or_url, image_or_name, suffix = "${{ needs.version.outputs.issue_id_slug }}"):
+#@ def _cache_image(registry_or_url, image_or_name, suffix = "${{ needs.version.outputs.issue_id_slug != '' && needs.version.outputs.issue_id_slug || 'cache' }}"):
 #@ url = getattr(registry_or_url,"url",registry_or_url)
 #@ image_name = getattr(image_or_name,"image_name",image_or_name)
 #@ return _registry_image_tag(url, image_name+"-cache", suffix)
