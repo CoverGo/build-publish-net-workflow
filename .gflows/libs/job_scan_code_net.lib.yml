@@ -26,7 +26,7 @@
   run: |
     dotnet nuget update source github --username ${GH_ACCOUNT} --password ${GH_TOKEN} --store-password-in-clear-text
 - name: Scan
-  uses: NazmiAltun/dotnet-parallel-sonar-scan@v1.1.3
+  uses: CoverGo/dotnet-parallel-sonar-scan@v1
   with:
     test-result-artifacts: #@ ",".join(test_result_artifacts)
 #@ if hasattr(scan_code_net,"sonar") :
