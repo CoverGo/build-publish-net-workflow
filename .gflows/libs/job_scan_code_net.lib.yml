@@ -63,6 +63,7 @@
 #@ end
   env:
     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64
 #@ end
 ---
 #@ def generate_scan_code_net_job(scan_code_net, sections):
