@@ -916,9 +916,9 @@ jobs:
         src: ghcr.io/covergo/auth:candidate-${{ needs.version.outputs.app_version }}
         dst: ${{ steps.github-tags-auth-service.outputs.docker_image_ghcr_tags }}
     - name: Set up sigstore cosign
-      uses: sigstore/cosign-installer@9becc617647dfa20ae7b1151972e9b3a2c338a2b
+      uses: sigstore/cosign-installer@v3.1.1
       with:
-        cosign-release: v1.13.1
+        cosign-release: v2.2.0
     - name: Sign published container image
       run: cosign sign --key env://COSIGN_PRIVATE_KEY ghcr.io/covergo/auth:${{ needs.version.outputs.app_version }}@${{ needs.docker-build-auth-service.outputs.digest }}
       env:
@@ -988,9 +988,9 @@ jobs:
       with:
         event-type: helm_release
     - name: Set up sigstore cosign
-      uses: sigstore/cosign-installer@9becc617647dfa20ae7b1151972e9b3a2c338a2b
+      uses: sigstore/cosign-installer@v3.1.1
       with:
-        cosign-release: v1.13.1
+        cosign-release: v2.2.0
     - name: Sign published container image
       run: cosign sign --key env://COSIGN_PRIVATE_KEY registry-intl.cn-hongkong.aliyuncs.com/covergo/auth:${{ needs.version.outputs.app_version }}@${{ needs.docker-build-auth-service.outputs.digest }}
       env:
@@ -1046,9 +1046,9 @@ jobs:
         src: ghcr.io/covergo/auth-predeployment:candidate-${{ needs.version.outputs.app_version }}
         dst: ${{ steps.github-tags-auth-predeployment.outputs.docker_image_ghcr_tags }}
     - name: Set up sigstore cosign
-      uses: sigstore/cosign-installer@9becc617647dfa20ae7b1151972e9b3a2c338a2b
+      uses: sigstore/cosign-installer@v3.1.1
       with:
-        cosign-release: v1.13.1
+        cosign-release: v2.2.0
     - name: Sign published container image
       run: cosign sign --key env://COSIGN_PRIVATE_KEY ghcr.io/covergo/auth-predeployment:${{ needs.version.outputs.app_version }}@${{ needs.docker-build-auth-predeployment.outputs.digest }}
       env:
@@ -1118,9 +1118,9 @@ jobs:
       with:
         event-type: helm_release
     - name: Set up sigstore cosign
-      uses: sigstore/cosign-installer@9becc617647dfa20ae7b1151972e9b3a2c338a2b
+      uses: sigstore/cosign-installer@v3.1.1
       with:
-        cosign-release: v1.13.1
+        cosign-release: v2.2.0
     - name: Sign published container image
       run: cosign sign --key env://COSIGN_PRIVATE_KEY registry-intl.cn-hongkong.aliyuncs.com/covergo/auth-predeployment:${{ needs.version.outputs.app_version }}@${{ needs.docker-build-auth-predeployment.outputs.digest }}
       env:
