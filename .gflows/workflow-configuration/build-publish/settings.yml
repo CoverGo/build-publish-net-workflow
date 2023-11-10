@@ -4,34 +4,34 @@
 ---
 
 generic_job_example:
-  name: Auth #name for the UI 
-  slug: auth-service #used for job dependencies references 
- 
+  name: Auth #name for the UI
+  slug: auth-service #used for job dependencies references
+
   # optional, name of the Dockerfile to build. If presented, job will build image
   dockerfile: Dockerfile
-  # optional, name of default image to export, as a result of build. 
+  # optional, name of default image to export, as a result of build.
   # Could be omitted if docker_export is presented
   # if dockerfile is missing, this field is considered as a dependency, all jobs will be searched for a one exporting this image name
   # image will be loaded into local docker to use for running or just use as a cache
   image_name: covergo/auth
   #optional. Array of parameters to pass to docker image during run.
-  image_run_args: 
+  image_run_args:
   - "arg1"
   - "arg 2"
-  
+
   #optional, docker cache configuration. Can be a map or an array
   cache_from:
-    
-  #Map view: 
+
+  #Map view:
     #optional, type of docker cache to use. Possible values: "gha" and "registry"
-    #gha will use GitHub Cache API via docker gha cache exporter. Experimental, fast, and limited to 5GB per repo 
+    #gha will use GitHub Cache API via docker gha cache exporter. Experimental, fast, and limited to 5GB per repo
     #registry will create a special "cache" images containing all layers and used only for caching, branch-specific, and store it in ghcr.io
     type: registry #[gha,registry]
     # optional, dependencies on external docker images, produced by other jobs,
     # used as an additional cache during build process.
     # Can be used only for "registry" cache type
     from_images:
-      # non-empty list containing names of the images. Should match "image_name" field of some sections in the same configuration file 
+      # non-empty list containing names of the images. Should match "image_name" field of some sections in the same configuration file
       # order matters, as cache will be used in the same order as declaration
       # cache order should reflect the dependencies from Dockerfile targets
       # base targets should come first
@@ -42,14 +42,14 @@ generic_job_example:
   #  - covergo/auth
 
   #optional, if presented means this job will run docker image as stand-alone or inside compose
-  #represents the path to get some artifacts from the image (compose service) as a result of the run 
-  #artifacts will be treated based on other factor, e.g. it could be test results in some format, nuget package, or smth else 
-  #requires image_name to locate the target image 
+  #represents the path to get some artifacts from the image (compose service) as a result of the run
+  #artifacts will be treated based on other factor, e.g. it could be test results in some format, nuget package, or smth else
+  #requires image_name to locate the target image
   container_result_path: app/TestResults
 
 
   # option section for running compose
-  # if presented, means job will run compose instead of docker 
+  # if presented, means job will run compose instead of docker
   compose_file: docker-compose.yml
   #service name in compose file to treat as SUT
   #results will be taken from this image, based on 'container_result_path' setting
@@ -61,7 +61,7 @@ generic_job_example:
   ## end of compose section
 
 #Deprecated in favor of services
-#service:  
+#service:
 
 #Should Only build and export docker images
 services:
@@ -72,7 +72,7 @@ services:
     image_name: covergo/auth
     generate_docker_meta: true
     output_docker_digest: true
-    build_args: 
+    build_args:
       - NOW="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
   - name: Auth Predeployment
     slug: auth-predeployment
@@ -84,8 +84,8 @@ services:
     cache_from:
       - covergo/auth
 
-#Runs an existing image, can build if needed 
-unit_test: #docker-build-and-job 
+#Runs an existing image, can build if needed
+unit_test: #docker-build-and-job
   - name: Unit tests
     slug: auth-test-unit
     container_result_path: app/TestResults
@@ -100,10 +100,10 @@ unit_test: #docker-build-and-job
       - covergo/auth
     upload_path: |
       bce
-      !fge 
+      !fge
       !hep/**/.tmp
 #Runs existing images in compose, can build if needed
-integration_test: #array of docker-build-and-job 
+integration_test: #array of docker-build-and-job
   - name: Integration tests
     slug: integration-tests
     container_result_path: app/TestResults
@@ -134,7 +134,7 @@ integration_test: #array of docker-build-and-job
       - covergo/auth
       - covergo/auth-test-unit
       - covergo/cases-api-test-integration
-      
+
   - name: Integration API tests
     slug: api-test-integration
     runner: ubuntu-latest
@@ -152,14 +152,14 @@ integration_test: #array of docker-build-and-job
 
 
 #Only build and export docker images
-additional_images: #array of docker-build-and-job 
+additional_images: #array of docker-build-and-job
   - name: Mongo db for Auth
     slug: auth-mongo
     dockerfile: Mongo.Dockerfile
     image_name: covergo/auth-mongo
 
 
-#Runs an exising image or build it, extract nuget package and publishes it 
+#Runs an exising image or build it, extract nuget package and publishes it
 nuget: #docker-build-and-job with special treatment of artifact
   - name: Auth client nuget
     slug: auth-nuget
@@ -256,6 +256,7 @@ scan_code_net:
   name: Sonar Code
   slug: scan_code_net
   #optional
+  runner: ubuntu-latest-4-cores
   cache_from:
     - covergo/auth
     - covergo/auth-test-unit
@@ -282,7 +283,7 @@ deploy_tenants:
     url: CoverGo/Documentation
     branch: master
     token: ${{ secrets.CR_PAT_FULL }}
-  
+
   # Legacy way
   service: covergo-auth
   image: registry-intl.cn-hongkong.aliyuncs.com/covergo/auth:${{ needs.version.outputs.app_version }}
