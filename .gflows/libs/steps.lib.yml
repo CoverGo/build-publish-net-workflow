@@ -51,7 +51,7 @@ with:
     "covergo/docker-extract@v1.1",
     "covergo/docker-diagnose@v1.8",
     "covergo/set-compose-tags@v1.0.1",
-    "covergo/run-in-compose@v1.1"
+    "covergo/run-in-compose@v2.0"
     ]'
   checkout_base_path: ./.github/actions
   app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
