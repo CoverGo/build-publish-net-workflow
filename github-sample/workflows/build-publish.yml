@@ -484,6 +484,7 @@ jobs:
     - docker-build-auth-mongo
     env:
       RESULTS_PATH: TestResults
+      GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
     steps:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
