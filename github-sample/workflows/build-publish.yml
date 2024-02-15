@@ -550,6 +550,7 @@ jobs:
         compose-file: docker-compose.yml
         service-name: cases-test-integration
         project-name: integration-test
+        env-vars: '{"GOOGLE_APPLICATION_CREDENTIALS":"${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}"}'
     - name: Collect Integration tests results
       if: always()
       uses: ./.github/actions/docker-extract
@@ -679,6 +680,7 @@ jobs:
         compose-file: docker-compose.yml
         service-name: cases-test-acceptance
         project-name: integration-test
+        env-vars: '{"GOOGLE_APPLICATION_CREDENTIALS":"${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}"}'
     - name: Collect Acceptance tests results
       if: always()
       uses: ./.github/actions/docker-extract
@@ -834,6 +836,7 @@ jobs:
         compose-file: docker-compose.mariadb.yml
         service-name: cases-mariadb-test-integration
         project-name: integration-test
+        env-vars: '{"GOOGLE_APPLICATION_CREDENTIALS":"${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}"}'
     - name: Collect Integration API tests results
       if: always()
       uses: ./.github/actions/docker-extract
