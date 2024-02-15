@@ -17,7 +17,6 @@
         images: #@ images
         target-tag: ${{ needs.version.outputs.app_version }}
         compose-file: #@ integration_test_definition.compose_file
-        env-vars: '{"GOOGLE_APPLICATION_CREDENTIALS":"${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}"}'
     - name: Prepare compose file
       uses: ./.github/actions/set-compose-tags
       with:
@@ -30,6 +29,7 @@
         compose-file: #@ integration_test_definition.compose_file
         service-name: #@ getattr(integration_test_definition,"compose_service_name",integration_test_definition.slug)
         project-name: integration-test
+        env-vars: '{"GOOGLE_APPLICATION_CREDENTIALS":"${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}"}'
 #@ end
 ---
 #@ def _collect_results_step(integration_test_definition, filter):

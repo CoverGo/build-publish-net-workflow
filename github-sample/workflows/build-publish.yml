@@ -537,7 +537,6 @@ jobs:
         images: covergo/auth;covergo/auth-predeployment;covergo/auth-test-unit;covergo/cases-mariadb-test-integration;covergo/cases-test-acceptance;covergo/cases-api-test-integration;covergo/auth-mongo
         target-tag: ${{ needs.version.outputs.app_version }}
         compose-file: docker-compose.yml
-        env-vars: '{"GOOGLE_APPLICATION_CREDENTIALS":"${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}"}'
     - name: Prepare compose file
       uses: ./.github/actions/set-compose-tags
       with:
@@ -550,6 +549,7 @@ jobs:
         compose-file: docker-compose.yml
         service-name: cases-test-integration
         project-name: integration-test
+        env-vars: '{"GOOGLE_APPLICATION_CREDENTIALS":"${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}"}'
     - name: Collect Integration tests results
       if: always()
       uses: ./.github/actions/docker-extract
@@ -666,7 +666,6 @@ jobs:
         images: covergo/auth;covergo/auth-predeployment;covergo/auth-test-unit;covergo/cases-mariadb-test-integration;covergo/cases-test-acceptance;covergo/cases-api-test-integration;covergo/auth-mongo
         target-tag: ${{ needs.version.outputs.app_version }}
         compose-file: docker-compose.yml
-        env-vars: '{"GOOGLE_APPLICATION_CREDENTIALS":"${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}"}'
     - name: Prepare compose file
       uses: ./.github/actions/set-compose-tags
       with:
@@ -679,6 +678,7 @@ jobs:
         compose-file: docker-compose.yml
         service-name: cases-test-acceptance
         project-name: integration-test
+        env-vars: '{"GOOGLE_APPLICATION_CREDENTIALS":"${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}"}'
     - name: Collect Acceptance tests results
       if: always()
       uses: ./.github/actions/docker-extract
@@ -821,7 +821,6 @@ jobs:
         images: covergo/auth;covergo/auth-predeployment;covergo/auth-test-unit;covergo/cases-mariadb-test-integration;covergo/cases-test-acceptance;covergo/cases-api-test-integration;covergo/auth-mongo
         target-tag: ${{ needs.version.outputs.app_version }}
         compose-file: docker-compose.mariadb.yml
-        env-vars: '{"GOOGLE_APPLICATION_CREDENTIALS":"${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}"}'
     - name: Prepare compose file
       uses: ./.github/actions/set-compose-tags
       with:
@@ -834,6 +833,7 @@ jobs:
         compose-file: docker-compose.mariadb.yml
         service-name: cases-mariadb-test-integration
         project-name: integration-test
+        env-vars: '{"GOOGLE_APPLICATION_CREDENTIALS":"${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}"}'
     - name: Collect Integration API tests results
       if: always()
       uses: ./.github/actions/docker-extract
