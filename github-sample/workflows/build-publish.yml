@@ -484,6 +484,7 @@ jobs:
     - docker-build-auth-mongo
     env:
       RESULTS_PATH: TestResults
+      GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
     steps:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
@@ -537,7 +538,6 @@ jobs:
         images: covergo/auth;covergo/auth-predeployment;covergo/auth-test-unit;covergo/cases-mariadb-test-integration;covergo/cases-test-acceptance;covergo/cases-api-test-integration;covergo/auth-mongo
         target-tag: ${{ needs.version.outputs.app_version }}
         compose-file: docker-compose.yml
-        env-vars: '{"GOOGLE_APPLICATION_CREDENTIALS":"${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}"}'
     - name: Prepare compose file
       uses: ./.github/actions/set-compose-tags
       with:
@@ -667,7 +667,6 @@ jobs:
         images: covergo/auth;covergo/auth-predeployment;covergo/auth-test-unit;covergo/cases-mariadb-test-integration;covergo/cases-test-acceptance;covergo/cases-api-test-integration;covergo/auth-mongo
         target-tag: ${{ needs.version.outputs.app_version }}
         compose-file: docker-compose.yml
-        env-vars: '{"GOOGLE_APPLICATION_CREDENTIALS":"${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}"}'
     - name: Prepare compose file
       uses: ./.github/actions/set-compose-tags
       with:
@@ -823,7 +822,6 @@ jobs:
         images: covergo/auth;covergo/auth-predeployment;covergo/auth-test-unit;covergo/cases-mariadb-test-integration;covergo/cases-test-acceptance;covergo/cases-api-test-integration;covergo/auth-mongo
         target-tag: ${{ needs.version.outputs.app_version }}
         compose-file: docker-compose.mariadb.yml
-        env-vars: '{"GOOGLE_APPLICATION_CREDENTIALS":"${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}"}'
     - name: Prepare compose file
       uses: ./.github/actions/set-compose-tags
       with:

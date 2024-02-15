@@ -105,7 +105,7 @@
 #@ steps = []
 #@ steps.extend(docker.steps.build(integration_test_definition, sections.cache_registry))
 #@ steps.extend(integration_test_run_job_steps(integration_test_definition, repository_built_images, sections.cache_registry, repository_built_images_to_publish, getattr(sections,"main_registry",None)))
-#@ return common.generate_job(integration_test_definition, steps ,{"RESULTS_PATH": "TestResults"},sections, needs, job_name)
+#@ return common.generate_job(integration_test_definition, steps ,{"RESULTS_PATH": "TestResults", "GOOGLE_APPLICATION_CREDENTIALS": "${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}"},sections, needs, job_name)
 #@ end
 ---
 

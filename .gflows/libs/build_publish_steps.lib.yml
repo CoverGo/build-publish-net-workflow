@@ -17,7 +17,6 @@
         images: #@ images
         target-tag: ${{ needs.version.outputs.app_version }}
         compose-file: #@ integration_test_definition.compose_file
-        env-vars: '{"GOOGLE_APPLICATION_CREDENTIALS":"${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}"}'
     - name: Prepare compose file
       uses: ./.github/actions/set-compose-tags
       with:
