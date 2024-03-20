@@ -81,7 +81,7 @@ with:
 ---
 #@ def _setup_cosign():
 name: Set up sigstore cosign
-uses: sigstore/cosign-installer@latest
+uses: sigstore/cosign-installer@main
 #@ end
 ---
 #@ def _sign_container_with_cosign(image_name, image_digest):
