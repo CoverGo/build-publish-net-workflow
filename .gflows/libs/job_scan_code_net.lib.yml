@@ -7,11 +7,13 @@
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
-      - name: Setup .NET Core
+      - name: Setup Dotnet
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: #@ getattr(section,"dotnet_version","6.x")
-      - name: Build and test
+      - name: CoverGo Nuget
+        run: dotnet nuget update source github --username ${{ secrets.PAT_USER_READ_PACKAGES }} --password ${{ secrets.PAT_READ_PACKAGES }} --store-password-in-clear-text
+      - name: Build Codebase
         run: dotnet build --configuration Release
       - name: downcase GITHUB_REPOSITORY_OWNER
         run: |
