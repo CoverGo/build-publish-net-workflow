@@ -1,3 +1,4 @@
+#@ load("job_dependency_resolution.lib.yml", "dep")
 ---
 #@ def generate_scan_code_net_job(section, sections):
   name: #@ section["name"]
