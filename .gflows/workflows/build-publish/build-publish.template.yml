@@ -32,7 +32,7 @@
   #@ jobs = {"version": generate_version_job(data.values)}   
   
   #@ if hasattr(data.values,"scan_code_net"):
-  #@  jobs["scan-code-net"] = generate_scan_code_net_job(data.values.scan_code_net)
+  #@  jobs["scan-code-net"] = generate_scan_code_net_job(data.values.scan_code_net, data.values)
   #@ end
 
   #@ if hasattr(data.values,"scan_code"):
