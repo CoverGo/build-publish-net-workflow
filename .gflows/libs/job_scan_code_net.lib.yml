@@ -1,10 +1,6 @@
 #@ load("job_dependency_resolution.lib.yml", "dep")
 ---
-#@ def generate_scan_code_net_job(section, sections):
-  name: #@ section["name"]
-  runs-on: #@ getattr(section,"runner","ubuntu-latest")
-  timeout-minutes: 10
-  steps:
+#@ def scan_code_net_build_needs(sections):
 #@    needs = ["version"]
 #@
 #@    if hasattr(sections,"integration_test"):
@@ -14,7 +10,16 @@
 #@    if hasattr(sections,"unit_test"):
 #@      needs.extend(dep.get_unit_tests_job_names(sections.unit_test))
 #@    end
-        needs: #@ needs
+#@    
+#@    return needs
+#@ end
+---
+#@ def generate_scan_code_net_job(section, sections):
+  name: #@ section["name"]
+  runs-on: #@ getattr(section,"runner","ubuntu-latest")
+  timeout-minutes: 10
+  needs: #@ scan_code_net_build_needs(sections)
+  steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
