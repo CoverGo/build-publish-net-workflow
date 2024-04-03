@@ -38,6 +38,10 @@
         uses: actions/download-artifact@v2
         with:
           path: ./
+      - name: Fix coverage paths
+        run: |
+          echo "Root directory: $GITHUB_WORKSPACE"
+          find . -name "*.opencover.xml" -exec sed -i -e "s@/app@$GITHUB_WORKSPACE@g" {} \;
       - name: SonarCloud Scan
         run: |
           dotnet tool install --global dotnet-sonarscanner
