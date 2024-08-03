@@ -40,7 +40,7 @@
     encrypt-password: #@ security.generate_diagnostic_password(environment)
 - name: Stop compose
   if: ${{ always() }}
-  run: docker compose down --remove-orphans
+  run: docker-compose down --remove-orphans
 - name: Upload test environment logs as artifact
   if: ${{ always() }}
   uses: actions/upload-artifact@v2

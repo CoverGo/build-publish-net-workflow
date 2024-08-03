@@ -153,7 +153,7 @@ jobs:
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
-        actions_list: '[ "covergo/docker-extract@v1.1", "covergo/docker-diagnose@v1.9", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v2.0" ]'
+        actions_list: '[ "covergo/docker-extract@v1.1", "covergo/docker-diagnose@v1.8", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v2.0" ]'
         checkout_base_path: ./.github/actions
         app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
         app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}
@@ -231,7 +231,7 @@ jobs:
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
-        actions_list: '[ "covergo/docker-extract@v1.1", "covergo/docker-diagnose@v1.9", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v2.0" ]'
+        actions_list: '[ "covergo/docker-extract@v1.1", "covergo/docker-diagnose@v1.8", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v2.0" ]'
         checkout_base_path: ./.github/actions
         app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
         app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}
@@ -438,7 +438,7 @@ jobs:
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
-        actions_list: '[ "covergo/docker-extract@v1.1", "covergo/docker-diagnose@v1.9", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v2.0" ]'
+        actions_list: '[ "covergo/docker-extract@v1.1", "covergo/docker-diagnose@v1.8", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v2.0" ]'
         checkout_base_path: ./.github/actions
         app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
         app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}
@@ -522,7 +522,7 @@ jobs:
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
-        actions_list: '[ "covergo/docker-extract@v1.1", "covergo/docker-diagnose@v1.9", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v2.0" ]'
+        actions_list: '[ "covergo/docker-extract@v1.1", "covergo/docker-diagnose@v1.8", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v2.0" ]'
         checkout_base_path: ./.github/actions
         app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
         app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}
@@ -651,7 +651,7 @@ jobs:
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
-        actions_list: '[ "covergo/docker-extract@v1.1", "covergo/docker-diagnose@v1.9", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v2.0" ]'
+        actions_list: '[ "covergo/docker-extract@v1.1", "covergo/docker-diagnose@v1.8", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v2.0" ]'
         checkout_base_path: ./.github/actions
         app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
         app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}
@@ -806,7 +806,7 @@ jobs:
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
-        actions_list: '[ "covergo/docker-extract@v1.1", "covergo/docker-diagnose@v1.9", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v2.0" ]'
+        actions_list: '[ "covergo/docker-extract@v1.1", "covergo/docker-diagnose@v1.8", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v2.0" ]'
         checkout_base_path: ./.github/actions
         app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
         app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}
@@ -1143,7 +1143,7 @@ jobs:
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
-        actions_list: '[ "covergo/docker-extract@v1.1", "covergo/docker-diagnose@v1.9", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v2.0" ]'
+        actions_list: '[ "covergo/docker-extract@v1.1", "covergo/docker-diagnose@v1.8", "covergo/set-compose-tags@v1.0.1", "covergo/run-in-compose@v2.0" ]'
         checkout_base_path: ./.github/actions
         app_id: ${{ secrets.PRIVATE_ACTION_APP_ID }}
         app_private_key: ${{ secrets.PRIVATE_ACTION_APP_PRIVATE_KEY }}
@@ -1192,7 +1192,7 @@ jobs:
         encrypt-password: ${{ secrets.DIAGNOSTIC_PASSWORD }}$GITHUB_RUN_NUMBER
     - name: Stop compose
       if: ${{ always() }}
-      run: docker compose down --remove-orphans
+      run: docker-compose down --remove-orphans
     - name: Upload test environment logs as artifact
       if: ${{ always() }}
       uses: actions/upload-artifact@v2
