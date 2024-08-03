@@ -35,7 +35,7 @@ Workflow template is designed for a generic .Net microservice, with several assu
 - There are zero or more unit tests projects 
 - There are zero or more integration test projects
 - There are zero or more acceptance test projects requiring Behave.Pro integration
-- External dependencies for integration and acceptance tests could be constructed as docker-compose environment 
+- External dependencies for integration and acceptance tests could be constructed as docker compose environment 
 - Integrate and acceptance test projects contains compose files required to run the tests 
 - There are zero or more NuGet packages (for the service client, for example)
 
@@ -111,7 +111,7 @@ Contract:
 
 > GIVEN compose file 'integration-tests.yml' for integration tests
 > AND integration test service in it named 'tests-integration'
-> WHEN CI runner start compose as `docker-compose -f integration-tests.yml up`
+> WHEN CI runner start compose as `docker compose -f integration-tests.yml up`
 > AND waits for tests finish as `docker wait tests-integration`
 > THEN zero return code means all tests are passed   
 > AND non-zero return code means there are some failed tests  
