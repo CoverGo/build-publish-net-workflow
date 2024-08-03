@@ -49,7 +49,7 @@ uses: daspn/private-actions-checkout@v2
 with:
   actions_list: '[
     "covergo/docker-extract@v1.1",
-    "covergo/docker-diagnose@v1.9",
+    "covergo/docker-diagnose@v1.8",
     "covergo/set-compose-tags@v1.0.1",
     "covergo/run-in-compose@v2.0"
     ]'
