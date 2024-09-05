@@ -164,7 +164,7 @@ jobs:
         container-path: app/nuget
         host-path: ./nuget
     - name: Upload nuget packages as artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: Nuget packages
         path: ./nuget
@@ -242,7 +242,7 @@ jobs:
         container-path: app/nuget
         host-path: ./nuget
     - name: Upload nuget packages as artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: Nuget packages
         path: ./nuget
@@ -458,7 +458,7 @@ jobs:
         host-path: ./TestResults
     - name: Upload Unit tests results as artifact
       if: always()
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: Unit tests results
         path: |
@@ -570,13 +570,13 @@ jobs:
         project-name: integration-test
     - name: Upload Integration tests environment diagnostics as artifact
       if: always()
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: Integration tests environment diagnostics
         path: investigate/*
     - name: Upload Integration tests results as artifact
       if: always()
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: Integration tests results
         path: TestResults
@@ -699,13 +699,13 @@ jobs:
         project-name: integration-test
     - name: Upload Acceptance tests environment diagnostics as artifact
       if: always()
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: Acceptance tests environment diagnostics
         path: investigate/*
     - name: Upload Acceptance tests results as artifact
       if: always()
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: Acceptance tests results
         path: TestResults
@@ -854,13 +854,13 @@ jobs:
         project-name: integration-test
     - name: Upload Integration API tests environment diagnostics as artifact
       if: always()
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: Integration API tests environment diagnostics
         path: investigate/*
     - name: Upload Integration API tests results as artifact
       if: always()
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: Integration API tests results
         path: abc
@@ -1195,7 +1195,7 @@ jobs:
       run: docker compose down --remove-orphans
     - name: Upload test environment logs as artifact
       if: ${{ always() }}
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: Big tenants legacy integration tests diagnostics
         path: diagnostics/*

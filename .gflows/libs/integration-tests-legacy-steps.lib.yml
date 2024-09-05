@@ -17,9 +17,9 @@
 - name: Prepare environment for integration tests
   uses: ./launch_environment
   with:
-    mongo-user: #@ environment.mongo_user 
-    mongo-password: #@ environment.mongo_password 
-    mongo-url: #@ environment.mongo_url 
+    mongo-user: #@ environment.mongo_user
+    mongo-password: #@ environment.mongo_password
+    mongo-url: #@ environment.mongo_url
     service-under-test: #@ environment.service_under_test.name
     image-under-test: #@ tagging.candidate_image(registry, environment.service_under_test.image)
 
@@ -28,7 +28,7 @@
   run: yarn install
 #@ for test_case in test_suites.tests:
 - name: #@ "Run {} tests".format(test_case)
-  run: #@ "yarn {}".format(test_case) 
+  run: #@ "yarn {}".format(test_case)
 #@ end
 - name: Gather test environment logs
   if: ${{ always() }}
@@ -43,7 +43,7 @@
   run: docker compose down --remove-orphans
 - name: Upload test environment logs as artifact
   if: ${{ always() }}
-  uses: actions/upload-artifact@v2
+  uses: actions/upload-artifact@v4
   with:
     name: #@ "{} diagnostics".format(test_suites.name)
     path: diagnostics/*
