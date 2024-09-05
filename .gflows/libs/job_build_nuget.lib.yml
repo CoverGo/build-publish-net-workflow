@@ -28,6 +28,7 @@
   with:
     name: Nuget packages
     path: ./nuget
+    include-hidden-files: true
 #@ end
 ---
 #@ def generate_nuget_build_job(nuget, sections):
