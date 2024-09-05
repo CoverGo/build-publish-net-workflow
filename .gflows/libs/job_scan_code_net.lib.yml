@@ -35,7 +35,7 @@
       - name: CoverGo Nuget
         run: dotnet nuget update source github --username ${{ secrets.PAT_USER_READ_PACKAGES }} --password ${{ secrets.PAT_READ_PACKAGES }} --store-password-in-clear-text
       - name: Download Coverage Artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           path: ./
       - name: Fix coverage paths

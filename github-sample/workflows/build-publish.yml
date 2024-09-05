@@ -176,7 +176,7 @@ jobs:
     - nuget-build-auth-nuget
     - acceptance-tests
     steps:
-    - uses: actions/download-artifact@v2
+    - uses: actions/download-artifact@v4
       with:
         name: Nuget packages
         path: ./nuget
@@ -259,7 +259,7 @@ jobs:
     - integration-tests-legacy-small
     - integration-tests-legacy-big
     steps:
-    - uses: actions/download-artifact@v2
+    - uses: actions/download-artifact@v4
       with:
         name: Nuget packages
         path: ./nuget
