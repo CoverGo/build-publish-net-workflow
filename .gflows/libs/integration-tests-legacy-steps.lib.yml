@@ -47,4 +47,5 @@
   with:
     name: #@ "{} diagnostics".format(test_suites.name)
     path: diagnostics/*
+    include-hidden-files: true
 #@ end

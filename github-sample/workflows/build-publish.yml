@@ -168,6 +168,7 @@ jobs:
       with:
         name: Nuget packages
         path: ./nuget
+        include-hidden-files: true
   nuget-publish-auth-nuget:
     name: Publish Auth client nuget
     timeout-minutes: 20
@@ -176,7 +177,7 @@ jobs:
     - nuget-build-auth-nuget
     - acceptance-tests
     steps:
-    - uses: actions/download-artifact@v2
+    - uses: actions/download-artifact@v4
       with:
         name: Nuget packages
         path: ./nuget
@@ -246,6 +247,7 @@ jobs:
       with:
         name: Nuget packages
         path: ./nuget
+        include-hidden-files: true
   nuget-publish-auth-nuget-default:
     name: Publish Auth client nuget with default dependencies
     timeout-minutes: 20
@@ -259,7 +261,7 @@ jobs:
     - integration-tests-legacy-small
     - integration-tests-legacy-big
     steps:
-    - uses: actions/download-artifact@v2
+    - uses: actions/download-artifact@v4
       with:
         name: Nuget packages
         path: ./nuget
@@ -465,6 +467,7 @@ jobs:
           bce
           !fge
           !hep/**/.tmp
+        include-hidden-files: true
     - name: Publish Unit tests results as check
       uses: docker://ghcr.io/enricomi/publish-unit-test-result-action:latest
       if: always()
@@ -574,12 +577,14 @@ jobs:
       with:
         name: Integration tests environment diagnostics
         path: investigate/*
+        include-hidden-files: true
     - name: Upload Integration tests results as artifact
       if: always()
       uses: actions/upload-artifact@v4
       with:
         name: Integration tests results
         path: TestResults
+        include-hidden-files: true
     - name: Publish Integration tests results as check
       uses: docker://ghcr.io/enricomi/publish-unit-test-result-action:latest
       if: always()
@@ -703,12 +708,14 @@ jobs:
       with:
         name: Acceptance tests environment diagnostics
         path: investigate/*
+        include-hidden-files: true
     - name: Upload Acceptance tests results as artifact
       if: always()
       uses: actions/upload-artifact@v4
       with:
         name: Acceptance tests results
         path: TestResults
+        include-hidden-files: true
     - name: Publish Acceptance tests results as check
       uses: docker://ghcr.io/enricomi/publish-unit-test-result-action:latest
       if: always()
@@ -858,12 +865,14 @@ jobs:
       with:
         name: Integration API tests environment diagnostics
         path: investigate/*
+        include-hidden-files: true
     - name: Upload Integration API tests results as artifact
       if: always()
       uses: actions/upload-artifact@v4
       with:
         name: Integration API tests results
         path: abc
+        include-hidden-files: true
     - name: Publish Integration API tests results as check
       uses: docker://ghcr.io/enricomi/publish-unit-test-result-action:latest
       if: always()
@@ -1199,6 +1208,7 @@ jobs:
       with:
         name: Big tenants legacy integration tests diagnostics
         path: diagnostics/*
+        include-hidden-files: true
   docker-build-auth-mongo:
     name: Build Mongo db for Auth image
     timeout-minutes: 20
