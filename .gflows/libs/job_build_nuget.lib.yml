@@ -24,7 +24,7 @@
     container-path: #@ nuget.container_result_path
     host-path: ./nuget
 - name: Upload nuget packages as artifacts
-  uses: actions/upload-artifact@v2
+  uses: actions/upload-artifact@v4
   with:
     name: Nuget packages
     path: ./nuget
