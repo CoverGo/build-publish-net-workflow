@@ -44,16 +44,17 @@ jobs:
           echo ::set-output name=is_production::true
         fi
   scan-code-net:
-    name: Sonar scan
-    timeout-minutes: 20
+    name: Sonar Code
     runs-on: ubuntu-latest-4-cores
+    timeout-minutes: 10
     needs:
     - version
-    - docker-build-auth-service
-    - docker-build-auth-test-unit
+    - build-and-run-integration-tests
+    - run-acceptance-tests
+    - run-api-test-integration
+    - run-auth-test-unit
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+    - uses: actions/checkout@v3
       with:
         fetch-depth: 0
     - name: Set up Java 17
@@ -61,26 +62,26 @@ jobs:
       with:
         java-version: 17
         distribution: adopt
-    - name: Add GitHub Packages to NuGet config
-      env:
-        GH_ACCOUNT: ${{ secrets.PAT_USER_READ_PACKAGES }}
-        GH_TOKEN: ${{ secrets.PAT_READ_PACKAGES }}
-      run: |
-        dotnet nuget update source github --username ${GH_ACCOUNT} --password ${GH_TOKEN} --store-password-in-clear-text
-    - name: Scan
-      uses: CoverGo/dotnet-parallel-sonar-scan@v1.0.1
+    - name: Setup Dotnet
+      uses: actions/setup-dotnet@v4
       with:
-        test-result-artifacts: Unit tests results,Integration tests results,Acceptance tests results,Integration API tests results
-        sonar-token: ${{ secrets.SONAR_TOKEN }}
-        coverage-solution-root-path: /sln
-        verbose: "true"
-        dotnet-build-command: dotnet build -v q -nologo --configuration Release
-        opencover-reports-paths: /**/*.opencover.test.xml
-        vstest-reports-paths: /**/*.test.trx
-        project-name: Auth Service
-        coverage-artifact-pooling-timeout-sec: "1200"
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        dotnet-version: 6.x
+    - name: CoverGo Nuget
+      run: dotnet nuget update source github --username ${{ secrets.PAT_USER_READ_PACKAGES }} --password ${{ secrets.PAT_READ_PACKAGES }} --store-password-in-clear-text
+    - name: Download Coverage Artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: ./
+    - name: Fix coverage paths
+      run: |
+        echo "Root directory: $GITHUB_WORKSPACE"
+        find . -name "*.opencover.xml" -exec sed -i -e "s@/app@$GITHUB_WORKSPACE@g" {} \;
+    - name: SonarCloud Scan
+      run: |
+        dotnet tool install --global dotnet-sonarscanner
+        dotnet sonarscanner begin /k:"${{ github.repository_owner }}_${{ github.event.repository.name }}" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /o:covergo /d:sonar.cs.opencover.reportsPaths=**/coverage.opencover.xml
+        dotnet build --configuration Release
+        dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
   scan-code:
     name: Sonar scan
     runs-on: ubuntu-latest
@@ -469,13 +470,48 @@ jobs:
           !hep/**/.tmp
         include-hidden-files: true
     - name: Publish Unit tests results as check
-      uses: docker://ghcr.io/enricomi/publish-unit-test-result-action:latest
       if: always()
-      with:
-        report_individual_runs: "true"
-        check_name: Unit tests check
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        files: ./TestResults/**/*.xml
+      env:
+        CHECK_NAME: Unit tests check
+        FILE_PATH: ./TestResults/**/*.xml
+      run: |
+        RETRY_COUNT=0
+        MAX_RETRIES=3
+        BACKOFF=10
+
+        while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+          # Check GitHub Rate Limit
+          REMAINING=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/rate_limit | jq '.rate.remaining')
+          if [ "$REMAINING" -lt 100 ]; then
+            echo "API rate limit is too low: $REMAINING remaining requests. Retrying in $BACKOFF seconds..."
+            sleep $BACKOFF
+            BACKOFF=$((BACKOFF * 2))
+            RETRY_COUNT=$((RETRY_COUNT + 1))
+            continue
+          fi
+
+          # Publish test results as check
+          docker run --rm -v $PWD:/workspace -e GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} ghcr.io/enricomi/publish-unit-test-result-action \
+            --check_name "$CHECK_NAME" \
+            --report_individual_runs "true" \
+            --files "$FILE_PATH"
+
+          # Check if publishing succeeded
+          if [ $? -eq 0 ]; then
+            echo "Test results published successfully!"
+            break
+          else
+            echo "Failed to publish test results. Retrying in $BACKOFF seconds..."
+            sleep $BACKOFF
+            BACKOFF=$((BACKOFF * 2))
+            RETRY_COUNT=$((RETRY_COUNT + 1))
+          fi
+
+          if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
+            echo "Max retries reached. Failing the job."
+            exit 1
+          fi
+        done
   build-and-run-integration-tests:
     name: Build and run Integration tests
     timeout-minutes: 20
@@ -586,13 +622,48 @@ jobs:
         path: TestResults
         include-hidden-files: true
     - name: Publish Integration tests results as check
-      uses: docker://ghcr.io/enricomi/publish-unit-test-result-action:latest
       if: always()
-      with:
-        report_individual_runs: "true"
-        check_name: Integration tests check
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        files: ./TestResults/**/*.xml
+      env:
+        CHECK_NAME: Integration tests check
+        FILE_PATH: ./TestResults/**/*.xml
+      run: |
+        RETRY_COUNT=0
+        MAX_RETRIES=3
+        BACKOFF=10
+
+        while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+          # Check GitHub Rate Limit
+          REMAINING=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/rate_limit | jq '.rate.remaining')
+          if [ "$REMAINING" -lt 100 ]; then
+            echo "API rate limit is too low: $REMAINING remaining requests. Retrying in $BACKOFF seconds..."
+            sleep $BACKOFF
+            BACKOFF=$((BACKOFF * 2))
+            RETRY_COUNT=$((RETRY_COUNT + 1))
+            continue
+          fi
+
+          # Publish test results as check
+          docker run --rm -v $PWD:/workspace -e GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} ghcr.io/enricomi/publish-unit-test-result-action \
+            --check_name "$CHECK_NAME" \
+            --report_individual_runs "true" \
+            --files "$FILE_PATH"
+
+          # Check if publishing succeeded
+          if [ $? -eq 0 ]; then
+            echo "Test results published successfully!"
+            break
+          else
+            echo "Failed to publish test results. Retrying in $BACKOFF seconds..."
+            sleep $BACKOFF
+            BACKOFF=$((BACKOFF * 2))
+            RETRY_COUNT=$((RETRY_COUNT + 1))
+          fi
+
+          if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
+            echo "Max retries reached. Failing the job."
+            exit 1
+          fi
+        done
   docker-build-acceptance-tests:
     name: Build Acceptance tests image
     timeout-minutes: 20
@@ -717,13 +788,48 @@ jobs:
         path: TestResults
         include-hidden-files: true
     - name: Publish Acceptance tests results as check
-      uses: docker://ghcr.io/enricomi/publish-unit-test-result-action:latest
       if: always()
-      with:
-        report_individual_runs: "true"
-        check_name: Acceptance tests check
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        files: ./TestResults/TestResultJUnit.xml
+      env:
+        CHECK_NAME: Acceptance tests check
+        FILE_PATH: ./TestResults/TestResultJUnit.xml
+      run: |
+        RETRY_COUNT=0
+        MAX_RETRIES=3
+        BACKOFF=10
+
+        while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+          # Check GitHub Rate Limit
+          REMAINING=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/rate_limit | jq '.rate.remaining')
+          if [ "$REMAINING" -lt 100 ]; then
+            echo "API rate limit is too low: $REMAINING remaining requests. Retrying in $BACKOFF seconds..."
+            sleep $BACKOFF
+            BACKOFF=$((BACKOFF * 2))
+            RETRY_COUNT=$((RETRY_COUNT + 1))
+            continue
+          fi
+
+          # Publish test results as check
+          docker run --rm -v $PWD:/workspace -e GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} ghcr.io/enricomi/publish-unit-test-result-action \
+            --check_name "$CHECK_NAME" \
+            --report_individual_runs "true" \
+            --files "$FILE_PATH"
+
+          # Check if publishing succeeded
+          if [ $? -eq 0 ]; then
+            echo "Test results published successfully!"
+            break
+          else
+            echo "Failed to publish test results. Retrying in $BACKOFF seconds..."
+            sleep $BACKOFF
+            BACKOFF=$((BACKOFF * 2))
+            RETRY_COUNT=$((RETRY_COUNT + 1))
+          fi
+
+          if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
+            echo "Max retries reached. Failing the job."
+            exit 1
+          fi
+        done
     - name: Upload Acceptance tests results to Behave.Pro
       if: always()
       env:
@@ -874,13 +980,48 @@ jobs:
         path: abc
         include-hidden-files: true
     - name: Publish Integration API tests results as check
-      uses: docker://ghcr.io/enricomi/publish-unit-test-result-action:latest
       if: always()
-      with:
-        report_individual_runs: "true"
-        check_name: Integration API tests check
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        files: ./TestResults/*.JUnit.xml
+      env:
+        CHECK_NAME: Integration API tests check
+        FILE_PATH: ./TestResults/*.JUnit.xml
+      run: |
+        RETRY_COUNT=0
+        MAX_RETRIES=3
+        BACKOFF=10
+
+        while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+          # Check GitHub Rate Limit
+          REMAINING=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/rate_limit | jq '.rate.remaining')
+          if [ "$REMAINING" -lt 100 ]; then
+            echo "API rate limit is too low: $REMAINING remaining requests. Retrying in $BACKOFF seconds..."
+            sleep $BACKOFF
+            BACKOFF=$((BACKOFF * 2))
+            RETRY_COUNT=$((RETRY_COUNT + 1))
+            continue
+          fi
+
+          # Publish test results as check
+          docker run --rm -v $PWD:/workspace -e GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} ghcr.io/enricomi/publish-unit-test-result-action \
+            --check_name "$CHECK_NAME" \
+            --report_individual_runs "true" \
+            --files "$FILE_PATH"
+
+          # Check if publishing succeeded
+          if [ $? -eq 0 ]; then
+            echo "Test results published successfully!"
+            break
+          else
+            echo "Failed to publish test results. Retrying in $BACKOFF seconds..."
+            sleep $BACKOFF
+            BACKOFF=$((BACKOFF * 2))
+            RETRY_COUNT=$((RETRY_COUNT + 1))
+          fi
+
+          if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
+            echo "Max retries reached. Failing the job."
+            exit 1
+          fi
+        done
   docker-publish-github-auth-service:
     name: Tag service image in GitHub
     timeout-minutes: 20

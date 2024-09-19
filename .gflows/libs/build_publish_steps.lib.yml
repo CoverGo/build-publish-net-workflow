@@ -58,13 +58,48 @@ with:
 ---
 #@ def _publish_test_result_as_check_step(filePath, check_name):
 name: #@ "Publish {} results as check".format(check_name)
-uses: docker://ghcr.io/enricomi/publish-unit-test-result-action:latest
 if: always()
-with:
-  report_individual_runs: "true"
-  check_name: #@ "{} check".format(check_name)
-  github_token: ${{ secrets.GITHUB_TOKEN }}
-  files: #@ filePath
+env:
+  CHECK_NAME: #@ "{} check".format(check_name)
+  FILE_PATH: #@ "{}".format(filePath)
+run: |
+  RETRY_COUNT=0
+  MAX_RETRIES=3
+  BACKOFF=10
+
+  while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+    # Check GitHub Rate Limit
+    REMAINING=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/rate_limit | jq '.rate.remaining')
+    if [ "$REMAINING" -lt 100 ]; then
+      echo "API rate limit is too low: $REMAINING remaining requests. Retrying in $BACKOFF seconds..."
+      sleep $BACKOFF
+      BACKOFF=$((BACKOFF * 2))
+      RETRY_COUNT=$((RETRY_COUNT + 1))
+      continue
+    fi
+
+    # Publish test results as check
+    docker run --rm -v $PWD:/workspace -e GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} ghcr.io/enricomi/publish-unit-test-result-action \
+      --check_name "$CHECK_NAME" \
+      --report_individual_runs "true" \
+      --files "$FILE_PATH"
+
+    # Check if publishing succeeded
+    if [ $? -eq 0 ]; then
+      echo "Test results published successfully!"
+      break
+    else
+      echo "Failed to publish test results. Retrying in $BACKOFF seconds..."
+      sleep $BACKOFF
+      BACKOFF=$((BACKOFF * 2))
+      RETRY_COUNT=$((RETRY_COUNT + 1))
+    fi
+
+    if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
+      echo "Max retries reached. Failing the job."
+      exit 1
+    fi
+  done
 #@ end
 ---
 #@ def _copy_between_registries_step(tag_from, tag_to, target_registry_name):
