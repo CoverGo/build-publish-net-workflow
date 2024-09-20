@@ -79,7 +79,7 @@ run: |
     fi
 
     # Publish test results as check
-    docker run --rm -v $PWD:/workspace -e GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} ghcr.io/enricomi/publish-unit-test-result-action \
+    docker run --rm -v $PWD:/workspace -e GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} -e GITHUB_EVENT_PATH=$GITHUB_EVENT_PATH ghcr.io/enricomi/publish-unit-test-result-action \
       --check_name "$CHECK_NAME" \
       --report_individual_runs "true" \
       --files "$FILE_PATH"
