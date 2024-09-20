@@ -44,16 +44,17 @@ jobs:
           echo ::set-output name=is_production::true
         fi
   scan-code-net:
-    name: Sonar scan
-    timeout-minutes: 20
+    name: Sonar Code
     runs-on: ubuntu-latest-4-cores
+    timeout-minutes: 10
     needs:
     - version
-    - docker-build-auth-service
-    - docker-build-auth-test-unit
+    - build-and-run-integration-tests
+    - run-acceptance-tests
+    - run-api-test-integration
+    - run-auth-test-unit
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+    - uses: actions/checkout@v3
       with:
         fetch-depth: 0
     - name: Set up Java 17
@@ -61,26 +62,26 @@ jobs:
       with:
         java-version: 17
         distribution: adopt
-    - name: Add GitHub Packages to NuGet config
-      env:
-        GH_ACCOUNT: ${{ secrets.PAT_USER_READ_PACKAGES }}
-        GH_TOKEN: ${{ secrets.PAT_READ_PACKAGES }}
-      run: |
-        dotnet nuget update source github --username ${GH_ACCOUNT} --password ${GH_TOKEN} --store-password-in-clear-text
-    - name: Scan
-      uses: CoverGo/dotnet-parallel-sonar-scan@v1.0.1
+    - name: Setup Dotnet
+      uses: actions/setup-dotnet@v4
       with:
-        test-result-artifacts: Unit tests results,Integration tests results,Acceptance tests results,Integration API tests results
-        sonar-token: ${{ secrets.SONAR_TOKEN }}
-        coverage-solution-root-path: /sln
-        verbose: "true"
-        dotnet-build-command: dotnet build -v q -nologo --configuration Release
-        opencover-reports-paths: /**/*.opencover.test.xml
-        vstest-reports-paths: /**/*.test.trx
-        project-name: Auth Service
-        coverage-artifact-pooling-timeout-sec: "1200"
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        dotnet-version: 6.x
+    - name: CoverGo Nuget
+      run: dotnet nuget update source github --username ${{ secrets.PAT_USER_READ_PACKAGES }} --password ${{ secrets.PAT_READ_PACKAGES }} --store-password-in-clear-text
+    - name: Download Coverage Artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: ./
+    - name: Fix coverage paths
+      run: |
+        echo "Root directory: $GITHUB_WORKSPACE"
+        find . -name "*.opencover.xml" -exec sed -i -e "s@/app@$GITHUB_WORKSPACE@g" {} \;
+    - name: SonarCloud Scan
+      run: |
+        dotnet tool install --global dotnet-sonarscanner
+        dotnet sonarscanner begin /k:"${{ github.repository_owner }}_${{ github.event.repository.name }}" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /o:covergo /d:sonar.cs.opencover.reportsPaths=**/coverage.opencover.xml
+        dotnet build --configuration Release
+        dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
   scan-code:
     name: Sonar scan
     runs-on: ubuntu-latest
@@ -470,12 +471,18 @@ jobs:
         include-hidden-files: true
     - name: Publish Unit tests results as check
       uses: docker://ghcr.io/enricomi/publish-unit-test-result-action:latest
+      continue-on-error: true
       if: always()
       with:
         report_individual_runs: "true"
         check_name: Unit tests check
         github_token: ${{ secrets.GITHUB_TOKEN }}
         files: ./TestResults/**/*.xml
+        github_retries: 3
+        comment_mode: false
+        compare_to_earlier_commit: false
+        check_run: false
+        check_run_annotations: none
   build-and-run-integration-tests:
     name: Build and run Integration tests
     timeout-minutes: 20
@@ -587,12 +594,18 @@ jobs:
         include-hidden-files: true
     - name: Publish Integration tests results as check
       uses: docker://ghcr.io/enricomi/publish-unit-test-result-action:latest
+      continue-on-error: true
       if: always()
       with:
         report_individual_runs: "true"
         check_name: Integration tests check
         github_token: ${{ secrets.GITHUB_TOKEN }}
         files: ./TestResults/**/*.xml
+        github_retries: 3
+        comment_mode: false
+        compare_to_earlier_commit: false
+        check_run: false
+        check_run_annotations: none
   docker-build-acceptance-tests:
     name: Build Acceptance tests image
     timeout-minutes: 20
@@ -718,12 +731,18 @@ jobs:
         include-hidden-files: true
     - name: Publish Acceptance tests results as check
       uses: docker://ghcr.io/enricomi/publish-unit-test-result-action:latest
+      continue-on-error: true
       if: always()
       with:
         report_individual_runs: "true"
         check_name: Acceptance tests check
         github_token: ${{ secrets.GITHUB_TOKEN }}
         files: ./TestResults/TestResultJUnit.xml
+        github_retries: 3
+        comment_mode: false
+        compare_to_earlier_commit: false
+        check_run: false
+        check_run_annotations: none
     - name: Upload Acceptance tests results to Behave.Pro
       if: always()
       env:
@@ -875,12 +894,18 @@ jobs:
         include-hidden-files: true
     - name: Publish Integration API tests results as check
       uses: docker://ghcr.io/enricomi/publish-unit-test-result-action:latest
+      continue-on-error: true
       if: always()
       with:
         report_individual_runs: "true"
         check_name: Integration API tests check
         github_token: ${{ secrets.GITHUB_TOKEN }}
         files: ./TestResults/*.JUnit.xml
+        github_retries: 3
+        comment_mode: false
+        compare_to_earlier_commit: false
+        check_run: false
+        check_run_annotations: none
   docker-publish-github-auth-service:
     name: Tag service image in GitHub
     timeout-minutes: 20

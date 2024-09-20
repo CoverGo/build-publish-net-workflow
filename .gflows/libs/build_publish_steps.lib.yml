@@ -59,12 +59,18 @@ with:
 #@ def _publish_test_result_as_check_step(filePath, check_name):
 name: #@ "Publish {} results as check".format(check_name)
 uses: docker://ghcr.io/enricomi/publish-unit-test-result-action:latest
+continue-on-error: true
 if: always()
 with:
   report_individual_runs: "true"
   check_name: #@ "{} check".format(check_name)
   github_token: ${{ secrets.GITHUB_TOKEN }}
   files: #@ filePath
+  github_retries: 3
+  comment_mode: off  # Disable pull request comments to reduce API calls
+  compare_to_earlier_commit: false  # Disable comparison with earlier commits
+  check_run: false  # Disable check runs to reduce API calls
+  check_run_annotations: none  # Disable additional annotations to reduce API calls
 #@ end
 ---
 #@ def _copy_between_registries_step(tag_from, tag_to, target_registry_name):
