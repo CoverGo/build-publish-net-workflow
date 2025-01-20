@@ -79,6 +79,7 @@ jobs:
     - name: SonarCloud Scan
       run: |
         dotnet tool install --global dotnet-sonarscanner
+        export PATH="$PATH:/root/.dotnet/tools"
         dotnet sonarscanner begin /k:"${{ github.repository_owner }}_${{ github.event.repository.name }}" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /o:covergo /d:sonar.cs.opencover.reportsPaths=**/coverage.opencover.xml
         dotnet build --configuration Release
         dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
@@ -182,6 +183,10 @@ jobs:
       with:
         name: Nuget packages
         path: ./nuget
+    - name: Setup Dotnet
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 7.x
     - name: Push generated package to GitHub registry
       run: dotnet nuget push ./nuget/*.nupkg --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate --source https://nuget.pkg.github.com/covergo/index.json
     - name: Push generated package symbols to GitHub registry
@@ -266,6 +271,10 @@ jobs:
       with:
         name: Nuget packages
         path: ./nuget
+    - name: Setup Dotnet
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 7.x
     - name: Push generated package to GitHub registry
       run: dotnet nuget push ./nuget/*.nupkg --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate --source https://nuget.pkg.github.com/covergo/index.json
     - name: Push generated package symbols to GitHub registry
@@ -955,6 +964,7 @@ jobs:
       with:
         src: ghcr.io/covergo/auth:candidate-${{ needs.version.outputs.app_version }}
         dst: ${{ steps.github-tags-auth-service.outputs.docker_image_ghcr_tags }}
+        docker-config-path: /home/runner/.docker/config.json
     - name: Set up sigstore cosign
       uses: sigstore/cosign-installer@main
     - name: Sign published container image
@@ -1020,6 +1030,7 @@ jobs:
       with:
         src: ghcr.io/covergo/auth:${{ needs.version.outputs.app_version }}
         dst: ${{ steps.alicloud-tags-auth-service.outputs.docker_image_ali_cloud_tags }}
+        docker-config-path: /home/runner/.docker/config.json
     - if: github.ref_type == 'tag'
       name: Publish helm chart
       uses: peter-evans/repository-dispatch@v2
@@ -1082,6 +1093,7 @@ jobs:
       with:
         src: ghcr.io/covergo/auth-predeployment:candidate-${{ needs.version.outputs.app_version }}
         dst: ${{ steps.github-tags-auth-predeployment.outputs.docker_image_ghcr_tags }}
+        docker-config-path: /home/runner/.docker/config.json
     - name: Set up sigstore cosign
       uses: sigstore/cosign-installer@main
     - name: Sign published container image
@@ -1147,6 +1159,7 @@ jobs:
       with:
         src: ghcr.io/covergo/auth-predeployment:${{ needs.version.outputs.app_version }}
         dst: ${{ steps.alicloud-tags-auth-predeployment.outputs.docker_image_ali_cloud_tags }}
+        docker-config-path: /home/runner/.docker/config.json
     - if: github.ref_type == 'tag'
       name: Publish helm chart
       uses: peter-evans/repository-dispatch@v2
