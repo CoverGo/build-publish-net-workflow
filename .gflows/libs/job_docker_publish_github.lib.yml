@@ -66,7 +66,7 @@ run: |
 #@   get_versions_tags_id = common.job_id(image_section,"github-tags-")
 - #@ steps.checkout()
 - #@ _get_versions(image_section, get_versions_tags_id, sections)
-- #@ bpsteps.copy_between_registries_step(tagging.candidate_image(sections.cache_registry, image_section),"${{ steps." + get_versions_tags_id + ".outputs.docker_image_ghcr_tags }}",sections.cache_registry.name)
+- #@ bpsteps.copy_between_registries_step(tagging.candidate_image(sections.cache_registry, image_section),"${{ steps." + get_versions_tags_id + ".outputs.docker_image_ghcr_tags }}",sections.cache_registry.name,sections.cache_registry.docker_config_path)
 - #@ bpsteps.setup_cosign()
 - #@ bpsteps.sign_container_with_cosign(tagging.with_registry(sections.cache_registry.url,image_section.image_name,"${{ needs.version.outputs.app_version }}"), "${{ needs." + job.id.docker_build(image_section) + ".outputs.digest }}")
 #@ end

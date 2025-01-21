@@ -240,6 +240,7 @@ cache_registry:
   url: ghcr.io
   name: GitHub Container Registry
   user: ${{ github.repository_owner }}
+  docker_config_path: /home/runner/.docker/config.json
  # password: ${{ secrets.CR_PAT_FULL }}
 
 main_registry:
@@ -251,6 +252,7 @@ main_registry:
   #default
   branches:
     - main
+  docker_config_path: /home/runner/.docker/config.json
 
 scan_code_net:
   name: Sonar Code

@@ -72,7 +72,7 @@ run: |
 - #@ steps.login_docker(sections.main_registry)
 #@   get_versions_tags_id = common.job_id(image_section,"alicloud-tags-")
 - #@ _get_versions(image_section, get_versions_tags_id, sections)
-- #@ bpsteps.copy_between_registries_step(tagging.image(sections.cache_registry, image_section),"${{ steps." + get_versions_tags_id + ".outputs.docker_image_ali_cloud_tags }}",sections.main_registry.name)
+- #@ bpsteps.copy_between_registries_step(tagging.image(sections.cache_registry, image_section),"${{ steps." + get_versions_tags_id + ".outputs.docker_image_ali_cloud_tags }}",sections.main_registry.name,sections.main_registry.docker_config_path)
 - #@ helmsteps.update_helmchart("${{ needs.version.outputs.app_version }}")
 - #@ bpsteps.setup_cosign()
 - #@ bpsteps.sign_container_with_cosign(tagging.with_registry(sections.main_registry.url,image_section.image_name,"${{ needs.version.outputs.app_version }}"), "${{ needs." + job.id.docker_build(image_section) + ".outputs.digest }}")
