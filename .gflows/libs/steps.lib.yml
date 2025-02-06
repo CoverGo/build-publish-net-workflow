@@ -41,6 +41,7 @@ name: Set up Docker Buildx
 uses: docker/setup-buildx-action@v2
 with:
   version: v0.11.2
+  driver-opts: image=ghcr.io/covergo/buildkit:latest
 #@ end
 ---
 #@ def _checkout_private_actions():
