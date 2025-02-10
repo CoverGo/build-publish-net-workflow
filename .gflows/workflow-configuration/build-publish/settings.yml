@@ -134,6 +134,15 @@ integration_test: #array of docker-build-and-job
       - covergo/auth
       - covergo/auth-test-unit
       - covergo/cases-api-test-integration
+    runs:
+      - name: Acceptance Light Tests
+        slug: acceptance-light-tests
+        env:
+          DISCRIMINATOR: LIGHT
+      - name: Acceptance Heavy Tests
+        slug: acceptance-heavy-tests
+        env:
+          DISCRIMINATOR: HEAVY
 
   - name: Integration API tests
     slug: api-test-integration

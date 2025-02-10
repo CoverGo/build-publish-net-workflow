@@ -29,8 +29,7 @@
 
 ---
 #@ def generate_jobs(data):
-  #@ jobs = {"version": generate_version_job(data.values)}   
-  
+  #@ jobs = {"version": generate_version_job(data.values)}
   #@ if hasattr(data.values,"scan_code_net"):
   #@  jobs["scan-code-net"] = generate_scan_code_net_job(data.values.scan_code_net, data.values)
   #@ end
@@ -41,18 +40,18 @@
 
   #@ if hasattr(data.values,"nuget"):
   #@  nuget_sections = []
-  #@   
+  #@
   #@  if type(data.values.nuget) != type([]):
   #@    nuget_sections.append(data.values.nuget)
-  #@  else: 
+  #@  else:
   #@    nuget_sections = data.values.nuget
   #@  end
-  #@ 
-  #@  for nuget_section in nuget_sections: 
+  #@
+  #@  for nuget_section in nuget_sections:
   #@     jobs["nuget-build-"+nuget_section.slug] = generate_nuget_build_job(nuget_section, data.values)
   #@     jobs["nuget-publish-"+nuget_section.slug]= generate_nuget_publish_job(nuget_section, data.values)
   #@  end
-  #@ 
+  #@
   #@ end
 
   #@ service_sections = dep.get_service_sections(data.values)
@@ -61,21 +60,21 @@
   #@   service_image_build_tag = tagging.candidate_image(data.values.cache_registry, service_section)
   #@   jobs[job.id.docker_build(service_section)] = docker.job.build(service_section, data.values, ["version"], service_image_build_tag, build_versioned_image=True )
   #@ end
-  
+
   #@ for unit_test_section in getattr(data.values,"unit_test",[]):
   #@   build_job_name = job.id.docker_build(unit_test_section)
   #@   run_job_name = job.id.docker_run(unit_test_section)
-  #@   
+  #@
   #@   if cfg.get_single_job(unit_test_section):
   #@      build_and_run_job_name = job.id.build_and_run(unit_test_section)
   #@      jobs[build_and_run_job_name] = unit_test_job.build_and_run(unit_test_section, data.values.cache_registry, data.values)
-  #@   else: 
+  #@   else:
   #@      jobs[build_job_name] = unit_test_job.build(unit_test_section,data.values)
   #@      jobs[run_job_name] = unit_test_job.run(unit_test_section, data.values.cache_registry, data.values, ["version",build_job_name])
   #@   end
-  #@ 
-  #@ end 
-  
+  #@
+  #@ end
+
   #@ if hasattr(data.values,"integration_test") :
     #@ needs = ["version"]
     #@ if (hasattr(data.values,"additional_images")):
@@ -88,29 +87,35 @@
        #@   jobs[build_and_run_job_id] = integration_test.build_and_run(integration_test_definition,data.values)
        #@ else:
        #@   jobs[build_job_id]= integration_test.build(integration_test_definition,data.values)
-       #@   jobs[job.id.docker_run(integration_test_definition)]= integration_test.run(integration_test_definition,data.values, ["version",build_job_id])
+       #@   if hasattr(integration_test_definition, "runs"):
+       #@     for run_definition in integration_test_definition.runs:
+       #@       jobs[job.id.docker_run(run_definition)] = integration_test.run(integration_test_definition,data.values, ["version",build_job_id], run_definition.name, run_definition.env)
+       #@     end
+       #@   else:
+       #@     jobs[job.id.docker_run(integration_test_definition)]= integration_test.run(integration_test_definition,data.values, ["version",build_job_id])
+       #@   end
        #@ end
     #@ end
   #@ end
-  
+
   #@ for service_section in service_sections:
   #@   service_image_build_tag = tagging.candidate_image(data.values.cache_registry, service_section)
   #@   jobs[docker_publish_github_job.id(service_section)] = docker_publish_github_job.build(service_section, data.values, service_image_build_tag)
-  #@   
-  #@   if hasattr(data.values,"main_registry"): 
+  #@
+  #@   if hasattr(data.values,"main_registry"):
   #@     jobs[docker_publish_alicloud_job.id(service_section)] = docker_publish_alicloud_job.build(service_section, data.values)
   #@   end
   #@ end
 
   #@ if (hasattr(data.values,"integration_tests_legacy")):
-    #@ if hasattr( data.values.integration_tests_legacy.test_suites, "small_tenants") :     
+    #@ if hasattr( data.values.integration_tests_legacy.test_suites, "small_tenants") :
       #@ jobs["integration-tests-legacy-small"]= generate_integration_test_legacy_small(data.values)
     #@ end
-    #@ if hasattr( data.values.integration_tests_legacy.test_suites, "big_tenants") :   
+    #@ if hasattr( data.values.integration_tests_legacy.test_suites, "big_tenants") :
      #@ jobs["integration-tests-legacy-big"]=  generate_integration_test_legacy_big(data.values)
     #@ end
   #@ end
-  
+
   #@ if hasattr(data.values,"additional_images"):
     #@ for additional_image in data.values.additional_images :
      #@ jobs[job.id.docker_build(additional_image)] = docker.job.build(additional_image, data.values)
@@ -119,7 +124,7 @@
 
   #@ def generate_scan_image_sub_job(service, values, service_sections):
   #@   if hasattr(values,"scan_image"):
-  #@     if hasattr(values,"main_registry"): 
+  #@     if hasattr(values,"main_registry"):
   #@       jobs["scan-image-{}".format(service.slug)] = generate_scan_image_job(service.image_name, service_sections, values.main_registry)
   #@     else:
   #@       if hasattr(values,"cache_registry"):
@@ -140,7 +145,7 @@
   #@     generate_scan_image_sub_job(data.values.service, data.values, service_sections)
   #@   end
   #@ end
-  
+
   #@ if hasattr(data.values, "deploy_tenants"):
     #@ deploy_tenants_registry_section = getattr(data.values, data.values.deploy_tenants.registry)
 
