@@ -10,7 +10,11 @@
 #@ load("job_dependency_resolution.lib.yml", "dep")
 #@ load("configuration.lib.yml", "cfg")
 ---
-#@ def integration_test_run_job_steps(integration_test_definition, repository_built_images, cache_registry, repository_built_images_to_publish, main_registry=None):
+#@ def integration_test_run_job_steps(integration_test_definition, repository_built_images, cache_registry, repository_built_images_to_publish, main_registry=None, name_override=None):
+#@   step_name = integration_test_definition.name
+#@   if (name_override != None):
+#@     step_name = name_override
+#@   end
   - #@ steps.checkout()
   - #@ steps.checkout_private_actions()
   #@ if(main_registry != None):
@@ -30,13 +34,13 @@
       encrypt-password: #@ security.generate_diagnostic_password(integration_test_definition)
       compose-file: #@ integration_test_definition.compose_file
       project-name: integration-test
-  - #@ bpsteps.upload_artifacts_step("investigate/*","{} environment diagnostics".format(integration_test_definition.name) )
-  - #@ bpsteps.upload_artifacts_step(cfg.get_file_upload_path(integration_test_definition),"{} results".format(integration_test_definition.name))
+  - #@ bpsteps.upload_artifacts_step("investigate/*","{} environment diagnostics".format(step_name) )
+  - #@ bpsteps.upload_artifacts_step(cfg.get_file_upload_path(integration_test_definition),"{} results".format(step_name))
   #@ if getattr(integration_test_definition,"enable_junit_test_check",True) :
-  - #@ bpsteps.publish_test_result_as_check_step(cfg.get_test_check_source_files(integration_test_definition),integration_test_definition.name)
+  - #@ bpsteps.publish_test_result_as_check_step(cfg.get_test_check_source_files(integration_test_definition),step_name)
     #@ end
   #@ if hasattr(integration_test_definition,"cucumber_result_filename") :
-  - name: #@ "Upload {} results to Behave.Pro".format(integration_test_definition.name)
+  - name: #@ "Upload {} results to Behave.Pro".format(step_name)
     if: always()
     env:
       behave_api_key: ${{ secrets.BEHAVE_PRO_TOKEN }}
@@ -57,17 +61,17 @@
         -H "X-BUILD-URL: $build_url" \
         --data-binary @"$results_file"
       done
-  - name: #@ "Publish {} results as check".format(integration_test_definition.name)
+  - name: #@ "Publish {} results as check".format(step_name)
     uses: deblockt/cucumber-report-annotations-action@v1.11
     if: always()
     with:
-      name: #@ "{} check".format(integration_test_definition.name)
+      name: #@ "{} check".format(step_name)
       access-token: ${{ secrets.GITHUB_TOKEN }}
       path: #@ cfg.get_host_path_for_docker_extract(integration_test_definition)+"/"+getattr(integration_test_definition,"cucumber_result_filename")
     #@ end
   #@ end
 ---
-#@ def _integration_test_run_job(integration_test_definition, sections, needs = ["version"]):
+#@ def _integration_test_run_job(integration_test_definition, sections, needs = ["version"], name_override = None, extra_envs = {}):
 #@ if hasattr(integration_test_definition, "compose_images"):
 #@  for image in integration_test_definition.compose_images:
 #@    needs.append(dep.find_job_for_image(image))
@@ -78,8 +82,13 @@
 #@ repository_built_images_to_publish=dep.get_repository_built_images_to_publish(sections)
 #@ steps_array = []
 #@ steps_array.append(steps.login_docker(sections.cache_registry))
-#@ steps_array.extend(integration_test_run_job_steps(integration_test_definition, repository_built_images, sections.cache_registry, repository_built_images_to_publish, getattr(sections,"main_registry",None)))
-#@ return common.generate_job(integration_test_definition, steps_array ,{"RESULTS_PATH": cfg.get_host_path_for_docker_extract(integration_test_definition)},sections, needs, job.name.docker_run(integration_test_definition))
+#@ steps_array.extend(integration_test_run_job_steps(integration_test_definition, repository_built_images, sections.cache_registry, repository_built_images_to_publish, getattr(sections,"main_registry",None), name_override))
+#@ envs = { "RESULTS_PATH": cfg.get_host_path_for_docker_extract(integration_test_definition) }
+#@ extra_envs_map = struct.decode(extra_envs)
+#@ for key in extra_envs_map.keys():
+#@   envs.update(key=extra_envs_map.get(key))
+#@ end
+#@ return common.generate_job(integration_test_definition, steps_array, envs, sections, needs, job.name.docker_run(integration_test_definition))
 #@ end
 ---
 #@ def _integration_test_build_job(integration_test_definition, sections):

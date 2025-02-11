@@ -13,7 +13,13 @@
 #@     if cfg.get_single_job(job_definition):
 #@       jobs.append(job.id.build_and_run(job_definition))
 #@     else:
-#@       jobs.append(job.id.docker_run(job_definition))
+#@       if hasattr(job_definition, "runs"):
+#@         for run_definition in job_definition.runs:
+#@           jobs.append(job.id.docker_run(run_definition))
+#@         end
+#@       else:
+#@         jobs.append(job.id.docker_run(job_definition))
+#@       end
 #@     end
 #@   end
 #@   return jobs
@@ -31,12 +37,12 @@
 #                      {
 #                          "artifact_name": {
 #                                    "job":"artifact_producing_job_name",
-#                                    "section":"configuration_section_name_defining_artifact" 
+#                                    "section":"configuration_section_name_defining_artifact"
 #                                    "type":"docker"
 #                         }
 #                      }
 #                 }
-# 
+#
 #
 #@ def copyTo(fromDict,toDict):
 #@    if fromDict != None:
@@ -49,12 +55,12 @@
 ---
 #@ def _get_exports(section, section_name):
 #@ exports = {}
-#@ if hasattr(section,"dockerfile") and hasattr(section,"image_name"): 
+#@ if hasattr(section,"dockerfile") and hasattr(section,"image_name"):
 #@ job_name=job.id.docker_build(section)
 #@ if cfg.get_single_job(section):
 #@   job_name=job.id.build_and_run(section)
 #@ end
-#@ exports[section.image_name]={"section":section_name, "job":job_name, "type":"default_local_docker_image"} 
+#@ exports[section.image_name]={"section":section_name, "job":job_name, "type":"default_local_docker_image"}
 # print("found by dockerfile " + section.image_name);
 #@ end
 
@@ -70,12 +76,12 @@
 #@ docker_target = field_names[0]
 #@ docker_image_name = getattr(export,field_names[0])
 #@ job_name=job.id.docker_build(section)
-# print ("found export {} at {} with job {}".format(docker_image_name,section_name, job_name)) 
+# print ("found export {} at {} with job {}".format(docker_image_name,section_name, job_name))
 #@ exports[docker_image_name] = {"section":section_name, "job":job_name, "type":"targeted_local_docker_image", "target": docker_target}
 # print_fields(export)
 #@ end
 #@ return exports
-#@ end 
+#@ end
 ---
 #@ def _scan_exports(sections):
 #@ exports = {}
@@ -178,17 +184,17 @@
 #@ for image in docker_images_for_cache:
 #@   needs.append(_find_job_for_image(image))
 #@ end
-#@ 
+#@
 #@ return needs
-#@ end 
+#@ end
 ---
 
 #@ dep = struct.make(
 #@ get_services_build_jobs                = _get_docker_build_jobs,
-#@ get_integration_tests_run_jobs         = _get_build_and_run_or_docker_run_jobs, 
+#@ get_integration_tests_run_jobs         = _get_build_and_run_or_docker_run_jobs,
 #@ get_additional_images_build_jobs       = _get_docker_build_jobs,
-#@ get_unit_tests_job_names               = _get_build_and_run_or_docker_run_jobs,        
-#@ find_job_for_image                     = _find_job_for_image,          
+#@ get_unit_tests_job_names               = _get_build_and_run_or_docker_run_jobs,
+#@ find_job_for_image                     = _find_job_for_image,
 #@ get_repository_built_images            = _get_repository_built_images,
 #@ get_repository_built_images_to_publish = _get_repository_built_images_to_publish,
 #@ get_job_needs                          = _get_job_needs,
