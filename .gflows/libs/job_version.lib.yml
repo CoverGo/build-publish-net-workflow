@@ -22,15 +22,15 @@ outputs:
   issue_id_slug: ${{ steps.version.outputs.preReleaseLabel }}
 steps:
   - name: Checkout repository
-    uses: actions/checkout@v3
+    uses: actions/checkout@v4
     with:
       fetch-depth: 0
   - name: Install GitVersion
     uses: gittools/actions/gitversion/setup@v0
     with:
-      versionSpec: '5.x'
+      versionSpec: "5.x"
   - name: Determine Version
-    id:   version
+    id: version
     uses: gittools/actions/gitversion/execute@v0
     with:
       useConfigFile: true
@@ -41,5 +41,8 @@ steps:
       if [[ ${{ steps.version.outputs.semVer }} =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
         echo ::set-output name=is_production::true
       fi
+
+
 #@ end
 ---
+

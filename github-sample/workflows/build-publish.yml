@@ -24,7 +24,7 @@ jobs:
       issue_id_slug: ${{ steps.version.outputs.preReleaseLabel }}
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
     - name: Install GitVersion
@@ -55,11 +55,11 @@ jobs:
     - run-api-test-integration
     - run-auth-test-unit
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
     - name: Set up Java 17
-      uses: actions/setup-java@v3
+      uses: actions/setup-java@v4
       with:
         java-version: 17
         distribution: adopt
@@ -89,11 +89,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
     - name: Set up Java 17
-      uses: actions/setup-java@v3
+      uses: actions/setup-java@v4
       with:
         java-version: 17
         distribution: adopt
@@ -545,7 +545,7 @@ jobs:
     - name: Image digest
       run: echo ${{ steps.docker-build-integration-tests.outputs.digest }}
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
@@ -684,7 +684,7 @@ jobs:
         username: ${{ github.repository_owner }}
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
@@ -808,7 +808,7 @@ jobs:
         username: ${{ github.repository_owner }}
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
@@ -972,7 +972,7 @@ jobs:
         username: ${{ github.repository_owner }}
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     - name: Checkout GitHub Action Repos
       uses: daspn/private-actions-checkout@v2
       with:
@@ -1073,7 +1073,7 @@ jobs:
         username: ${{ github.repository_owner }}
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     - name: Get docker image tags
       id: github-tags-auth-service
       env:
@@ -1128,7 +1128,7 @@ jobs:
     - integration-tests-legacy-big
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     - name: Login to GitHub Container Registry
       uses: docker/login-action@v2
       with:
@@ -1204,7 +1204,7 @@ jobs:
         username: ${{ github.repository_owner }}
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     - name: Get docker image tags
       id: github-tags-auth-predeployment
       env:
@@ -1259,7 +1259,7 @@ jobs:
     - integration-tests-legacy-big
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     - name: Login to GitHub Container Registry
       uses: docker/login-action@v2
       with:
