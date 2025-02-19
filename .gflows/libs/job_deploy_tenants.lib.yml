@@ -14,7 +14,7 @@
   name: #@ "Deploy to {}".format(tenant.name)
   steps:
   - name: Checkout tokens repository
-    uses: actions/checkout@v3
+    uses: actions/checkout@v4
     with:
       repository: #@ deploy.repository.url
       ref: #@ deploy.repository.branch
