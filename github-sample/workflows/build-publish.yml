@@ -1321,7 +1321,7 @@ jobs:
     - docker-build-auth-service
     steps:
     - name: Checkout tests repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: covergo/integration-testing
         ref: ${{ github.head_ref }}
@@ -1470,7 +1470,7 @@ jobs:
     name: Deploy to Tahoe
     steps:
     - name: Checkout tokens repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: CoverGo/Documentation
         ref: master

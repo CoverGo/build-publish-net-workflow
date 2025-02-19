@@ -6,7 +6,7 @@
 ---
 #@ def integration_tests_legacy_steps(repository, registry,main_registry, environment, test_suites):
 - name: Checkout tests repository
-  uses: actions/checkout@v3
+  uses: actions/checkout@v4
   with:
     repository: covergo/integration-testing
     ref: #@ repository.branch
