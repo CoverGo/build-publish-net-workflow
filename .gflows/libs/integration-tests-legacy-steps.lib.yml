@@ -24,6 +24,13 @@
     image-under-test: #@ tagging.candidate_image(registry, environment.service_under_test.image)
 
 - uses: actions/cache@v4
+  with:
+    path: |
+      **/node_modules
+      **/.cache/yarn
+    key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+    restore-keys: |
+      ${{ runner.os }}-yarn-
 - name: Install yarn
   run: yarn install
 #@ for test_case in test_suites.tests:
