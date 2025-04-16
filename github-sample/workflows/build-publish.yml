@@ -1353,7 +1353,14 @@ jobs:
         mongo-url: dds-3ns0c4f035f4d3141258-pub.mongodb.rds.aliyuncs.com:3717,dds-3ns0c4f035f4d3142331-pub.mongodb.rds.aliyuncs.com:3717/admin?replicaSet=mgset-5830817&maxPoolSize=500&waitQueueMultiple=5
         service-under-test: auth
         image-under-test: ghcr.io/covergo/auth:candidate-${{ needs.version.outputs.app_version }}
-    - uses: c-hive/gha-yarn-cache@v2
+    - uses: actions/cache@v4
+      with:
+        path: |
+          **/node_modules
+          **/.cache/yarn
+        key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-yarn-
     - name: Install yarn
       run: yarn install
     - name: Run test_uat tests
