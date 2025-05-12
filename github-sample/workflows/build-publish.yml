@@ -383,6 +383,8 @@ jobs:
           GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
           GH_ACCOUNT=${{ secrets.PAT_USER_READ_PACKAGES }}
           GH_TOKEN=${{ secrets.PAT_READ_PACKAGES }}
+          FORMKIT_ENTERPRISE_TOKEN=${{ secrets.FORMKIT_ENTERPRISE_TOKEN }}
+          COVERGO_NPM_TOKEN=${{ secrets.COVERGO_NPM_TOKEN }}
           BUILD_DATETIME=${{ steps.meta.outputs.json && fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.created'] }}
           APP_VERSION=${{ needs.version.outputs.app_version }}
           FILE_VERSION=${{ needs.version.outputs.file_version }}
