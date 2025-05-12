@@ -117,6 +117,8 @@ with:
   #@ build_args.append("GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}")
   #@ build_args.append("GH_ACCOUNT=${{ secrets.PAT_USER_READ_PACKAGES }}")
   #@ build_args.append("GH_TOKEN=${{ secrets.PAT_READ_PACKAGES }}")
+  #@ build_args.append("FORMKIT_ENTERPRISE_TOKEN=${{ secrets.FORMKIT_ENTERPRISE_TOKEN }}")
+  #@ build_args.append("COVERGO_NPM_TOKEN=${{ secrets.COVERGO_NPM_TOKEN }}")
   #@ if build_versioned_image:
   #@ build_args.append("BUILD_DATETIME=${{ steps.meta.outputs.json && fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.created'] }}")
   #@ build_args.append("APP_VERSION=${{ needs.version.outputs.app_version }}")
