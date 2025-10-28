@@ -101,6 +101,11 @@ env:
   COSIGN_PRIVATE_KEY: ${{ secrets.SIGNING_SECRET }}
 #@ end
 ---
+#@ def _setup_cosign_alicloud():
+name: Set up sigstore cosign alicloud
+uses: sigstore/cosign-installer@v2.6.0
+#@ end
+---
 #@ bpsteps = struct.make(
 #@ compose_launch_steps = _compose_launch_steps,
 #@ collect_results_step =  _collect_results_step,
@@ -109,4 +114,5 @@ env:
 #@ copy_between_registries_step = _copy_between_registries_step,
 #@ get_compose_service_name_filter_to_diagnose = _get_compose_service_name_filter_to_diagnose,
 #@ setup_cosign = _setup_cosign,
-#@ sign_container_with_cosign = _sign_container_with_cosign)
+#@ sign_container_with_cosign = _sign_container_with_cosign,
+#@ setup_cosign_alicloud = _setup_cosign_alicloud)
