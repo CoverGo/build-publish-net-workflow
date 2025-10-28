@@ -145,6 +145,8 @@ jobs:
           GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
           GH_ACCOUNT=${{ secrets.PAT_USER_READ_PACKAGES }}
           GH_TOKEN=${{ secrets.PAT_READ_PACKAGES }}
+          FORMKIT_ENTERPRISE_TOKEN=${{ secrets.FORMKIT_ENTERPRISE_TOKEN }}
+          COVERGO_NPM_TOKEN=${{ secrets.COVERGO_NPM_TOKEN }}
           BUILD_DATETIME=${{ steps.meta.outputs.json && fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.created'] }}
           APP_VERSION=${{ needs.version.outputs.app_version }}
           FILE_VERSION=${{ needs.version.outputs.file_version }}
@@ -229,6 +231,8 @@ jobs:
           GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
           GH_ACCOUNT=${{ secrets.PAT_USER_READ_PACKAGES }}
           GH_TOKEN=${{ secrets.PAT_READ_PACKAGES }}
+          FORMKIT_ENTERPRISE_TOKEN=${{ secrets.FORMKIT_ENTERPRISE_TOKEN }}
+          COVERGO_NPM_TOKEN=${{ secrets.COVERGO_NPM_TOKEN }}
           BUILD_DATETIME=${{ steps.meta.outputs.json && fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.created'] }}
           APP_VERSION=${{ needs.version.outputs.app_version }}
           FILE_VERSION=${{ needs.version.outputs.file_version }}
@@ -327,6 +331,8 @@ jobs:
           GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
           GH_ACCOUNT=${{ secrets.PAT_USER_READ_PACKAGES }}
           GH_TOKEN=${{ secrets.PAT_READ_PACKAGES }}
+          FORMKIT_ENTERPRISE_TOKEN=${{ secrets.FORMKIT_ENTERPRISE_TOKEN }}
+          COVERGO_NPM_TOKEN=${{ secrets.COVERGO_NPM_TOKEN }}
           BUILD_DATETIME=${{ steps.meta.outputs.json && fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.created'] }}
           APP_VERSION=${{ needs.version.outputs.app_version }}
           FILE_VERSION=${{ needs.version.outputs.file_version }}
@@ -435,6 +441,8 @@ jobs:
           GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
           GH_ACCOUNT=${{ secrets.PAT_USER_READ_PACKAGES }}
           GH_TOKEN=${{ secrets.PAT_READ_PACKAGES }}
+          FORMKIT_ENTERPRISE_TOKEN=${{ secrets.FORMKIT_ENTERPRISE_TOKEN }}
+          COVERGO_NPM_TOKEN=${{ secrets.COVERGO_NPM_TOKEN }}
         provenance: "false"
     - name: Image digest
       run: echo ${{ steps.docker-build-auth-test-unit.outputs.digest }}
@@ -543,6 +551,8 @@ jobs:
           GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
           GH_ACCOUNT=${{ secrets.PAT_USER_READ_PACKAGES }}
           GH_TOKEN=${{ secrets.PAT_READ_PACKAGES }}
+          FORMKIT_ENTERPRISE_TOKEN=${{ secrets.FORMKIT_ENTERPRISE_TOKEN }}
+          COVERGO_NPM_TOKEN=${{ secrets.COVERGO_NPM_TOKEN }}
         provenance: "false"
     - name: Image digest
       run: echo ${{ steps.docker-build-integration-tests.outputs.digest }}
@@ -665,6 +675,8 @@ jobs:
           GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
           GH_ACCOUNT=${{ secrets.PAT_USER_READ_PACKAGES }}
           GH_TOKEN=${{ secrets.PAT_READ_PACKAGES }}
+          FORMKIT_ENTERPRISE_TOKEN=${{ secrets.FORMKIT_ENTERPRISE_TOKEN }}
+          COVERGO_NPM_TOKEN=${{ secrets.COVERGO_NPM_TOKEN }}
         provenance: "false"
     - name: Image digest
       run: echo ${{ steps.docker-build-acceptance-tests.outputs.digest }}
@@ -954,6 +966,8 @@ jobs:
           GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
           GH_ACCOUNT=${{ secrets.PAT_USER_READ_PACKAGES }}
           GH_TOKEN=${{ secrets.PAT_READ_PACKAGES }}
+          FORMKIT_ENTERPRISE_TOKEN=${{ secrets.FORMKIT_ENTERPRISE_TOKEN }}
+          COVERGO_NPM_TOKEN=${{ secrets.COVERGO_NPM_TOKEN }}
         provenance: "false"
     - name: Image digest
       run: echo ${{ steps.docker-build-api-test-integration.outputs.digest }}
@@ -1176,8 +1190,8 @@ jobs:
       with:
         event-type: helm_release
         client-payload: '{"ref_name": "${{ github.ref_name }}"}'
-    - name: Set up sigstore cosign
-      uses: sigstore/cosign-installer@main
+    - name: Set up sigstore cosign alicloud
+      uses: sigstore/cosign-installer@v2.6.0
     - name: Sign published container image
       run: cosign sign --key env://COSIGN_PRIVATE_KEY registry-intl.cn-hongkong.aliyuncs.com/covergo/auth:${{ needs.version.outputs.app_version }}@${{ needs.docker-build-auth-service.outputs.digest }}
       env:
@@ -1307,8 +1321,8 @@ jobs:
       with:
         event-type: helm_release
         client-payload: '{"ref_name": "${{ github.ref_name }}"}'
-    - name: Set up sigstore cosign
-      uses: sigstore/cosign-installer@main
+    - name: Set up sigstore cosign alicloud
+      uses: sigstore/cosign-installer@v2.6.0
     - name: Sign published container image
       run: cosign sign --key env://COSIGN_PRIVATE_KEY registry-intl.cn-hongkong.aliyuncs.com/covergo/auth-predeployment:${{ needs.version.outputs.app_version }}@${{ needs.docker-build-auth-predeployment.outputs.digest }}
       env:
@@ -1428,6 +1442,8 @@ jobs:
           GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
           GH_ACCOUNT=${{ secrets.PAT_USER_READ_PACKAGES }}
           GH_TOKEN=${{ secrets.PAT_READ_PACKAGES }}
+          FORMKIT_ENTERPRISE_TOKEN=${{ secrets.FORMKIT_ENTERPRISE_TOKEN }}
+          COVERGO_NPM_TOKEN=${{ secrets.COVERGO_NPM_TOKEN }}
         provenance: "false"
     - name: Image digest
       run: echo ${{ steps.docker-build-auth-mongo.outputs.digest }}
