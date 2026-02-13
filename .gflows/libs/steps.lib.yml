@@ -38,9 +38,7 @@ uses: docker/setup-qemu-action@v1
 ---
 #@ def _setup_buildx():
 name: Set up Docker Buildx
-uses: docker/setup-buildx-action@v2
-with:
-  version: v0.11.2
+uses: docker/setup-buildx-action@v3
 #@ end
 ---
 #@ def _checkout_private_actions():
