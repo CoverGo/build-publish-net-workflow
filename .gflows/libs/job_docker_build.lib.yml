@@ -15,9 +15,9 @@
   #@ if cfg.should_generate_sourcelink(component):
 - #@ steps.checkout()
   #@ end
-- #@ steps.setup_buildx()
 - #@ steps.login_docker(cache_registry)
   #@ if cfg.should_generate_docker_meta(component):
+- #@ steps.setup_buildx()
 - #@ steps.generate_docker_meta()
   #@ end
 - #@ steps.build_and_push_docker(component, cache_registry, step_id=step_id_value, tags=tag_build, load_image=load_image, push_image=push_image,build_versioned_image=build_versioned_image)
